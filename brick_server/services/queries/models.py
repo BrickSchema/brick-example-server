@@ -5,7 +5,7 @@ from flask_restplus import reqparse
 
 from ..data.models import timeseries_data_model
 
-query_api = Namespace('query', description='Query interfaces for various data sources.')
+query_api = Namespace('queries', description='Query interfaces for various data sources.')
 
 response_template = {
     'result': None,
@@ -16,8 +16,10 @@ query_api.models[timeseries_data_model.name] = timeseries_data_model
 
 
 reqparser = reqparse.RequestParser()
-reqparser.add_argument('query',
+reqparser.add_argument('Content-Type',
                        type = str,
-                       location='json',
+                       location='headers',
+                       default='sparql-query',
+                       dest='content_type'
                        )
 

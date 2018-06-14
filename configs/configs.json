@@ -20,5 +20,8 @@
         "host": "http://localhost:8890/sparql",
         "brick_version": "1.0.3",
         "base_ns": "http://jason.com/"
+    },
+    "server": {
+        "hostname": "132.239.10.117:7889"
     }
 }

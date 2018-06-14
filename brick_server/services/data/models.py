@@ -31,8 +31,3 @@ reqparser.add_argument('data',
                        type = list,
                        location='json',
                        )
-reqparser.add_argument('query',
-                       type = str,
-                       location='json',
-                       )
-

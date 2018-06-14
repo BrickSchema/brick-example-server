@@ -17,3 +17,5 @@ from .services.queries.resources import query_api
 api.add_namespace(query_api)
 from .services.entities.resources import entity_api
 api.add_namespace(entity_api)
+from .services.actuation.resources import actuate_api
+api.add_namespace(actuate_api)

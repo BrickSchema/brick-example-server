@@ -10,3 +10,4 @@ class NumberOrString(fields.Raw):
             return value
         elif isinstance(value, numbers.Number):
             return value
+        raise Exception('non matched')

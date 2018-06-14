@@ -2,6 +2,7 @@ import pdb
 from contextlib import contextmanager
 import random
 import time
+from uuid import uuid4 as gen_uuid
 
 import arrow
 import timeout_decorator
@@ -9,12 +10,13 @@ from timeout_decorator import TimeoutError
 from flask import request
 from injector import inject
 from flask_restplus import Resource
+from flask_restplus.marshalling import marshal
 from werkzeug import exceptions
 
 from brick_data.sparql import BrickSparql
 from brick_data.timeseries import BrickTimeseries
 
-from .models import reqparser, entity_api, entity_model
+from .models import reqparser, entity_api, entity_model, entities_model
 from brick_server.extensions.lockmanager import LockManager
 
 
@@ -48,62 +50,8 @@ def get_all_relationships(db, entity_id):
     res = db.query(qstr)
     return res[1]
 
-@entity_api.route('/<string:entity_id>/actuate', methods=['post'])
-class ActuationEntity(Resource):
-    @inject
-    def __init__(self,
-                 brick_sparql: BrickSparql,
-                 ts_db: BrickTimeseries,
-                 lock_manager: LockManager,
-                 api):
-        self.brick_sparql = brick_sparql
-        self.ts_db = ts_db
-        self.lock_manager = lock_manager
-        super(ActuationEntity, self).__init__(api)
 
-    @entity_api.doc(description='Actuate an entity to a value')
-    @entity_api.response(200, 'Sucess')
-    @entity_api.param('entity_id', 'The ID of an entity for the data request.', _in='url')
-    @entity_api.param('value', 'An actuation value in float.', type=float, _in='body')
-    @entity_api.param('relinquish', 'Relinquish.', type=bool, _in='body')
-    def post(self, entity_id):
-        # TODO
-        # - read paramterrs
-        # - start a session
-        # - get a lock of the resource
-        # - actuation
-        # - verify the actuation
-        # - post the updated value to the timeseries database
-        # - close the session - abort the session if anything goes wrong.
-        args = reqparser.parse_args()
-        actuation_value = args.value
-        scheduled_time = args.get('scheduled_time', None)
-        if scheduled_time:
-            # TODO: Implement this
-            raise exceptions.NotImplemented('Currently only immediate actuation is implemented.')
-
-        with self.lock_manager.advisory_lock(entity_id) as lock_acquired:
-            assert lock_acquired, exceptions.BadRequest('Lock for {0} cannot be acquired'.format(entity_id))
-            self.actuation(entity_id, actuation_value)
-            actuated_time = arrow.get()
-            data = [[entity_id, actuated_time.timestamp, actuation_value]]
-            self.ts_db.add_data(data)
-            return None
-
-        raise exceptions.InternalServerError('This should not be reached.')
-
-    def relinquish(self, entity_id):
-        pass
-
-    def actuation(self, entity_id, value):
-        # TODO: Implement relevant scripts.
-        #       For now, actuation is assumed to be done in certain time.
-        random_delay = random.uniform(0, 5)
-        time.sleep(random_delay)
-        print('{0} is actuated as {1}'.format(entity_id, value))
-        return True
-
-@entity_api.route('/<string:entity_id>', methods=['get', 'delete'])
+@entity_api.route('/<string:entity_id>', methods=['get', 'delete', 'post'], strict_slashes=False)
 class EntityById(Resource):
     @inject
     def __init__(self, db: BrickSparql, api):
@@ -134,31 +82,61 @@ class EntityById(Resource):
     @entity_api.doc(description='Update the metadata of an entity')
     @entity_api.response(201, 'Success')
     def post(self, entity_id):
-        raise exceptions.NotImplemented('TODO: Implement adding more triples for an entity')
         args = reqparser.parse_args()
-        data = args['data']
+        for [prop, obj] in args.relationships:
+            self.db.add_triple(':' + entity_id, prop, ':' + obj)
+        return 'Success', 201
 
-@entity_api.route('/', methods=['get', 'post'])
-class Entity(Resource):
+
+@entity_api.route('/', methods=['get', 'post'], strict_slashes=False)
+class Entities(Resource):
     @inject
     def __init__(self, db: BrickSparql, api):
         self.db = db
-        super(EntityById, self).__init__(api)
+        super(Entities, self).__init__(api)
 
     @entity_api.marshal_with(entity_model)
     @entity_api.doc(description='List all entities with their types')
     @entity_api.response(200, 'TODO')
     @entity_api.response(401, 'Server Error')
     @entity_api.param('entity_id', 'The ID of an entity for the data request.')
-    def get(self, entity_id):
+    def get(self):
         # TODO: Implement
         raise exceptions.NotImplemented('TODO: List all entities and types')
         return res
 
+    def add_entities_ttl(self, raw_ttl):
+        self.db.update(raw_ttl)
+
+    def add_entities_json(self, entities):
+        for entity in entities:
+            entity_type = entity['type']
+            entity_id = entity.get('entity_id', None)
+            if not entity_id:
+                entity_id = str(gen_uuid())
+                entity['entity_id'] = entity_id
+            self.db.add_brick_instance(entity_id, entity_type)
+            for prop, obj in entity['relationships']:
+                self.db.add_triple(':' + entity_id, prop, ':' + obj)
+            name = entity.get('name', None)
+            if name:
+                self.db.add_triple(':' + entity_id, 'bf:hasName', name)
+        return entities
+
     @entity_api.doc(description='Add entities with their triples.')
-    @entity_api.param('entities', 'Entities in triple', _in='body')
-    @entity_api.response(201, 'Success')
+    @entity_api.response(201, 'Success', model=entities_model)
+    @entity_api.marshal_with(entities_model)
     def post(self):
         args = reqparser.parse_args()
-        data = args['data']
-        raise exceptions.NotImplemented('TODO: Add entities.')
+        content_type = args.content_type
+        # TODO: Verify/Authorize the user for the turtle file
+        if content_type == 'application/json':
+            entities = marshal(args, entities_model)['entities']
+            entities = self.add_entities_json(entities)
+        elif content_type == 'text/turtle':
+            raise exceptions.NotImplemented('TODO: Implement entities addition for Content-Type {0}.'.format(content_type))
+            raw_ttl = request.data.decode('utf-8')
+            self.add_entities_ttl(raw_ttl)
+        else:
+            raise exceptions.NotImplemented('TODO: Implement entities addition for Content-Type {0}.'.format(content_type))
+        return {'entities': entities}, 201

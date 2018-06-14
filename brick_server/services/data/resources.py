@@ -55,7 +55,7 @@ class Timeseries(Resource):
 
     @data_api.doc(description='Post data. If fields are not given, default values are assumed.')
     @data_api.response(201, 'Success')
-    @data_api.expect(timeseries_data_model, validate=True)
+    #@data_api.expect(timeseries_data_model, validate=True) # TODO: Enable this line.
     def post(self):
         args = reqparser.parse_args()
         raw_data = args['data']

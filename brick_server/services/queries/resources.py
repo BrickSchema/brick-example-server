@@ -3,6 +3,7 @@ import pdb
 import arrow
 
 from injector import inject
+from flask import request
 from flask_restplus import Namespace, Api, Resource
 from werkzeug import exceptions
 
@@ -48,7 +49,8 @@ class SparqlQuery(Resource):
     @query_api.response(200, 'Success')
     def post(self):
         args = reqparser.parse_args()
-        qstr = args['query']
+        if args.content_type != 'sparql-query':
+            raise exceptions.UnsupportedMediaType()
+        qstr = request.data.decode('utf-8')
         raw_res = self.db.query(qstr)
-        raise exceptions.NotImplemented('Not implemented yet')
-        return res, 200
+        return raw_res, 200, {'Content-Type': 'application/sparql-results+json.'}
