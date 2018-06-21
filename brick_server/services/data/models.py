@@ -11,7 +11,9 @@ timeseries_data_model = Model(
                                       ['uuid-abcd', 1547526187, 71.0]]
                             ),
         'fields': fields.List(fields.String(enum=['uuid', 'timestamp', 'value']),
-                              default=['uuid', 'timestamp', 'value']),
+                              default=['uuid', 'timestamp', 'value'],
+                              example=['uuid', 'timestamp', 'value'],
+                              ),
     }
 )
 data_api.models[timeseries_data_model.name] = timeseries_data_model

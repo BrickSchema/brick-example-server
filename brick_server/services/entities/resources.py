@@ -16,7 +16,8 @@ from werkzeug import exceptions
 from brick_data.sparql import BrickSparql
 from brick_data.timeseries import BrickTimeseries
 
-from .models import reqparser, entity_api, entity_model, entities_model
+from .models import reqparser, entity_api
+from .models import entity_model, entities_model, relationships_model
 from brick_server.extensions.lockmanager import LockManager
 
 
@@ -102,7 +103,8 @@ class EntityById(Resource):
         raise exceptions.NotImplemented('TODO: Delete corresponding entity.')
         return None
 
-    @entity_api.doc(description='Update the metadata of an entity')
+    @entity_api.doc(description='Add relationships of an entity')
+    @entity_api.expect(relationships_model, validate=True) # TODO: Enable this line.
     @entity_api.response(201, 'Success')
     def post(self, entity_id):
         args = reqparser.parse_args()
@@ -118,11 +120,8 @@ class Entities(Resource):
         self.db = db
         super(Entities, self).__init__(api)
 
-    @entity_api.marshal_with(entity_model)
-    @entity_api.doc(description='List all entities with their types')
+    @entity_api.doc(description='List all entities with their types. (Not implemented yet)')
     @entity_api.response(200, 'TODO')
-    @entity_api.response(401, 'Server Error')
-    @entity_api.param('entity_id', 'The ID of an entity for the data request.')
     def get(self):
         # TODO: Implement
         raise exceptions.NotImplemented('TODO: List all entities and types')
@@ -147,6 +146,7 @@ class Entities(Resource):
         return entities
 
     @entity_api.doc(description='Add entities with their triples.')
+    @entity_api.expect(entities_model, validate=True) # TODO: Enable this line.
     @entity_api.response(201, 'Success', model=entities_model)
     @entity_api.marshal_with(entities_model)
     def post(self):

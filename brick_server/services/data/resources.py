@@ -18,7 +18,7 @@ class TimeseriesById(Resource):
     @data_api.doc(description='Get data of an entity with in a time range.')
     @data_api.marshal_with(timeseries_data_model)
     @data_api.response(200, 'Data loaded', model=timeseries_data_model)
-    @data_api.param('entity_id', 'The ID of an entity for the data request.')
+    @data_api.param('entity_id', 'The ID of an entity for the data request.', _in='url')
     @data_api.param('start_time', 'Starting time of the data in UNIX timestamp in seconds (float)', _in='query')
     @data_api.param('end_time', 'Ending time of the data UNIX timestamp in seconds (float)', _in='query')
     def get(self, entity_id):
@@ -34,9 +34,9 @@ class TimeseriesById(Resource):
         return res
 
     @data_api.doc(description='Delete data of an entity with in a time range or all the data if a time range is not given.')
-    @data_api.expect('entity_id', 'The ID of an entity for the data request.', _in='url')
-    @data_api.expect('start_time', 'Starting time of the data in UNIX timestamp in seconds (float)', _in='query')
-    @data_api.expect('end_time', 'Ending time of the data UNIX timestamp in seconds (float)', _in='query')
+    @data_api.param('entity_id', 'The ID of an entity for the data request.', _in='url')
+    @data_api.param('start_time', 'Starting time of the data in UNIX timestamp in seconds (float)', _in='query')
+    @data_api.param('end_time', 'Ending time of the data UNIX timestamp in seconds (float)', _in='query')
     @data_api.response(200, 'Sucess')
     def delete(self, entity_id):
         args = reqparser.parse_args()
@@ -55,7 +55,7 @@ class Timeseries(Resource):
 
     @data_api.doc(description='Post data. If fields are not given, default values are assumed.')
     @data_api.response(201, 'Success')
-    #@data_api.expect(timeseries_data_model, validate=True) # TODO: Enable this line.
+    @data_api.expect(timeseries_data_model, validate=False) # TODO: Enable this line.
     def post(self):
         args = reqparser.parse_args()
         raw_data = args['data']

@@ -19,9 +19,10 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 3. Interface to different databases.
 
 ### What we WILL have
-1. We will add a general app authorization mechanism with Brick.
-2. We will gradually add support for other databases.
-3. We will integrate geometry of buildings.
+1. Will add a general app authorization mechanism with Brick.
+2. Will gradually add support for other databases.
+3. Will integrate geometry of buildings.
+4. Will integrate a semantic for actuation function.
 
 ### What we DON'T have
 1. We do not have exact data of full buildings. For the access to example dataset, please visit XXX, YYY.

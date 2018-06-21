@@ -44,7 +44,6 @@ def post_random_metadata(num_rooms):
         }
 
 
-
         #resp = requests.post(api_endpoint + '/entities', data=q, headers=headers, )
         resp = requests.post(api_endpoint + '/entities', json=body)
         assert resp.status_code == 201
