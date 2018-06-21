@@ -49,8 +49,10 @@ class SparqlQuery(Resource):
     @query_api.response(200, 'Success')
     def post(self):
         args = reqparser.parse_args()
+        if not args.content_type:
+            args.content_type = 'sparql-query' # default content type
         if args.content_type != 'sparql-query':
             raise exceptions.UnsupportedMediaType()
         qstr = request.data.decode('utf-8')
         raw_res = self.db.query(qstr)
-        return raw_res, 200, {'Content-Type': 'application/sparql-results+json.'}
+        return raw_res, 200, {'Content-Type': 'application/json'}

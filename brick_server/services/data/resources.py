@@ -43,7 +43,7 @@ class TimeseriesById(Resource):
         start_time = args['start_time']
         end_time = args['end_time']
         self.db.delete(start_time, end_time, [entity_id])
-        return None
+        return None, 200
 
 
 @data_api.route('/timeseries', methods=['post'], strict_slashes=False)

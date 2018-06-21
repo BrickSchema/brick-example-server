@@ -27,13 +27,31 @@ def get_entity_type(db, entity_id):
     }}
     """.format(entity_id)
     res = db.query(qstr)
-    if res[1]:
-        assert len(res[1]) == 1
-        return res[1][0][0]
+    tuples = res['tuples']
+    if tuples:
+        assert len(tuples) == 1
+        return tuples[0][0]
     else:
-        raise Exception('Type not found')
+        #Type not found for the entity_id
+        return None
+
+def get_name(db, entity_id):
+    qstr = """
+    select ?name where {{
+        :{0} bf:hasName ?name.
+    }}
+    """.format(entity_id)
+    res = db.query(qstr)
+    tuples = res['tuples']
+    if tuples:
+        name = tuples[0][0]
+    else:
+        name = None
+    return name
 
 def get_all_relationships(db, entity_id):
+    #TODO: Implement owl:inverseOf inside Vrituoso
+    print('warning: ``inverseOf`` is not implemented yet inside Virtuoso')
     qstr = """
     select ?p ?o where {{
     {{
@@ -48,7 +66,7 @@ def get_all_relationships(db, entity_id):
     }}
     """.format(entity_id)
     res = db.query(qstr)
-    return res[1]
+    return res['tuples']
 
 
 @entity_api.route('/<string:entity_id>', methods=['get', 'delete', 'post'], strict_slashes=False)
@@ -65,10 +83,15 @@ class EntityById(Resource):
     @entity_api.param('entity_id', 'The ID of an entity for the data request.')
     def get(self, entity_id):
         entity_type = get_entity_type(self.db, entity_id)
+        if not entity_type:
+            raise exceptions.NotFound('{0} does not exist'.format(entity_id))
         relationships = get_all_relationships(self.db, entity_id)
+        name = get_name(self.db, entity_id)
         res = {
             'type': entity_type,
             'relationships': relationships,
+            'name': name,
+            'entity_id': entity_id,
         }
         return res
 

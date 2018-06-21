@@ -2,25 +2,21 @@ import requests
 import json
 import numpy as np
 import arrow
-import pdb
 import random
+import pdb
 
 from brick_data.timeseries import *
 from brick_data.sparql import BrickSparql
 
-brick_db = BrickSparql('http://localhost:8890/sparql',
-                       '1.0.3',
-                       base_ns='http://jason.com/')
-
 url = 'http://localhost:7889'
 api_endpoint = url + '/api/v1'
 
-def gen_random_metadata(num_rooms):
-    generated_entities = []
+def post_random_metadata(num_rooms):
+    generated_entities = {}
     for room_num in range(0, num_rooms):
-        room = 'room_{0}'.format(room_num)
-        znt = 'znt_{0}'.format(room_num)
-        cc = 'cc_{0}'.format(room_num)
+        room_name = 'room_{0}'.format(room_num)
+        znt_name = 'znt_{0}'.format(room_num)
+        cc_name = 'cc_{0}'.format(room_num)
         headers = {
             'Content-Type': 'text/turtle',
         }
@@ -30,19 +26,19 @@ def gen_random_metadata(num_rooms):
                     'type': 'Zone_Temperature_Sensor',
                     'relationships': [
                     ],
-                    'name': znt
+                    'name': znt_name
                 },
                 {
                     'type': 'Cooling_Command',
                     'relationships': [
                     ],
-                    'name': cc
+                    'name': cc_name
                 },
                 {
                     'type': 'Room',
                     'relationships': [
                     ],
-                    'name': room
+                    'name': room_name
                 }
             ],
         }
@@ -56,11 +52,12 @@ def gen_random_metadata(num_rooms):
         znt_id = entities[0]['entity_id']
         cc_id = entities[1]['entity_id']
         room_id = entities[2]['entity_id']
-
         body = {
             'relationships': [['bf:hasLocation', room_id]],
         }
-        generated_entities += entities
+        generated_entities[znt_name] = znt_id
+        generated_entities[cc_name] = cc_id
+        generated_entities[room_name] = room_id
 
         resp = requests.post(api_endpoint + '/entities/{0}'.format(znt_id), json=body)
         assert resp.status_code == 201
@@ -100,12 +97,7 @@ def gen_random_data(point_type, begin_time, end_time, srcid):
     data = [[srcid, x, y] for x, y in zip(xs, ys)]
     return data
 
-if __name__ == '__main__':
-    entities = gen_random_metadata(2)
-    begin_time = arrow.get(2018,4,1).timestamp
-    end_time = arrow.get(2018,4,2).timestamp
-    znt_id = entities[0]['entity_id']
-    data = gen_random_data('Zone_Temperature_Sensor', begin_time, end_time, znt_id)
+def post_random_data(data):
     url = api_endpoint + '/data/timeseries'.format(znt_id)
     headers = {
         'Content-Type': 'application/json'
@@ -116,4 +108,80 @@ if __name__ == '__main__':
     }
     resp = requests.post(url, json=payload, headers=headers)
     assert resp.status_code == 201
+
+def get_timeseries_data(entity_id, begin_time, end_time):
+    url = api_endpoint + '/data/timeseries/{0}'.format(znt_id)
+    params = {
+        'begin_time': begin_time,
+        'end_time': end_time,
+    }
+    resp = requests.get(url, params=params)
+    data = resp.json()['data']
+    return data
+
+def delete_timeseries_data(entity_id, begin_time, end_time):
+    url = api_endpoint + '/data/timeseries/{0}'.format(znt_id)
+    params = {
+        'begin_time': begin_time,
+        'end_time': end_time,
+    }
+    resp = requests.delete(url, params=params)
+    assert resp.status_code == 200
+
+def get_entity_by_id(entity_id):
+    url = api_endpoint + '/entities/{0}'.format(entity_id)
+    resp = requests.get(url)
+    if resp.status_code == 404:
+        print(entity_id, 'non found')
+        return None
+    else:
+        return resp.json()
+
+def delete_entity_by_id(entity_id):
+    #TODO: Implement this inside the server
+    url = api_endpointa + 'entities/{0}'.format(entity_id)
+    resp = requests.delete(url)
+    assert resp.status_code == 200
+
+def query_sparql(query):
+    url = api_endpoint + '/queries/sparql'
+    headers = {
+        'Content-Type': 'sparql-query',
+    }
+    resp = requests.post(url, data=query)
+    return resp.json()
+
+if __name__ == '__main__':
+    # Entities testing
+    entity_ids = post_random_metadata(2)
+    begin_time = arrow.get(2018,4,1).timestamp
+    end_time = arrow.get(2018,4,2).timestamp
+    znt_id = entity_ids['znt_0']
+    znt_entity = get_entity_by_id(znt_id)
+    assert znt_entity
+    not_existing_entity = get_entity_by_id('some_non_eixsting_id')
+    assert not not_existing_entity
+    print('Metadata Test Success')
+
+    # Timeseries testing
+    data = gen_random_data('Zone_Temperature_Sensor', begin_time, end_time, znt_id)
+    post_random_data(data)
+    received_data = get_timeseries_data(znt_id, begin_time, end_time)
+    assert received_data
+    delete_timeseries_data(znt_id, begin_time, end_time)
+    received_data = get_timeseries_data(znt_id, begin_time, end_time)
+    assert received_data == []
+    print('Timeseries Data Test Success')
+
+    # Raw SPARQL testing
+    query = """
+    select ?point where {{
+    ?point bf:hasLocation :{0}.
+    }}
+    """.format(entity_ids['room_0'])
+    res = query_sparql(query)
+    assert res['tuples']
+    print('Raw QPARQL Test Success')
+
+
 

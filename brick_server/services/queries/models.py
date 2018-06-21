@@ -19,7 +19,6 @@ reqparser = reqparse.RequestParser()
 reqparser.add_argument('Content-Type',
                        type = str,
                        location='headers',
-                       default='sparql-query',
                        dest='content_type'
                        )
 

@@ -27,14 +27,17 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 1. We do not have exact data of full buildings. For the access to example dataset, please visit XXX, YYY.
 
 
+## System Requirements
+- OS: We have tested this only on Ubuntu 18.04.
+- Python 3.5> is required.
+
 ## Getting Started
 
-1. Install Virtuoso
-2. Install PostgreSQL
-3. Install TimescaleDB
-4. Install pip packages by ``pip install -r requirements.txt``
-5. Configure the databases and configure ``configs/configs.json``.
-6. Run ``./run_app``
+1. Install and run Virtuoso
+2. Install and run TimescaleDB/PostgreSQL
+3. Install pip packages by ``pip install -r requirements.txt``
+4. Configure the databases and configure ``configs/configs.json``
+5. Run ``python entry.py``
 
 
 # References
