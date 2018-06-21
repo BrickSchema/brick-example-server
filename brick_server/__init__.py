@@ -31,11 +31,14 @@ def configure_binding(binder):
                                lockmanager_configs['password'],
                                )
     brick_configs = configs['brick']
-    base_ns = 'http://{hostname}{api_prefix}{entity_api_prefix}/'.format(
-        hostname = configs['server']['hostname'],
-        api_prefix = API_V1_PREFIX,
-        entity_api_prefix = entity_api.path
-    )
+    if configs['server']['use_hostname_as_ns']:
+        base_ns = 'http://{hostname}{api_prefix}{entity_api_prefix}/'.format(
+            hostname = configs['server']['hostname'],
+            api_prefix = API_V1_PREFIX,
+            entity_api_prefix = entity_api.path
+        )
+    else:
+        base_ns = brick_configs['base_ns']
     brick_sparql = BrickSparql(brick_configs['host'],
                                brick_configs['brick_version'],
                                #base_ns=brick_configs['base_ns'],

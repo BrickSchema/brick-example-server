@@ -32,13 +32,17 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 - OS: We have tested this only on Ubuntu 18.04.
 - Python 3.5> is required.
 
-## Getting Started
 
-1. Install and run Virtuoso
+## Getting Started
+1. Install and run Virtuoso (Note: Please use only released versions in Virtuoso repository.)
 2. Install and run TimescaleDB/PostgreSQL
 3. Install pip packages by ``pip install -r requirements.txt``
 4. Configure the databases and configure ``configs/configs.json``
-5. Run ``python entry.py``
+    1. Create a database with a proper name (e.g., ``brick``,
+    2. Create a role/user of the database.
+    3. Add them inside ``configs/configs.json``
+5. Run ``python entry.py`` to run the server.
+6. Run ``python examples/test_api.py`` in another console.
 
 
 # References
