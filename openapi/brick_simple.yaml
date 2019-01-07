@@ -1,0 +1,142 @@
+openapi: "3.0.0"
+info:
+  version: 0.0.1
+  title: Brick REST API
+  license:
+    name: MIT
+servers:
+  - url: http://brickexample.org
+paths:
+  /metadata/query/sparql:
+    post:
+      summary: SPARQL Endpoint for querying
+      operationId: app.query_sparql
+      requestBody:
+        description: SPARQL query string
+        required: true
+        content:
+          application/sparql-query:
+            schema:
+              $ref: '#/components/schemas/SparqlQuery'
+      tags:
+        - metadata
+      responses:
+        '201':
+          description: Query result
+          content:
+            application/sparql-results+json:
+              schema:
+                $ref: "#/components/schemas/SparqlResult"
+        default:
+          description: unexpected error
+
+  /metadata/{entity_id}:
+    get:
+      operationId: app.get_entity_metadata
+      tags:
+        - metadata
+      summary: Info for a specific entity
+      description: Get all the triples related to the entity with given ``resource_id``.
+      parameters:
+        - name: entity_id
+          in: path
+          required: true
+          description: The id of the pet to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entity"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /data/timeseries/{entity_id}:
+    get:
+      operationId: app.get_entity_timeseries
+      tags:
+        - data
+      parameters:
+        - name: entity_id
+          in: path
+          required: true
+          description: The id of the point to retrieve
+          schema:
+            type: string
+        - name: start_time
+          in: query
+          schema:
+            type: number
+        - name: end_time
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: List of timeseries data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeseriesResult"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /data/query/timeseries:
+    post:
+      operationId: app.query_timeseries
+      summary: Timeseries query endpoint
+      requestBody:
+        description: SPARQL query string
+        required: true
+        content:
+          application/sparql-query:
+            schema:
+              $ref: '#/components/schemas/SparqlQuery'
+
+      tags:
+        - data
+      responses:
+        '201':
+          description: Query result
+          content:
+            application/sparql-results+json:
+              schema:
+                $ref: "#/components/schemas/SparqlResult"
+        default:
+          description: unexpected error
+
+
+components:
+  schemas:
+    SparqlQuery:
+      type: string
+    SparqlResult:
+      type: object
+      properties:
+        name:
+          type: string
+    TimeseriesDatum:
+      type: array
+    TimeseriesResult:
+      type: object
+    Entity:
+      type: object
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
