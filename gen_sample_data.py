@@ -1,4 +1,3 @@
-#insert_data
 import requests
 import numpy as np
 import arrow
