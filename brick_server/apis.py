@@ -8,3 +8,5 @@ from .services.data.resources import data_api
 api.add_namespace(data_api)
 from .services.queries.resources import query_api
 api.add_namespace(query_api)
+from .services.entities.resources import entity_api
+api.add_namespace(entity_api)

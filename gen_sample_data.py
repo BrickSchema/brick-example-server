@@ -4,11 +4,11 @@ import arrow
 import pdb
 import random
 
-"""
 from brick_data.timeseries import *
-from brick_data.sparql import BrickEndpoint
+from brick_data.sparql import BrickSparql
 
-brick_db = BrickEndpoint('http://localhost:8890/sparql', '1.0.3')
+brick_db = BrickSparql('http://localhost:8890/sparql', '1.0.3',
+                       base_ns='http://jason.com/')
 ts_db = SqlalchemyTimeseries(
     dbname = 'brick',
     user = 'bricker',
@@ -16,7 +16,6 @@ ts_db = SqlalchemyTimeseries(
     host = 'localhost',
     port = 6001
 )
-"""
 
 def gen_random_data(point_type, begin_time, end_time, srcid):
     latency_base = 300 # seconds
@@ -59,19 +58,20 @@ def gen_random_metadata(num_rooms, brick_db):
         brick_db.add_brick_instance(room, 'Room')
         brick_db.add_brick_instance(znt, 'Zone_Temperature_Sensor')
         brick_db.add_brick_instance(cc, 'Cooling_Command')
+        brick_db.add_triple(':{0}'.format(znt), 'bf:hasLocation', ':%s' % room)
+        brick_db.add_triple(':{0}'.format(cc), 'bf:hasLocation', ':%s' % room)
 
 if __name__ == '__main__':
-    """
     brick_db.load_schema()
     gen_random_metadata(2, brick_db)
-    """
     begin_time = arrow.get(2018,4,1).timestamp
     end_time = arrow.get(2018,4,2).timestamp
     uuid = 'znt1'
     data = gen_random_data('Zone_Temperature_Sensor', begin_time, end_time, uuid)
-    url = 'http://132.239.10.117:8080/data/timeseries/{0}'.format(uuid)
+    url = 'http://132.239.10.117:8080/api/v1/data/timeseries/{0}'.format(uuid)
     headers = {
         'Content-Type': 'application/json'
     }
     requests.post(url, json={'data': data}, headers=headers)
 
+    pdb.set_trace()

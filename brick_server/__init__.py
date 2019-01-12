@@ -17,7 +17,8 @@ def configure_binding(binder):
     from brick_data.sparql import BrickSparql
     brick_ts = BrickTimeseries(dbname, user, pw, host, port)
     binder.bind(BrickTimeseries, to=brick_ts)
-    brick_sparql = BrickSparql('http://localhost:8890/sparql', '1.0.3')
+    brick_sparql = BrickSparql('http://localhost:8890/sparql', '1.0.3',
+                               base_ns='http://jason.com/')
     binder.bind(BrickSparql, to=brick_sparql)
 
 

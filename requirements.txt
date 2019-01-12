@@ -6,3 +6,6 @@ flask-cors
 flask-marshmallow
 webargs
 apispec
+flask_injector
+requests
+timeout-decorator
