@@ -1,142 +1,176 @@
-openapi: "3.0.0"
-info:
-  version: 0.0.1
-  title: Brick REST API
-  license:
-    name: MIT
-servers:
-  - url: http://brickexample.org
+basePath: /api/v1
+consumes: [application/json]
+definitions:
+  Entity:
+    properties:
+      relationships:
+        example:
+        - ['bf:hasLocation', room_1]
+        items:
+          items: {type: string}
+          type: array
+        type: array
+      type: {example: Zone_Temperature_Sensor, type: string}
+    type: object
+  TimeseriesData:
+    properties:
+      data:
+        example:
+        - [uuid-abcd, 1547526087, 70.0]
+        - [uuid-abcd, 1547526187, 71.0]
+        items:
+          items: {type: object}
+          type: array
+        type: array
+      fields:
+        default: [uuid, timestamp, value]
+        items:
+          enum: [uuid, timestamp, value]
+          example: uuid
+          type: string
+        type: array
+    type: object
+info: {description: '
+
+    - Questions to https://groups.google.com/forum/#!forum/brickschema
+
+    - Official Website: https://brickschema.org
+
+    ', title: Brick API Documentation, version: '1.0'}
 paths:
-  /metadata/query/sparql:
+  /data/timeseries:
     post:
-      summary: SPARQL Endpoint for querying
-      operationId: app.query_sparql
-      requestBody:
-        description: SPARQL query string
-        required: true
-        content:
-          application/sparql-query:
-            schema:
-              $ref: '#/components/schemas/SparqlQuery'
-      tags:
-        - metadata
-      responses:
-        '201':
-          description: Query result
-          content:
-            application/sparql-results+json:
-              schema:
-                $ref: "#/components/schemas/SparqlResult"
-        default:
-          description: unexpected error
-
-  /metadata/{entity_id}:
-    get:
-      operationId: app.get_entity_metadata
-      tags:
-        - metadata
-      summary: Info for a specific entity
-      description: Get all the triples related to the entity with given ``resource_id``.
+      description: Post data. If fields are not given, default values are assumed.
+      operationId: post_timeseries
       parameters:
-        - name: entity_id
-          in: path
-          required: true
-          description: The id of the pet to retrieve
-          schema:
-            type: string
+      - in: body
+        name: payload
+        required: true
+        schema: {$ref: '#/definitions/TimeseriesData'}
       responses:
-        '200':
-          description: Expected response to a valid request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Entity"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+        '201': {description: Success}
+      tags: [data]
   /data/timeseries/{entity_id}:
+    delete:
+      description: Delete data of an entity with in a time range or all the data if
+        a time range is not given.
+      operationId: delete_timeseries_by_id
+      responses:
+        '200': {description: Sucess}
+      tags: [data]
     get:
-      operationId: app.get_entity_timeseries
-      tags:
-        - data
+      description: Get data of an entity with in a time range.
+      operationId: get_timeseries_by_id
       parameters:
-        - name: entity_id
-          in: path
-          required: true
-          description: The id of the point to retrieve
-          schema:
-            type: string
-        - name: start_time
-          in: query
-          schema:
-            type: number
-        - name: end_time
-          in: query
-          schema:
-            type: number
+      - {description: The ID of an entity for the data request., in: query, name: entity_id,
+        required: true, type: string}
+      - {description: Ending time of the data UNIX timestamp in seconds (float), in: query,
+        name: end_time, type: string}
+      - {description: Starting time of the data in UNIX timestamp in seconds (float),
+        in: query, name: start_time, type: string}
+      - {description: An optional fields mask, format: mask, in: header, name: X-Fields,
+        type: string}
       responses:
         '200':
-          description: List of timeseries data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TimeseriesResult"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /data/query/timeseries:
-    post:
-      operationId: app.query_timeseries
-      summary: Timeseries query endpoint
-      requestBody:
-        description: SPARQL query string
-        required: true
-        content:
-          application/sparql-query:
-            schema:
-              $ref: '#/components/schemas/SparqlQuery'
-
-      tags:
-        - data
+          description: Success
+          schema: {$ref: '#/definitions/TimeseriesData'}
+      tags: [data]
+    parameters:
+    - {in: path, name: entity_id, required: true, type: string}
+  /entities/:
+    get:
+      description: List all entities with their types
+      operationId: get_entity
+      parameters:
+      - {description: The ID of an entity for the data request., in: query, name: entity_id,
+        type: string}
+      - {description: An optional fields mask, format: mask, in: header, name: X-Fields,
+        type: string}
       responses:
-        '201':
-          description: Query result
-          content:
-            application/sparql-results+json:
-              schema:
-                $ref: "#/components/schemas/SparqlResult"
-        default:
-          description: unexpected error
-
-
-components:
-  schemas:
-    SparqlQuery:
-      type: string
-    SparqlResult:
-      type: object
-      properties:
-        name:
-          type: string
-    TimeseriesDatum:
-      type: array
-    TimeseriesResult:
-      type: object
-    Entity:
-      type: object
-    Error:
-      required:
-        - code
-        - message
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
+        '200':
+          description: Success
+          schema: {$ref: '#/definitions/Entity'}
+        '401': {description: Server Error}
+      tags: [entities]
+    post:
+      description: Add entities with their triples.
+      operationId: post_entity
+      parameters:
+      - {description: Entities in triple, in: body, name: entities, type: string}
+      responses:
+        '201': {description: Success}
+      tags: [entities]
+  /entities/{entity_id}:
+    delete:
+      description: Delete an entity along with its relationships and data
+      operationId: delete_entity_by_id
+      parameters:
+      - {description: The ID of an entity for the data request., in: query, name: entity_id,
+        required: true, type: string}
+      responses:
+        '200': {description: Sucess}
+      tags: [entities]
+    get:
+      description: Get information about an entity including type and its relationships
+        with others
+      operationId: get_entity_by_id
+      parameters:
+      - {description: The ID of an entity for the data request., in: query, name: entity_id,
+        required: true, type: string}
+      - {description: An optional fields mask, format: mask, in: header, name: X-Fields,
+        type: string}
+      responses:
+        '200':
+          description: Success
+          schema: {$ref: '#/definitions/Entity'}
+        '401': {description: Server Error}
+      tags: [entities]
+    parameters:
+    - {in: path, name: entity_id, required: true, type: string}
+  /entities/{entity_id}/actuate:
+    parameters:
+    - {in: path, name: entity_id, required: true, type: string}
+    post:
+      description: Actuate an entity to a value
+      operationId: post_actuation_entity
+      parameters:
+      - {description: The ID of an entity for the data request., in: url, name: entity_id,
+        required: true, type: string}
+      - {description: Relinquish., in: body, name: relinquish, type: boolean}
+      - {description: An actuation value in float., in: body, name: value, type: number}
+      responses:
+        '200': {description: Sucess}
+      tags: [entities]
+  /query/sparql:
+    post:
+      description: Raw SPARQL for Brick metadata. (May not be exposed in the production
+        deployment.
+      operationId: post_sparql_query
+      parameters:
+      - {description: Query, in: body, name: query, type: string}
+      responses:
+        '200': {description: Success}
+      tags: [query]
+  /query/timeseries:
+    post:
+      description: Raw SQL query for timeseries. (May not be exposed in the production
+        deployment.
+      operationId: post_timeseries_query
+      parameters:
+      - {description: Query, in: body, name: query, type: string}
+      - {description: An optional fields mask, format: mask, in: header, name: X-Fields,
+        type: string}
+      responses:
+        '200':
+          description: Success
+          schema: {$ref: '#/definitions/TimeseriesData'}
+      tags: [query]
+produces: [application/json]
+responses:
+  MaskError: {description: When any error occurs on mask}
+  ParseError: {description: When a mask can't be parsed}
+swagger: '2.0'
+tags:
+- {description: Data, name: data}
+- {description: Query interfaces for various data sources., name: query}
+- {description: Manage entities, name: entities}
