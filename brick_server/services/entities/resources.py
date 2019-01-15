@@ -1,5 +1,7 @@
 import pdb
 from contextlib import contextmanager
+import random
+import time
 
 import arrow
 import timeout_decorator
@@ -7,9 +9,13 @@ from timeout_decorator import TimeoutError
 from flask import request
 from injector import inject
 from flask_restplus import Namespace, Api, Resource
+from werkzeug import exceptions
+
 from brick_data.sparql import BrickSparql
+from brick_data.timeseries import BrickTimeseries
 
 from .models import reqparser, entity_api, entity_model
+from brick_server.extensions.lockmanager import LockManager
 
 
 def get_entity_type(db, entity_id):
@@ -45,8 +51,14 @@ def get_all_relationships(db, entity_id):
 @entity_api.route('/<string:entity_id>/actuate', methods=['post'])
 class ActuationEntity(Resource):
     @inject
-    def __init__(self, db: BrickSparql, api):
-        self.db = db
+    def __init__(self,
+                 brick_sparql: BrickSparql,
+                 ts_db: BrickTimeseries,
+                 lock_manager: LockManager,
+                 api):
+        self.brick_sparql = brick_sparql
+        self.ts_db = ts_db
+        self.lock_manager = lock_manager
         super(ActuationEntity, self).__init__(api)
 
     @entity_api.marshal_with(entity_model)
@@ -63,19 +75,32 @@ class ActuationEntity(Resource):
         # - post the updated value to the timeseries database
         # - close the session - abort the session if anything goes wrong.
         args = reqparser.parse_args()
-        with api.commit_or_abort(
-                default_error_message="Failed to actuate {0}".format(entity_id)
-        ):
-            actuation()
-            return team
+        actuation_value = args.value
+        scheduled_time = args.get('scheduled_time', None)
+        if scheduled_time:
+            # TODO: Implement this
+            raise exceptions.NotImplemented('Currently only immediate actuation is implemented.')
 
-    @contextmanager
-    def lock_entity_actuation(self, entity_id):
-        try:
-            yield
-        finally:
-            pass
+        with self.lock_manager.advisory_lock(entity_id) as lock_acquired:
+            assert lock_acquired, exceptions.BadRequest('Lock for {0} cannot be acquired'.format(entity_id))
+            self.actuation(entity_id, actuation_value)
+            actuated_time = arrow.get()
+            data = [[entity_id, actuated_time.timestamp, actuation_value]]
+            self.ts_db.add_data(data)
+            return None
 
+        raise exceptions.InternalServerError('This should not be reached.')
+
+    def relinquish(self, entity_id):
+        pass
+
+    def actuation(self, entity_id, value):
+        # TODO: Implement relevant scripts.
+        #       For now, actuation is assumed to be done in certain time.
+        random_delay = random.uniform(0, 5)
+        time.sleep(random_delay)
+        print('{0} is actuated as {1}'.format(entity_id, value))
+        return True
 
 @entity_api.route('/<string:entity_id>', methods=['get', 'delete'])
 class EntityById(Resource):
@@ -108,5 +133,3 @@ class EntityById(Resource):
     def post(self, entity_id):
         args = reqparser.parse_args()
         data = args['data']
-        self.db.add_data(data)
-        return None, 201

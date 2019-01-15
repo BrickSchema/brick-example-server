@@ -2,7 +2,14 @@ from flask import Blueprint
 from flask_restplus import Api
 
 blueprint = Blueprint('api', __name__)
-api = Api(blueprint, title='API', description='API')
+api_desc = """
+- Questions to https://groups.google.com/forum/#!forum/brickschema
+- Official Website: https://brickschema.org
+"""
+api = Api(blueprint,
+          title = 'Brick API Documentation',
+          description = api_desc,
+          doc = '/doc')
 
 from .services.data.resources import data_api
 api.add_namespace(data_api)

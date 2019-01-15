@@ -32,5 +32,4 @@ reqparser.add_argument('value',
 reqparser.add_argument('scheduled_time',
                        type = float,
                        location='json',
-                       default=None,
                        )

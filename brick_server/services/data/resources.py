@@ -22,6 +22,8 @@ class TimeseriesById(Resource):
     @data_api.param('start_time', 'Starting time of the data', _in='query')
     @data_api.param('end_time', 'Ending time of the data', _in='query')
     def get(self, entity_id):
+        """
+        """
         args = reqparser.parse_args()
         start_time = args['start_time']
         end_time = args['end_time']

@@ -68,9 +68,11 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
 
         cursor.close()
 
+def get_lock_id(uuid):
+    pass
+
 
 if __name__ == '__main__':
     lock_id = 1234
     with advisory_lock(lock_id, shared=False, wait=True, using=None) as al:
-        print(1)
         pdb.set_trace()

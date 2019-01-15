@@ -5,7 +5,11 @@ arrow
 flask-cors
 flask-marshmallow
 webargs
-apispec
+apispec>=1.0.0b1
+apispec_webframeworks
 flask_injector
 requests
 timeout-decorator
+psycopg2-binary
+pytest-flask
+git+https://github.com/jbkoh/brick_data.git@master

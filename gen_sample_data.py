@@ -66,7 +66,7 @@ if __name__ == '__main__':
     gen_random_metadata(2, brick_db)
     begin_time = arrow.get(2018,4,1).timestamp
     end_time = arrow.get(2018,4,2).timestamp
-    uuid = 'znt1'
+    uuid = 'znt_1'
     data = gen_random_data('Zone_Temperature_Sensor', begin_time, end_time, uuid)
     url = 'http://132.239.10.117:8080/api/v1/data/timeseries/{0}'.format(uuid)
     headers = {
