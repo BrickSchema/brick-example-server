@@ -1,0 +1,24 @@
+{
+    "timeseries": {
+        "dbtype": "timescaledb",
+        "dbname": "brick",
+        "user": "bricker",
+        "password": "brick-demo",
+        "host": "localhost",
+        "port": 6001
+    },
+    "lockmanager": {
+        "dbname": "brick",
+        "user": "bricker",
+        "password": "brick-demo",
+        "host": "localhost",
+        "port": 6001,
+        "dbtype": "postgresql"
+    },
+    "brick": {
+        "dbtype": "virtuoso",
+        "host": "http://localhost:8890/sparql",
+        "brick_version": "1.0.3",
+        "base_ns": "http://jason.com/"
+    }
+}
