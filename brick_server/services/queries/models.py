@@ -5,7 +5,7 @@ from flask_restplus import reqparse
 
 from ..data.models import timeseries_data_model
 
-query_api = Namespace('query', description='Query')
+query_api = Namespace('query', description='Query interfaces for various data sources.')
 
 response_template = {
     'result': None,

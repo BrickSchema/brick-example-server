@@ -4,6 +4,8 @@ import arrow
 
 from injector import inject
 from flask_restplus import Namespace, Api, Resource
+from werkzeug import exceptions
+
 from brick_data.timeseries import BrickTimeseries
 from brick_data.sparql import BrickSparql
 
@@ -16,8 +18,11 @@ class TimeseriesQuery(Resource):
         super(TimeseriesQuery, self).__init__(api)
         self.db = db
 
+    @query_api.doc(description='Raw SQL query for timeseries. (May not be exposed in the production deployment.')
+    @query_api.expect('query', 'Query', _in='body')
     @query_api.param('query', 'Query', _in='body')
-    @query_api.response(200, 'Success')
+    @query_api.response(200, 'Success', model=timeseries_data_model)
+    @query_api.marshal_with(timeseries_data_model)
     def post(self):
         args = reqparser.parse_args()
         qstr = args['query']
@@ -37,14 +42,13 @@ class SparqlQuery(Resource):
         super(SparqlQuery, self).__init__(api)
         self.db = db
 
+    @query_api.doc(description='Raw SPARQL for Brick metadata. (May not be exposed in the production deployment.')
+    @query_api.expect('query', 'Query', _in='body')
     @query_api.param('query', 'Query', _in='body')
     @query_api.response(200, 'Success')
     def post(self):
         args = reqparser.parse_args()
         qstr = args['query']
         raw_res = self.db.query(qstr)
-        res = {
-            'data': raw_res[1],
-            'fields': raw_res[0]
-        }
+        raise exceptions.NotImplemented('Not implemented yet')
         return res, 200

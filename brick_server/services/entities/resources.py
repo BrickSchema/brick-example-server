@@ -8,7 +8,7 @@ import timeout_decorator
 from timeout_decorator import TimeoutError
 from flask import request
 from injector import inject
-from flask_restplus import Namespace, Api, Resource
+from flask_restplus import Resource
 from werkzeug import exceptions
 
 from brick_data.sparql import BrickSparql
@@ -61,10 +61,11 @@ class ActuationEntity(Resource):
         self.lock_manager = lock_manager
         super(ActuationEntity, self).__init__(api)
 
-    @entity_api.marshal_with(entity_model)
-    @entity_api.response(200, 'Sucess', model=entity_model)
-    @entity_api.response(401, 'Server Error')
-    @entity_api.param('entity_id', 'The ID of an entity for the data request.')
+    @entity_api.doc(description='Actuate an entity to a value')
+    @entity_api.response(200, 'Sucess')
+    @entity_api.param('entity_id', 'The ID of an entity for the data request.', _in='url')
+    @entity_api.param('value', 'An actuation value in float.', type=float, _in='body')
+    @entity_api.param('relinquish', 'Relinquish.', type=bool, _in='body')
     def post(self, entity_id):
         # TODO
         # - read paramterrs
@@ -109,6 +110,7 @@ class EntityById(Resource):
         self.db = db
         super(EntityById, self).__init__(api)
 
+    @entity_api.doc(description='Get information about an entity including type and its relationships with others')
     @entity_api.marshal_with(entity_model)
     @entity_api.response(200, 'Sucess', model=entity_model)
     @entity_api.response(401, 'Server Error')
@@ -122,14 +124,41 @@ class EntityById(Resource):
         }
         return res
 
+    @entity_api.doc(description='Delete an entity along with its relationships and data')
     @entity_api.param('entity_id', 'The ID of an entity for the data request.')
     @entity_api.response(200, 'Sucess')
     def delete(self, entity_id):
-        args = reqparser.parse_args()
+        raise exceptions.NotImplemented('TODO: Delete corresponding entity.')
         return None
 
-    @entity_api.param('data', 'Data', _in='body')
+    @entity_api.doc(description='Update the metadata of an entity')
     @entity_api.response(201, 'Success')
     def post(self, entity_id):
+        raise exceptions.NotImplemented('TODO: Implement adding more triples for an entity')
         args = reqparser.parse_args()
         data = args['data']
+
+@entity_api.route('/', methods=['get', 'post'])
+class Entity(Resource):
+    @inject
+    def __init__(self, db: BrickSparql, api):
+        self.db = db
+        super(EntityById, self).__init__(api)
+
+    @entity_api.marshal_with(entity_model)
+    @entity_api.doc(description='List all entities with their types')
+    @entity_api.response(200, 'TODO')
+    @entity_api.response(401, 'Server Error')
+    @entity_api.param('entity_id', 'The ID of an entity for the data request.')
+    def get(self, entity_id):
+        # TODO: Implement
+        raise exceptions.NotImplemented('TODO: List all entities and types')
+        return res
+
+    @entity_api.doc(description='Add entities with their triples.')
+    @entity_api.param('entities', 'Entities in triple', _in='body')
+    @entity_api.response(201, 'Success')
+    def post(self):
+        args = reqparser.parse_args()
+        data = args['data']
+        raise exceptions.NotImplemented('TODO: Add entities.')
