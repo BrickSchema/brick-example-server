@@ -1,0 +1,108 @@
+---
+- hosts:
+  - ec2test
+  remote_user: ubuntu
+  become: yes
+  gather_facts: no
+  tasks:
+  - name: install apt deps
+    apt:
+      name: "{{ packages }}"
+    vars:
+      packages:
+      - python
+      - python-pip
+      - virtualenv
+      - postgresql
+      - libpq-dev
+      - python-psycopg2
+  - name: create virtuoso directory
+    file:
+      path: /etc/virtuoso
+      state: directory
+  - name: download virtuoso
+    unarchive:
+      src: https://github.com/openlink/virtuoso-opensource/releases/download/v7.2.5.1/virtuoso-opensource.x86_64-generic_glibc25-linux-gnu.tar.gz
+      dest: /etc/virtuoso/
+      remote_src: yes
+      mode: 0775
+  - name: fix virtuoso ini file
+    command: cp /etc/virtuoso/virtuoso-opensource/database/virtuoso.ini.sample /etc/virtuoso/virtuoso-opensource/database/virtuoso.ini
+  - name: get virtuoso systemd config
+    copy:
+      src: virtuoso.service
+      dest: /etc/systemd/system/virtuoso.service
+      owner: root
+      group: root
+      mode: 0644
+  - name: enable virtuoso systemd config
+    systemd:
+      name: virtuoso
+      enabled: yes
+      masked: no
+  - name: start virtuoso systemd config
+    systemd:
+      name: virtuoso
+      state: started
+  - name: add timescale repo
+    apt_repository: 
+      repo: ppa:timescale/timescaledb-ppa
+  - name: install timescaledb
+    apt:
+      name: timescaledb-postgresql-10
+      state: latest
+  - name: update postgres configuration
+    lineinfile:
+      dest: /etc/postgresql/10/main/postgresql.conf
+      line: shared_preload_libraries = 'timescaledb'
+  - name: restart postgresql
+    systemd:
+      name: postgresql
+      state: restarted
+  - name: test postgres
+    become: true
+    become_user: postgres
+    postgresql_db:
+      name: brick
+  - name: enable timescale
+    become: true
+    become_user: postgres
+    postgresql_ext:
+      name: timescaledb
+      db: brick
+  - name: create brick user for postgres
+    become: true
+    become_user: postgres
+    postgresql_user:
+      db: brick
+      name: bricker
+      password: brick-demo
+      encrypted: yes
+  - name: get brick server
+    git:
+      repo: https://github.com/gtfierro/brick-server
+      dest: /etc/brick-server
+      update: yes
+      version: master
+      accept_hostkey: yes
+  - name: install brick server python dependencies
+    pip:
+      requirements: /etc/brick-server/requirements.txt
+      virtualenv: /etc/brick-server/venv
+      virtualenv_python: python3.6
+  - name: get brickserver systemd config
+    copy:
+      src: brickserver.service
+      dest: /etc/systemd/system/brickserver.service
+      owner: root
+      group: root
+      mode: 0644
+  - name: enable brickserver systemd config
+    systemd:
+      name: brickserver
+      enabled: yes
+      masked: no
+  - name: start brickserver systemd config
+    systemd:
+      name: brickserver
+      state: started

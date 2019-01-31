@@ -1,0 +1,13 @@
+[Unit]
+Description="BrickServer"
+
+[Service]
+Restart=always
+RestartSec=30
+WorkingDirectory=/etc/brick-server
+ExecStart=/etc/brick-server/venv/bin/python entry.py
+
+[Install]
+WantedBy=multi-user.target
+
+
