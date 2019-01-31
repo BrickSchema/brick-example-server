@@ -5,14 +5,14 @@
         "user": "bricker",
         "password": "brick-demo",
         "host": "localhost",
-        "port": 6001
+        "port": 5432
     },
     "lockmanager": {
         "dbname": "brick",
         "user": "bricker",
         "password": "brick-demo",
         "host": "localhost",
-        "port": 6001,
+        "port": 5432,
         "dbtype": "postgresql"
     },
     "brick": {
@@ -22,7 +22,7 @@
         "base_ns": "http://brickschema.org/example_ns/"
     },
     "server": {
-        "hostname": "132.239.10.117:7889",
+        "hostname": "0.0.0.0:7889",
         "use_hostname_as_ns": true
     }
 }
