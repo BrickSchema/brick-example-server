@@ -1,0 +1,12 @@
+[Unit]
+Description="Virtuoso"
+
+[Service]
+Restart=always
+RestartSec=30
+WorkingDirectory=/etc/virtuoso/virtuoso-opensource/database
+ExecStart=/etc/virtuoso/virtuoso-opensource/bin/virtuoso-t -f
+
+[Install]
+WantedBy=multi-user.target
+

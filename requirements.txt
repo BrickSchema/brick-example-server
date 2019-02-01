@@ -13,3 +13,4 @@ timeout-decorator
 psycopg2-binary
 pytest-flask
 git+https://github.com/jbkoh/brick_data.git@master
+pyaml

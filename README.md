@@ -44,6 +44,19 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 5. Run ``python entry.py`` to run the server.
 6. Run ``python examples/test_api.py`` in another console.
 
+### Alternative: Use Ansible
+
+1. Make sure Python >=3.6 is installed on the deployment server
+2. Install ansible on your local machine
+    - follow instructions for the [control machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-the-control-machine)
+3. Edit your `/etc/ansible/hosts` file to include the remote host and any SSH key you need
+
+```
+[ec2test]
+52.91.98.98 ansible_ssh_private_key_file=/path/to/my/ssh/key
+```
+
+4. Run `ansible-playbook brick-server-playbook.yml` from the `ansible` directory
 
 # References
 - Brick (BuildSys 2016)
