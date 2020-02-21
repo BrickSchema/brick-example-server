@@ -1,0 +1,105 @@
+@prefix bd3: <https://mesl-bd.ucsd.edu:82/api/sensor/> .
+@prefix bf: <https://brickschema.org/schema/1.0.3/BrickFrame#> .
+@prefix brick: <https://brickschema.org/schema/1.0.3/Brick#> .
+@prefix ebu3b: <ebu3b:> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+brick:Power_Sensor rdfs:subClassOf brick:Sensor.
+brick:Thermal_Power_Sensor rdfs:subClassOf brick:Power_Sensor.
+brick:Electricity_Power_Sensor rdfs:subClassOf brick:Power_Sensor.
+brick:Energy_Sensor rdfs:subClassOf brick:Sensor.
+brick:Thermal_Energy_Sensor rdfs:subClassOf brick:Energy_Sensor.
+brick:Water_Thermal_Energy_Sensor rdfs:subClassOf brick:Thermal_Energy_Sensor.
+brick:Chilled_Water_Thermal_Energy_Sensor rdfs:subClassOf brick:Water_Thermal_Energy_Sensor.
+brick:Hot_Water_Thermal_Energy_Sensor rdfs:subClassOf brick:Water_Thermal_Energy_Sensor.
+
+
+ebu3b:WARREN_EBU3B_1st_Floor_E2545_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries <https://mesl-bd.ucsd.edu:82/api/sensor/36999948-77ea-4c84-a7bc-cf00aaada2ba> ;
+    bf:hasName "WARREN_EBU3B_1st_Floor_E2545_RealTime_Real_Power"^^xsd:string;
+    bf:isPointOf ebu3b:EBU3B_Floor_1 .
+
+ebu3b:WARREN_EBU3B_1st_Floor_E2546_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries bd3:d363f8db-cc08-4a77-80d3-2dbe392ccef7 ;
+    bf:hasName "WARREN_EBU3B_1st_Floor_E2546_RealTime_Real_Power"^^xsd:string;
+    bf:isPointOf ebu3b:EBU3B_Floor_1 .
+
+ebu3b:WARREN_EBU3B_1st_Floor_E2548_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries bd3:ddfd8f27-ecfa-47dc-a6c0-e1e4c8ecd102 ;
+    bf:hasName "WARREN_EBU3B_1st_Floor_E2548_RealTime_Real_Power"^^xsd:string;
+    bf:isPointOf ebu3b:EBU3B_Floor_1 .
+
+ebu3b:WARREN_EBU3B_2nd_Floor_E2549_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries bd3:b54f419c-1587-441c-94c4-c65660f090cc ;
+    bf:isPointOf ebu3b:EBU3B_Floor_2 .
+
+ebu3b:WARREN_EBU3B_3rd_Floor_E2550_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries <https://mesl-bd.ucsd.edu:82/api/sensor/16f3e2df-0217-45c1-91a8-a733bdebd751> ;
+    bf:isPointOf ebu3b:EBU3B_Floor_3 .
+
+ebu3b:WARREN_EBU3B_4th_Floor_E2551_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries bd3:f07e5c09-ed50-453a-be22-a5c7368af8e4 ;
+    bf:isPointOf ebu3b:EBU3B_Floor_4 .
+
+ebu3b:WARREN_EBU3B_BTU_C_H2520_RealTime_CHW_Flo a brick:Chilled_Water_Flow_Sensor ;
+    bf:hasTimeseries <https://mesl-bd.ucsd.edu:82/api/sensor/6acbfb84-cc5b-4dd9-804c-c83a5e4145d8> ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_BTU_C_H2520_RealTime_CHW_RT a brick:Chilled_Water_Return_Temperature_Sensor ;
+    bf:hasTimeseries bd3:dc227714-832a-457f-9eed-96b76885fbbe ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_BTU_C_H2520_RealTime_CHW_TOT a brick:Chilled_Water_Thermal_Energy_Sensor ;
+    bf:hasTimeseries bd3:dbe20519-51f0-4c2e-9099-02a0a2f0ef33 ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_BTU_C_H2520_RealTime_HTW_RT a brick:Hot_Water_Return_Temperature_Sensor ;
+    bf:hasTimeseries <https://mesl-bd.ucsd.edu:82/api/sensor/610ce612-a0d4-43ae-aa69-abf7dcb2beaa> ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_BTU_C_H2520_RealTime_HTW_ST a brick:Hot_Water_Supply_Temperature_Sensor ;
+    bf:hasTimeseries <https://mesl-bd.ucsd.edu:82/api/sensor/47739ab2-8c65-4494-b55e-dfa64abb7125> ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_BTU_C_H2520_RealTime_HTW_Tot a brick:Hot_Water_Thermal_Energy_Sensor ;
+    bf:hasTimeseries bd3:aaf65458-8feb-419b-a14d-84f2d6ceb539 ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_E2520_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries <https://mesl-bd.ucsd.edu:82/api/sensor/13aa1365-c2e5-4b86-b1f8-6153f1c13dbe> ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_E2521_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries <https://mesl-bd.ucsd.edu:82/api/sensor/25b0eb40-9668-488a-afe3-ac7f27cd9cac> ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_E2522_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries bd3:bcfdffdd-c407-4123-b672-0fd30abece44 ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_Elev_E2527_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries <https://mesl-bd.ucsd.edu:82/api/sensor/39a67d98-4c81-4d7c-a5f4-2e1c8b5076a7> ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_Panel_M_E2526_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries <https://mesl-bd.ucsd.edu:82/api/sensor/3cb20993-3ee4-496f-a86b-3317ef4acf09> ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_Sec_Elec_E2523_RealTime_Real_Power a brick:Electricity_Power_Sensor ;
+    bf:hasTimeseries <https://mesl-bd.ucsd.edu:82/api/sensor/3e2e85b3-cd6c-405b-99d4-e6f18d84e614> ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_Server_Rm_BTU_C2521_RealTime_CHW_RT a brick:Chilled_Water_Return_Temperature_Sensor ;
+    bf:hasTimeseries <https://mesl-bd.ucsd.edu:82/api/sensor/2e610e15-d329-43fc-ac6b-1ad5fa70aca6> ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:WARREN_EBU3B_Server_Rm_BTU_C2521_RealTime_CHW_TOT a brick:Chilled_Water_Thermal_Energy_Sensor ;
+    bf:hasTimeseries bd3:d7025604-1c11-4cce-bd07-28d9bb678b4d ;
+    bf:isPointOf ebu3b:EBU3B .
+
+ebu3b:RM_2150_Thermal_Power a brick:Thermal_Power_Sensor;
+    bf:isPointOf ebu3b:EBU3B_VAV_Rm_2150.
+

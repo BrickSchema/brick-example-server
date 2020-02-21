@@ -1,0 +1,51 @@
+
+
+class BaseTimeseries(object):
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def add_data(self, data):
+        """Adds timeseries data
+
+        This function adds data into the designated timeseries database.
+
+        Args:
+            data: A list of lists for timeseries data. An internal list represents a tuple of timestamped value for an entity. Refer to the data model `TimeseriesData` for the complete model.
+
+        Returns:
+            None. It raises an exception if it fails.
+
+        Raises:
+            TODO
+        """
+        raise exceptions.NotImplemented('This should be overriden by an actual implementation.')
+
+    def query(self, start_time, end_time, entity_ids):
+        """Executes a basic query over the timeseries DB.
+
+        Processes a basic range-based query over the timeseries DB.
+
+        Args:
+            start_time: UNIX timestamp in seconds as a floating point.
+            end_time: UNIX timestamp in seconds as a floating point.
+            entity_ids: A list of string entity identifiers.
+
+        Returns:
+
+        """
+        raise exceptions.NotImplemented('This should be overriden by an actual implementation.')
+
+
+    def raw_query(self, qstr):
+        """Executes SQL query over the timeseries DB.
+
+        Executes SQL query over timeseries data.
+
+        Args:
+            qstr: A SQL query string. TODO: SQL template so that an implementation can be adapted for a different schema.
+
+        Returns:
+            TODO
+        """
+        raise exceptions.NotImplemented('This should be overriden by an actual implementation.')

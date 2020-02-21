@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+
+import json
+import time
+import sys
+import jwt
+sys.path.append("./")
+
+with open('configs/configs.json', 'r') as fp:
+    configs = json.load(fp)
+
+with open(configs['auth']['jwt']['privkey_path'], 'r') as fp:
+    _jwt_priv_key = fp.read()
+with open(configs['auth']['jwt']['pubkey_path'], 'r') as fp:
+    _jwt_pub_key = fp.read()
+
+
+def create_jwt_token(token_lifetime: int = 3600):
+    payload = {
+        'user_id': 'admin',
+        'exp': time.time() + token_lifetime # TODO: Think about the timezone
+    }
+    jwt_token = jwt.encode(payload, _jwt_priv_key, algorithm='RS256')
+    return jwt_token
+
+print(create_jwt_token(3600*24*365).decode('utf-8'))

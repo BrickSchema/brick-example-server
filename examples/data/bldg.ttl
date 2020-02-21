@@ -1,0 +1,55 @@
+@prefix brick: <https://brickschema.org/schema/1.0.3/Brick#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+@prefix bldg: <bldg:>.
+@prefix : <bldg:>.
+
+:BLDG a brick:Building.
+:FL1 a brick:Floor.
+
+:VAV101 a brick:VAV;
+    brick:feeds :RM101.
+:VAV102 a brick:VAV;
+    brick:feeds :RM102.
+
+:RM101 a brick:HVAC_Zone;
+    brick:isPartOf :FL1.
+:RM102 a brick:HVAC_Zone;
+    brick:isPartOf :FL1.
+
+:BLDG_RM101_ZN_T a brick:Zone_Air_Temperature_Sensor.
+:BLDG_RM101_ZNT_SP a brick:Zone_Air_Temperature_Setpoint.
+:BLDG_RM101_ONOFF a brick:On_Off_Command.
+:BLDG_RM101_MTR a brick:Thermal_Power_Sensor.
+
+:RM101 brick:isLocationOf :BLDG_RM101_ZN_T.
+:RM101 brick:hasPoint :BLDG_RM101_ZN_T.
+
+:VAV101  brick:hasPoint :BLDG_RM101_ZN_T.
+:VAV101  brick:hasPoint :BLDG_RM101_ZNT_SP.
+:VAV101  brick:hasPoint :BLDG_RM101_ONOFF.
+:VAV101  brick:hasPoint :BLDG_RM101_MTR.
+
+:BLDG_RM102_ZN_T a brick:Zone_Air_Temperature_Sensor.
+:BLDG_RM102_ZNT_SP a brick:Zone_Air_Temperature_Setpoint.
+:BLDG_RM102_ONOFF a brick:On_Off_Command.
+:BLDG_RM102_MTR a brick:Thermal_Power_Sensor.
+
+:RM102 brick:isLocationOf :BLDG_RM102_ZN_T.
+:RM102 brick:hasPoint :BLDG_RM102_ZN_T.
+
+:VAV102  brick:hasPoint :BLDG_RM102_ZN_T.
+:VAV102  brick:hasPoint :BLDG_RM102_ZNT_SP.
+:VAV102  brick:hasPoint :BLDG_RM102_ONOFF.
+:VAV102  brick:hasPoint :BLDG_RM102_MTR.
+
+brick:Thermal_Power_Sensor rdfs:subClassOf brick:Sensor.
+
+
+bldg:jason_loc a brick:Person_Location_Sensor .
+brick:Person_Location_Sensor rdfs:subClassOf brick:Sensor.
