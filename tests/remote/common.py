@@ -3,11 +3,6 @@ from copy import deepcopy
 
 import pytest
 
-os.environ["BRICK_CONFIGFILE"] = 'configs/configs.json'
-
-#from brick_server.configs import configs
-
-#BRICK_VERSION = configs['brick']['brick_version']
 BRICK_VERSION = '1.0.3'
 
 HOSTNAME = 'https://bd-testbed.ucsd.edu'
