@@ -55,7 +55,7 @@ class ActuationEntity(Resource):
             self.actuation_iface.actuate(entity_id, actuation_value)
             actuated_time = arrow.get()
             data = [[entity_id, actuated_time.timestamp, actuation_value]]
-            self.ts_db.add_data(data)
+            await self.ts_db.add_data(data)
             return IsSuccess()
 
         raise exceptions.InternalServerError('This should not be reached.')

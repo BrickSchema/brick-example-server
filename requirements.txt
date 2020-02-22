@@ -15,7 +15,7 @@ chardet==3.0.4
 Click==7.0
 cryptography==2.8
 decorator==4.4.1
-fastapi==0.49.0
+git+https://github.com/jbkoh/fastapi.git@fix-bodyparsing
 fastapi-utils==0.1.1
 Flask==1.1.1
 Flask-Cors==3.0.8
@@ -50,7 +50,6 @@ pandas==1.0.1
 parso==0.6.1
 pexpect==4.8.0
 pickleshare==0.7.5
-pkg-resources==0.0.0
 pluggy==0.13.1
 post==2019.4.13
 prompt-toolkit==3.0.3
