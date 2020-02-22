@@ -9,22 +9,22 @@ import arrow
 import rdflib
 from rdflib import URIRef
 from fastapi_utils.cbv import cbv
-from fastapi import Depends, Header, HTTPException, Body, Query, Security
+from fastapi import Depends, Header, HTTPException, Body, Query, Path
 from fastapi_utils.inferring_router import InferringRouter
 from fastapi.security import HTTPAuthorizationCredentials
 from starlette.requests import Request
 
 from .models import Entity, Relationships, EntityIds, Entities, IsSuccess
+from .models import entity_id_description, graph_description, jwt_security_scheme
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
-from ..auth.authorization import authorized_isadmin, auth_scheme, parse_jwt_token
+from ..auth.authorization import authorized_admin, auth_scheme, parse_jwt_token
 from ..models import get_all_relationships
 from ..configs import configs
 from ..dbs import get_brick_db
 
 entity_router = InferringRouter('entities')
-
 
 
 async def get_entity_type(db, entity_id):
@@ -68,23 +68,24 @@ class EntitiesByFileResource:
                         response_model=IsSuccess,
                         description='Upload a Turtle file. An example file: https://gitlab.com/jbkoh/brick-server-dev/blob/dev/examples/data/bldg.ttl',
                         summary='Uplaod a Turtle file',
+                        tags=['Entities'],
                         )
-    @authorized_isadmin
+    @authorized_admin
     async def upload(self,
-                     request: str = Body(..., media_type='text/turtle'),
-                     graph: str = Query(configs['brick']['base_graph']),
+                     turtle: str = Body(...,
+                                        media_type='text/turtle',
+                                        description='The text of a Turtle file.'),
+                     graph: str = Query(configs['brick']['base_graph'],
+                                        description=graph_description,
+                                        ),
                      content_type: str = Header('text/turtle'),
-                     token: HTTPAuthorizationCredentials = Security(auth_scheme),
+                     token: HTTPAuthorizationCredentials = jwt_security_scheme,
                      ) -> IsSuccess:
         jwt_payload = parse_jwt_token(token.credentials)
         user_id = jwt_payload['user_id']
 
         if content_type == 'text/turtle':
-            #pdb.set_trace()
-            #req_bytes = await request.body()
-            #ttl_io = StringIO(req_bytes.decode('utf-8'))
-            ttl_io = StringIO(request)
-            #ttl_io = StringIO(request.data.decode('utf-8'))
+            ttl_io = StringIO(turtle)
             ttl_backup = deepcopy(ttl_io)
             await self.brick_db.load_rdffile(ttl_io, graph=graph)
             #self.brick_db.load_rdffile(ttl_io, graph=graph)
@@ -117,11 +118,12 @@ class EntitiesByIdResource:
                        status_code=200,
                        response_model=Entity,
                        description='Get information about an entity including type and its relationships with others',
+                       tags=['Entities'],
                        )
-    @authorized_isadmin
+    @authorized_admin
     async def get_entity_by_id(self,
-                               entity_id,
-                               token: HTTPAuthorizationCredentials = Security(auth_scheme),
+                               entity_id: str = Path(..., description=entity_id_description),
+                               token: HTTPAuthorizationCredentials = jwt_security_scheme,
                                ) -> Entity:
         entity_type = await get_entity_type(self.brick_db, entity_id)
         if not entity_type:
@@ -140,11 +142,12 @@ class EntitiesByIdResource:
                           status_code=200,
                           response_model=IsSuccess,
                           description='Delete an entity along with its relationships and data',
+                          tags=['Entities'],
                           )
-    @authorized_isadmin
+    @authorized_admin
     async def entity_delete(self,
                             entity_id,
-                            token: HTTPAuthorizationCredentials = Security(auth_scheme),
+                            token: HTTPAuthorizationCredentials = jwt_security_scheme,
                             ) -> IsSuccess:
         futures = []
         qstr = """
@@ -174,12 +177,13 @@ class EntitiesByIdResource:
                         status_code=200,
                         response_model=IsSuccess,
                         description='Add relationships of an entity',
+                        tags=['Entities'],
                         )
-    @authorized_isadmin
+    @authorized_admin
     async def update_entity(self,
                             entity_id,
                             relationships: Relationships,
-                            token: HTTPAuthorizationCredentials = Security(auth_scheme),
+                            token: HTTPAuthorizationCredentials = jwt_security_scheme,
                             ):
         for [prop, obj] in relationships:
             self.db.add_triple(URIRef(entity_id), prop, obj)
@@ -208,10 +212,11 @@ class EntitiesResource:
                        status_code=200,
                        response_model=EntityIds,
                        description='List all entities with their types.',
+                       tags=['Entities'],
                        )
-    @authorized_isadmin
+    @authorized_admin
     async def get(self,
-                  token: HTTPAuthorizationCredentials = Security(auth_scheme),
+                  token: HTTPAuthorizationCredentials = jwt_security_scheme,
                   ) -> EntityIds:
         # TODO: Implement
         qstr = """
@@ -231,12 +236,13 @@ class EntitiesResource:
                         status_code=200,
                         response_model=IsSuccess,
                         description='Add entities with their triples.',
+                        tags=['Entities'],
                         )
-    @authorized_isadmin
+    @authorized_admin
     async def post(self,
                    entities: Entities,
                    graph: str = configs['brick']['base_graph'],
-                   token: HTTPAuthorizationCredentials = Security(auth_scheme),
+                   token: HTTPAuthorizationCredentials = jwt_security_scheme,
                    ) -> IsSuccess:
         entities = marshal(args, entities_model)['entities']
         await self.add_entities_json(entities.dict())

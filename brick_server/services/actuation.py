@@ -12,15 +12,15 @@ from flask_restplus import Resource
 from werkzeug import exceptions
 
 from fastapi_utils.cbv import cbv
-from fastapi import Depends, Header, HTTPException, Body, Query, Path, Security
+from fastapi import Depends, Header, HTTPException, Body, Query, Path
 from fastapi_utils.inferring_router import InferringRouter
 from fastapi.security import HTTPAuthorizationCredentials
 
 
-from .models import IsSuccess, ActuationRequest
+from .models import IsSuccess, ActuationRequest, jwt_security_scheme
 from ..dbs import get_ts_db, get_lock_manager, get_actuation_iface
 from brick_server.extensions.lockmanager import LockManager
-from ..auth.authorization import authorized_isadmin, auth_scheme
+from ..auth.authorization import authorized_admin, auth_scheme
 from ..interfaces import BaseActuation, BaseTimeseries
 from ..configs import configs
 
@@ -38,12 +38,13 @@ class ActuationEntity(Resource):
                            description='Actuate an entity to a value',
                            response_model=IsSuccess,
                            status_code=200,
+                           tags=['Actuation'],
                            )
-    @authorized_isadmin
+    @authorized_admin
     async def post(self,
                    entity_id: str = Path(None),
                    actuation_request: ActuationRequest = Body(None),
-                   token: HTTPAuthorizationCredentials = Security(auth_scheme),
+                   token: HTTPAuthorizationCredentials = jwt_security_scheme,
                    ) -> IsSuccess:
         #if scheduled_time:
         #    # TODO: Implement this

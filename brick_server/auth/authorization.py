@@ -20,7 +20,7 @@ W = 'W' # writable
 R = 'R' # readable
 O = 'O' # owning
 
-auth_scheme = HTTPBearer()
+auth_scheme = HTTPBearer(bearerFormat='JWT')
 
 with open(configs['auth']['jwt']['privkey_path'], 'r') as fp:
     _jwt_priv_key = fp.read()
@@ -52,7 +52,7 @@ def parse_jwt_token(jwt_token):
     payload = jwt.decode(jwt_token, _jwt_pub_key, algorithm='RS256')
     return payload
 
-def authorized_isadmin(f):
+def authorized_admin(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
         # Intentionally empty not to check anything as a dummy authorization

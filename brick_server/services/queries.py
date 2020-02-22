@@ -18,14 +18,14 @@ from .models import TimeseriesData, SparqlResult
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
-from ..auth.authorization import authorized_isadmin, authorized, auth_scheme
+from ..auth.authorization import authorized_admin, authorized, auth_scheme
 from ..models import get_all_relationships
 from ..configs import configs
 from ..dbs import get_brick_db, get_ts_db
 from ..interfaces import BaseTimeseries
 
 
-query_router = InferringRouter('queries')
+query_router = InferringRouter('raw_queries')
 
 
 @cbv(query_router)
@@ -34,9 +34,10 @@ class TimeseriesQuery():
 
     @query_router.get('/timeseries',
                       description='Raw PostgreSQL query for timeseries. (May not be exposed in the production deployment.)',
-                      response_model = TimeseriesData
+                      response_model = TimeseriesData,
+                      tags=['Raw Queries'],
                       )
-    @authorized_isadmin
+    @authorized_admin
     async def get(self,
                   query: str = Body(..., media_type='application/sql'),
                   token: HTTPAuthorizationCredentials = Security(auth_scheme),
@@ -56,8 +57,9 @@ class SparqlQuery():
 
     @query_router.post('/sparql',
                        description='Raw SPARQL for Brick metadata. (May not be exposed in the production deployment.',
+                       tags=['Raw Queries'],
                        )
-    @authorized_isadmin
+    @authorized_admin
     async def post(self,
                    query: str = Body(..., media_type='application/sparql-query'),
                    token: HTTPAuthorizationCredentials = Security(auth_scheme),

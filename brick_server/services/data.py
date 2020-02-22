@@ -11,13 +11,14 @@ from rdflib import URIRef
 from fastapi_utils.cbv import cbv
 from fastapi import Depends, Header, HTTPException, Body, APIRouter, Query, Path
 from fastapi_utils.inferring_router import InferringRouter
+from fastapi.security import HTTPAuthorizationCredentials
 from starlette.requests import Request
 
-from .models import TimeseriesData, ValueTypes, ValueType, IsSuccess
+from .models import TimeseriesData, ValueTypes, ValueType, IsSuccess, jwt_security_scheme
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
-from ..auth.authorization import authorized_isadmin, authorized, O
+from ..auth.authorization import authorized_admin, authorized, O
 from ..models import get_all_relationships
 from ..configs import configs
 from ..dbs import get_brick_db, get_ts_db
@@ -36,7 +37,9 @@ class TimeseriesById:
                      status_code=200,
                      #description='Get data of an entity with in a time range.',
                      response_model=TimeseriesData,
+                     tags=['Data'],
                      )
+    @authorized_admin
     async def get(self,
                   entity_id = Path(
                       default=None,
@@ -53,6 +56,7 @@ class TimeseriesById:
                   value_types: ValueTypes = Query(
                       default=[ValueType.number],
                   ),
+                  token: HTTPAuthorizationCredentials = jwt_security_scheme,
                   ) -> TimeseriesData:
         """
         Test
@@ -70,12 +74,15 @@ class TimeseriesById:
                         status_code=200,
                         description='Delete data of an entity with in a time range or all the data if a time range is not given.',
                         response_model=IsSuccess,
+                        tags=['Data'],
                         )
+    @authorized_admin
     async def delete(self,
-               entity_id,
-               start_time: float = None,
-               end_time: float = None,
-               ) -> IsSuccess:
+                     entity_id,
+                     start_time: float = None,
+                     end_time: float = None,
+                     token: HTTPAuthorizationCredentials = jwt_security_scheme,
+                     ) -> IsSuccess:
         await self.ts_db.delete([entity_id], start_time, end_time)
         return IsSuccess()
 
@@ -88,10 +95,13 @@ class Timeseries():
                       status_code=200,
                       description='Post data. If fields are not given, default values are assumed.',
                       response_model=IsSuccess,
+                      tags=['Data'],
                       )
+    @authorized_admin
     async def post(self,
-             data: TimeseriesData,
-             ) -> IsSuccess:
+                   data: TimeseriesData,
+                   token: HTTPAuthorizationCredentials = jwt_security_scheme,
+                   ) -> IsSuccess:
         raw_data = data.data
         fields = data.columns
         unrecognized_fields = [field for field in fields

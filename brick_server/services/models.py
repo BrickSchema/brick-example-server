@@ -2,6 +2,10 @@ from pydantic import BaseModel
 from typing import List, Dict, Any
 from enum import Enum
 
+from fastapi import Security
+
+from ..auth.authorization import auth_scheme
+
 Relationship = List[str] ## [Predicate, Object] for the Subject
 
 class Relationships(BaseModel):
@@ -43,3 +47,8 @@ class ActuationRequest(BaseModel):
     value: float
     #scheduled_time: float = Field(None)
 
+jwt_security_scheme = Security(auth_scheme)
+
+
+entity_id_description = 'The identifier of an entity. Often a URI'
+graph_description = 'The name of the graph. This is similar to a database name in relational databases.'
