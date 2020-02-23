@@ -15,6 +15,7 @@ from starlette.requests import Request
 from fastapi.security import HTTPAuthorizationCredentials
 
 from .models import TimeseriesData, SparqlResult
+from .models import sql_desc, sparql_desc
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
@@ -39,7 +40,10 @@ class TimeseriesQuery():
                       )
     @authorized_admin
     async def get(self,
-                  query: str = Body(..., media_type='application/sql'),
+                  query: str = Body(...,
+                                    media_type='application/sql',
+                                    description=sql_desc,
+                                    ),
                   token: HTTPAuthorizationCredentials = Security(auth_scheme),
                   ):
         res = await self.ts_db.raw_query(query)
@@ -61,7 +65,10 @@ class SparqlQuery():
                        )
     @authorized_admin
     async def post(self,
-                   query: str = Body(..., media_type='application/sparql-query'),
+                   query: str = Body(...,
+                                     media_type='application/sparql-query',
+                                     description='sparql_desc'
+                                     ),
                    token: HTTPAuthorizationCredentials = Security(auth_scheme),
                    ) -> SparqlResult:
         raw_res = await self.brick_db.query(query)

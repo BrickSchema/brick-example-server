@@ -15,6 +15,8 @@ from fastapi.security import HTTPAuthorizationCredentials
 from starlette.requests import Request
 
 from .models import TimeseriesData, ValueTypes, ValueType, IsSuccess, jwt_security_scheme
+from .models import entity_id_desc, graph_desc, relationships_desc, start_time_desc, end_time_desc
+from .models import value_type_desc, timeseries_data_desc
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
@@ -41,30 +43,14 @@ class TimeseriesById:
                      )
     @authorized_admin
     async def get(self,
-                  entity_id = Path(
-                      default=None,
-                      description='The ID of an entity for the data request.',
-                  ),
-                  start_time: float = Query(
-                      default=None,
-                      description='Starting time of the data in UNIX timestamp in seconds (float)',
-                  ),
-                  end_time: float = Query(
-                      default=None,
-                      description='Ending time of the data in UNIX timestamp in seconds (float)',
-                  ),
-                  value_types: ValueTypes = Query(
-                      default=[ValueType.number],
-                  ),
+                  entity_id: str = Path(..., description=entity_id_desc,),
+                  start_time: float = Query(default=None, description=start_time_desc),
+                  end_time: float = Query(default=None, description=end_time_desc),
+                  value_types: ValueTypes = Query(default=[ValueType.number],
+                                                  description=value_type_desc,
+                                                  ),
                   token: HTTPAuthorizationCredentials = jwt_security_scheme,
                   ) -> TimeseriesData:
-        """
-        Test
-
-        - **entity_id**: The ID of an entity for the data request.
-        - **start_time**: Starting time of the data in UNIX timestamp in seconds (float)
-        - **end_time**: Ending time of the data UNIX timestamp in seconds (float)
-        """
         value_types = [row.value for row in value_types]
         data = await self.ts_db.query([entity_id], start_time, end_time, value_types)
         columns= ['uuid', 'timestamp'] + value_types
@@ -78,9 +64,9 @@ class TimeseriesById:
                         )
     @authorized_admin
     async def delete(self,
-                     entity_id,
-                     start_time: float = None,
-                     end_time: float = None,
+                     entity_id: str = Path(..., description=entity_id_desc),
+                     start_time: float = Query(default=None, description=start_time_desc),
+                     end_time: float = Query(None, description=end_time_desc),
                      token: HTTPAuthorizationCredentials = jwt_security_scheme,
                      ) -> IsSuccess:
         await self.ts_db.delete([entity_id], start_time, end_time)
@@ -99,7 +85,9 @@ class Timeseries():
                       )
     @authorized_admin
     async def post(self,
-                   data: TimeseriesData,
+                   data: TimeseriesData = Body(...,
+                                               description=timeseries_data_desc,
+                                               ),
                    token: HTTPAuthorizationCredentials = jwt_security_scheme,
                    ) -> IsSuccess:
         raw_data = data.data

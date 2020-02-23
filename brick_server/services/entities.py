@@ -15,7 +15,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from starlette.requests import Request
 
 from .models import Entity, Relationships, EntityIds, Entities, IsSuccess
-from .models import entity_id_description, graph_description, jwt_security_scheme
+from .models import entity_id_desc, graph_desc, jwt_security_scheme, relationships_desc, entity_desc
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
@@ -76,7 +76,7 @@ class EntitiesByFileResource:
                                         media_type='text/turtle',
                                         description='The text of a Turtle file.'),
                      graph: str = Query(configs['brick']['base_graph'],
-                                        description=graph_description,
+                                        description=graph_desc,
                                         ),
                      content_type: str = Header('text/turtle'),
                      token: HTTPAuthorizationCredentials = jwt_security_scheme,
@@ -88,7 +88,6 @@ class EntitiesByFileResource:
             ttl_io = StringIO(turtle)
             ttl_backup = deepcopy(ttl_io)
             await self.brick_db.load_rdffile(ttl_io, graph=graph)
-            #self.brick_db.load_rdffile(ttl_io, graph=graph)
             g = rdflib.Graph()
             g.parse(ttl_backup, format='turtle')
             res = g.query("""
@@ -117,12 +116,12 @@ class EntitiesByIdResource:
     @entity_router.get('/{entity_id}',
                        status_code=200,
                        response_model=Entity,
-                       description='Get information about an entity including type and its relationships with others',
+                       description='Get information about an entity including type and its relationships with others. The definition of entity: {0}'.format(entity_desc),
                        tags=['Entities'],
                        )
     @authorized_admin
     async def get_entity_by_id(self,
-                               entity_id: str = Path(..., description=entity_id_description),
+                               entity_id: str = Path(..., description=entity_id_desc),
                                token: HTTPAuthorizationCredentials = jwt_security_scheme,
                                ) -> Entity:
         entity_type = await get_entity_type(self.brick_db, entity_id)
@@ -146,7 +145,7 @@ class EntitiesByIdResource:
                           )
     @authorized_admin
     async def entity_delete(self,
-                            entity_id,
+                            entity_id: str = Path(..., description=entity_id_desc),
                             token: HTTPAuthorizationCredentials = jwt_security_scheme,
                             ) -> IsSuccess:
         futures = []
@@ -181,27 +180,15 @@ class EntitiesByIdResource:
                         )
     @authorized_admin
     async def update_entity(self,
-                            entity_id,
-                            relationships: Relationships,
+                            entity_id: str = Path(..., description=entity_id_desc),
+                            relationships: Relationships = Body(..., description=relationships_desc),
                             token: HTTPAuthorizationCredentials = jwt_security_scheme,
                             ):
         for [prop, obj] in relationships:
-            self.db.add_triple(URIRef(entity_id), prop, obj)
+            self.brick_db.add_triple(URIRef(entity_id), prop, obj)
         return 'Success', 200
 
-#@cbv(entity_router)
-#class Testtt:
-#
-#    brick_db: BrickSparqlAsync = Depends(get_brick_db)
-#
-#
-#    @entity_router.get('/testtt/testtt',
-#                       status_code=200,
-#                       response_model=IsSuccess,
-#                       )
-#    async def get(self) -> IsSuccess:
-#        return IsSuccess()
-#
+
 @cbv(entity_router)
 class EntitiesResource:
 
@@ -218,19 +205,15 @@ class EntitiesResource:
     async def get(self,
                   token: HTTPAuthorizationCredentials = jwt_security_scheme,
                   ) -> EntityIds:
-        # TODO: Implement
         qstr = """
         select ?entity where {
-        ?entity a/rdfs:subClassOf* brick:TagSet.
+        ?entity a/rdfs:subClassOf* bf:TagSet.
         }
         """ # TODO The query should be generalized to Class
-        res = await self.db.query(qstr)
+        res = await self.brick_db.query(qstr)
         pdb.set_trace()
-        resp = {
-            'entity_ids': [row[0] for row in res['tuples']],
-        }
-        #raise exceptions.NotImplemented('TODO: List all entities and types')
-        return resp
+        entity_ids = [row['entity']['value'] for row in res['results']['bindings']]
+        return Entity_Ids( entity_ids=entity_ids)
 
     @entity_router.post('/',
                         status_code=200,

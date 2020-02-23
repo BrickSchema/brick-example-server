@@ -42,8 +42,8 @@ class ActuationEntity(Resource):
                            )
     @authorized_admin
     async def post(self,
-                   entity_id: str = Path(None),
-                   actuation_request: ActuationRequest = Body(None),
+                   entity_id: str = Path(...),
+                   actuation_request: ActuationRequest = Body(...),
                    token: HTTPAuthorizationCredentials = jwt_security_scheme,
                    ) -> IsSuccess:
         #if scheduled_time:
