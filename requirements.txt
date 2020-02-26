@@ -94,3 +94,4 @@ websockets==8.1
 Werkzeug==0.16.1
 yarl==1.4.2
 zipp==2.2.0
+git+https://github.com/jbkoh/brick_data.git@master

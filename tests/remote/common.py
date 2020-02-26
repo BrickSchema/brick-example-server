@@ -5,8 +5,8 @@ import pytest
 
 BRICK_VERSION = '1.0.3'
 
-HOSTNAME = 'https://bd-testbed.ucsd.edu'
-#HOSTNAME = 'http://bd-testbed.ucsd.edu:8000'
+#HOSTNAME = 'https://bd-testbed.ucsd.edu'
+HOSTNAME = 'http://bd-testbed.ucsd.edu:8000'
 #HOSTNAME = ''
 API_BASE = HOSTNAME + '/brickapi/v1'
 ENTITY_BASE = API_BASE + '/entities'

@@ -211,9 +211,8 @@ class EntitiesResource:
         }
         """ # TODO The query should be generalized to Class
         res = await self.brick_db.query(qstr)
-        pdb.set_trace()
         entity_ids = [row['entity']['value'] for row in res['results']['bindings']]
-        return Entity_Ids( entity_ids=entity_ids)
+        return EntityIds(entity_ids=entity_ids)
 
     @entity_router.post('/',
                         status_code=200,
@@ -227,7 +226,6 @@ class EntitiesResource:
                    graph: str = configs['brick']['base_graph'],
                    token: HTTPAuthorizationCredentials = jwt_security_scheme,
                    ) -> IsSuccess:
-        entities = marshal(args, entities_model)['entities']
         await self.add_entities_json(entities.dict())
         return IsSuccess()
 
