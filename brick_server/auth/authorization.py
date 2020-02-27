@@ -33,7 +33,6 @@ def authorized(permission_required, get_entity_ids=None):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             # Intentionally empty not to check anything as a dummy authorization
-            pdb.set_trace()
             return f(*args, **kwargs)
         return decorated_function
 
