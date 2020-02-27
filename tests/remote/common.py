@@ -5,7 +5,7 @@ import pytest
 
 BRICK_VERSION = '1.0.3'
 
-HOSTNAME = 'http://bd-testbed.ucsd.edu'
+HOSTNAME = 'https://bd-testbed.ucsd.edu'
 #HOSTNAME = 'https://bd-testbed.ucsd.edu'
 #HOSTNAME = 'http://bd-testbed.ucsd.edu:8000'
 #HOSTNAME = ''
