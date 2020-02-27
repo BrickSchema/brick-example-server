@@ -6,9 +6,6 @@ import time
 import arrow
 import timeout_decorator
 from timeout_decorator import TimeoutError
-from flask import request
-from injector import inject
-from flask_restplus import Resource
 from werkzeug import exceptions
 
 from fastapi_utils.cbv import cbv
@@ -29,7 +26,7 @@ actuation_router = InferringRouter('actuation')
 
 
 @cbv(actuation_router)
-class ActuationEntity(Resource):
+class ActuationEntity():
     lock_manager: LockManager = Depends(get_lock_manager)
     actuation_iface: BaseActuation = Depends(get_actuation_iface)
     ts_db: BaseTimeseries = Depends(get_ts_db)

@@ -1,0 +1,14 @@
+
+#/usr/bin/env bash
+
+docker rm -f bs-test
+
+docker run --name bs-test \
+    -p 80:80 \
+    -it \
+    -v $PWD:/app \
+    -v /etc/letsencrypt/:/etc/letsencrypt/ \
+    --network "brickserverfastapi_default" \
+    -e LOG_LEVEL="debug" \
+    bs-fastapi
+
