@@ -11,6 +11,13 @@ class ValueType(str, Enum):
     text = 'text'
     loc = 'loc'
 
+class ColumnType(str, Enum):
+    number = 'number'
+    text = 'text'
+    loc = 'loc'
+    uuid = 'uuid'
+    timestamp = 'timestamp'
+
 
 value_types = [val.value for val in ValueType]
 
@@ -52,7 +59,7 @@ class Entities(BaseModel):
 
 class TimeseriesData(BaseModel):
     data: List[List[Any]] = Field(..., description=data_desc)
-    columns: List[str] = Field(['uuid', 'timestamp', 'number'], description=columns_desc)
+    columns: List[ColumnType] = Field(['uuid', 'timestamp', 'number'], description=columns_desc)
 
 ValueTypes = List[ValueType]
 
