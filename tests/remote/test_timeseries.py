@@ -12,13 +12,13 @@ def test_post_timeseries():
         'data': znt_data,
         'fields': ['uuid', 'timestamp', 'number'],
     }
-    headers = authorize_headers
+    headers = authorize_headers()
     resp = requests.post(DATA_BASE + '/timeseries', json=body, headers=headers)
     assert resp.status_code == 200
 
 def test_get_timeseries():
     url = DATA_BASE + '/timeseries/' + quote_plus(znt_id) + '?start_time={0}&?end_time={1}'.format(znt_t0 - 1, znt_t1 + 1)
-    headers = authorize_headers
+    headers = authorize_headers()
     resp = requests.get(url, headers=headers)
     assert resp.status_code == 200
     assert resp.json()['data']
@@ -33,5 +33,5 @@ def test_delete_timeseries():
     resp = requests.delete(url, params=params, headers=headers)
     assert resp.status_code == 200
 
-    resp = requests.get(url, params=params)
+    resp = requests.get(url, params=params, headers=headers)
     assert not resp.json()['data']
