@@ -19,7 +19,11 @@ class LockManager(object):
             .format(dbname=dbname, host=host, port=port) + \
             "password='{pw}' user='{user}'".format(user=user, pw=pw)
         self.conn = psycopg2.connect(conn_str)
-        self.create_lock_table()
+        try:
+            self.create_lock_table()
+        except psycopg2.errors.UniqueViolation:
+            pass
+
 
     def create_lock_id(self, entity_id, lock_id=None):
         cursor = self.conn.cursor()

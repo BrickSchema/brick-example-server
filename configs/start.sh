@@ -1,6 +1,12 @@
 #! /usr/bin/env sh
 set -e
 
+
+if [ -z ${ENABLE_SSL+x} ]; then
+    ENABLE_SSL=false
+fi
+
+
 if [ -f /app/app/main.py ]; then
     DEFAULT_MODULE_NAME=app.main
 elif [ -f /app/main.py ]; then
@@ -30,4 +36,19 @@ else
 fi
 
 # Start Gunicorn
-exec gunicorn -k uvicorn.workers.UvicornWorker -c "$GUNICORN_CONF" "$APP_MODULE" --certfile /etc/letsencrypt/live/bd-testbed.ucsd.edu/fullchain.pem --keyfile /etc/letsencrypt/live/bd-testbed.ucsd.edu/privkey.pem
+if [ $ENABLE_SSL = true ]; then
+    if [ -z ${CERTFILE+x} ]; then
+        echo "CERTFILE is not defined";
+        exit 1
+    fi
+    if [ -z ${KEYFILE+x} ]; then
+        echo "KEYFILE is not defined";
+        exit 1
+    fi
+
+    echo "SSL is enabled"
+    exec gunicorn -k uvicorn.workers.UvicornWorker -c "$GUNICORN_CONF" "$APP_MODULE" --certfile $CERTFILE --keyfile $KEYFILE
+else
+    echo "SSL is disabled"
+    exec gunicorn -k uvicorn.workers.UvicornWorker -c "$GUNICORN_CONF" "$APP_MODULE"
+fi
