@@ -25,3 +25,15 @@ select ?s where {
     resp = requests.post(QUERY_BASE + '/sparql', data=qstr, headers=headers)
     assert resp.json()['results']['bindings']
 
+
+def test_simple_sql():
+    qstr = """
+select * from brick_data;
+"""
+    headers = authorize_headers({
+        'Content-Type': 'application/sql'
+    })
+    resp = requests.post(QUERY_BASE + '/timeseries', data=qstr, headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()
+

@@ -1,4 +1,6 @@
 import pdb
+import calendar
+from datetime import datetime
 from copy import deepcopy
 from uuid import uuid4 as gen_uuid
 from io import StringIO
@@ -33,13 +35,13 @@ query_router = InferringRouter('raw_queries')
 class TimeseriesQuery():
     ts_db: BaseTimeseries = Depends(get_ts_db)
 
-    @query_router.get('/timeseries',
+    @query_router.post('/timeseries',
                       description='Raw PostgreSQL query for timeseries. (May not be exposed in the production deployment.)',
-                      response_model = TimeseriesData,
+                      #response_model = TimeseriesData,
                       tags=['Raw Queries'],
                       )
     @authorized_admin
-    async def get(self,
+    async def post(self,
                   query: str = Body(...,
                                     media_type='application/sql',
                                     description=sql_desc,
@@ -47,12 +49,18 @@ class TimeseriesQuery():
                   token: HTTPAuthorizationCredentials = Security(auth_scheme),
                   ):
         res = await self.ts_db.raw_query(query)
-        data = [[row[0], arrow.get(row[1]).timestamp, row[2]] for row in res]
-        res = {
-            'data': data,
-            'fields': ['uuid', 'timestamp', 'value']
-        }
-        return res, 200
+        formatted = format_raw_query(res)
+        return formatted
+
+
+def timeformatter(val):
+    if isinstance(val, datetime):
+        return calendar.timegm(val.timetuple())
+    else:
+        return val
+
+def format_raw_query(res):
+    return [tuple(timeformatter(row) for row in rows) for rows in res]
 
 @cbv(query_router)
 class SparqlQuery():

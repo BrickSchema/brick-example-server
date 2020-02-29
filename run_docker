@@ -6,13 +6,11 @@ docker rm -f bs-test
 docker run --name bs-test \
     -p 8080:80 \
     -it \
-    -v $PWD:/app \
     -v /etc/letsencrypt/:/etc/letsencrypt/ \
-    --network "brickserverfastapi_default" \
     -e LOG_LEVEL="debug" \
-    -e ENABLE_SSL=true \
-    -e CERTFILE="/etc/letsencrypt/live/bd-testbed.ucsd.edu/fullchain.pem" \
-    -e KEYFILE="/etc/letsencrypt/live/bd-testbed.ucsd.edu/privkey.pem" \
-    -e OVERWRITE_JWT=true \
+    -v $PWD:/app \
+    --network "brickserverfastapi_default" \
     jbkoh/brickserver:0.1
-
+    #-e ENABLE_SSL=true \
+    #-e CERTFILE="/etc/letsencrypt/live/bd-testbed.ucsd.edu/fullchain.pem" \
+    #-e KEYFILE="/etc/letsencrypt/live/bd-testbed.ucsd.edu/privkey.pem" \
