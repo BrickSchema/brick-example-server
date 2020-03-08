@@ -8,6 +8,7 @@ import timeout_decorator
 from timeout_decorator import TimeoutError
 from werkzeug import exceptions
 
+from starlette.requests import Request
 from fastapi_utils.cbv import cbv
 from fastapi import Depends, Header, HTTPException, Body, Query, Path
 from fastapi_utils.inferring_router import InferringRouter
@@ -39,6 +40,7 @@ class ActuationEntity():
                            )
     @authorized_admin
     async def post(self,
+                   request: Request,
                    entity_id: str = Path(...),
                    actuation_request: ActuationRequest = Body(...),
                    token: HTTPAuthorizationCredentials = jwt_security_scheme,

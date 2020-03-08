@@ -74,6 +74,18 @@ class ActuationRequest(BaseModel):
     value: float = Field(..., description=actuation_value_desc)
     #scheduled_time: float = Field(None)
 
+class CreateEntityRequest(BaseModel):
+    number: int = Field(..., description='The number of instances to create for the Brick Class')
+    #ignore_brick_type: bool = Bool(False, description='If true, does not check whether the given type is defined in Brick or not') #TODO: Implement this
+
+BrickClass = str
+
+CreateEntitiesRequest = Dict[BrickClass,# = Field(..., description='A Class name, often defined in Brick'),
+                             int# = Field(...,description='The number of instances to create for the Brick Class')
+                             ]
+
+EntitiesCreateResponse = Dict[BrickClass, List[str]]
+
 jwt_security_scheme = Security(auth_scheme)
 
 

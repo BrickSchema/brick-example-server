@@ -1,13 +1,14 @@
-import pdb
+from pdb import set_trace as bp
 from copy import deepcopy
 from uuid import uuid4 as gen_uuid
 from io import StringIO
 import asyncio
 from typing import ByteString, Any, Dict
+from collections import defaultdict
 
 import arrow
 import rdflib
-from rdflib import URIRef
+from rdflib import RDF, URIRef
 from fastapi_utils.cbv import cbv
 from fastapi import Depends, Header, HTTPException, Body, Query, Path
 from fastapi_utils.inferring_router import InferringRouter
@@ -15,7 +16,9 @@ from fastapi.security import HTTPAuthorizationCredentials
 from starlette.requests import Request
 
 from .models import Entity, Relationships, EntityIds, Entities, IsSuccess
+from .models import EntitiesCreateResponse, CreateEntitiesRequest
 from .models import entity_id_desc, graph_desc, jwt_security_scheme, relationships_desc, entity_desc
+from .namespaces import URN, UUID
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
@@ -72,6 +75,7 @@ class EntitiesByFileResource:
                         )
     @authorized_admin
     async def upload(self,
+                     request: Request,
                      turtle: str = Body(...,
                                         media_type='text/turtle',
                                         description='The text of a Turtle file.'),
@@ -121,6 +125,7 @@ class EntitiesByIdResource:
                        )
     @authorized_admin
     async def get_entity_by_id(self,
+                               request: Request,
                                entity_id: str = Path(..., description=entity_id_desc),
                                token: HTTPAuthorizationCredentials = jwt_security_scheme,
                                ) -> Entity:
@@ -145,6 +150,7 @@ class EntitiesByIdResource:
                           )
     @authorized_admin
     async def entity_delete(self,
+                            request: Request,
                             entity_id: str = Path(..., description=entity_id_desc),
                             token: HTTPAuthorizationCredentials = jwt_security_scheme,
                             ) -> IsSuccess:
@@ -180,6 +186,7 @@ class EntitiesByIdResource:
                         )
     @authorized_admin
     async def update_entity(self,
+                            request: Request,
                             entity_id: str = Path(..., description=entity_id_desc),
                             relationships: Relationships = Body(..., description=relationships_desc),
                             token: HTTPAuthorizationCredentials = jwt_security_scheme,
@@ -203,6 +210,7 @@ class EntitiesResource:
                        )
     @authorized_admin
     async def get(self,
+                  request: Request,
                   token: HTTPAuthorizationCredentials = jwt_security_scheme,
                   ) -> EntityIds:
         qstr = """
@@ -216,25 +224,32 @@ class EntitiesResource:
 
     @entity_router.post('/',
                         status_code=200,
-                        response_model=IsSuccess,
+                        response_model=EntitiesCreateResponse,
                         description='Add entities with their triples.',
                         tags=['Entities'],
                         )
     @authorized_admin
     async def post(self,
-                   entities: Entities,
-                   graph: str = configs['brick']['base_graph'],
+                   request: Request,
+                   create_entities: CreateEntitiesRequest = Body(..., description='A dictionary to describe entities to create. Keys are Brick Classes and values are the number of instances to create for the Class'),
+                   graph: str = Query(configs['brick']['base_graph'], description=graph_desc),
                    token: HTTPAuthorizationCredentials = jwt_security_scheme,
-                   ) -> IsSuccess:
-        await self.add_entities_json(entities.dict())
-        return IsSuccess()
+                   ) -> EntitiesCreateResponse:
+        resp = defaultdict(list)
+        for brick_type, entities_num in create_entities.items():
+            for _ in range(entities_num):
+                uri = UUID[str(gen_uuid())]
+                await self.brick_db.add_triple(uri, RDF.type, URIRef(brick_type))
+                # TODO: Check the brick_type based on the parameter in the future
+                resp[brick_type].append(str(uri))
+        return dict(resp)
 
-    async def add_entities_json(self, entities):
+    async def add_entities_json_deprecated(self, entities):
         #TODO: IMplement this:
         raise HTTPException(status_code=501)
         for entity in entities:
             entity_type = entity['type']
-            entity_id = entity.get('entity_id', 'Success')
+            entity_id = entity.get('entity_id', None)
             if not entity_id:
                 entity_id = str(gen_uuid())
                 entity['entity_id'] = entity_id

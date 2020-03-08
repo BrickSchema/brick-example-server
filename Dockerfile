@@ -15,7 +15,8 @@ RUN rm -rf /app  && \
 RUN pip install --upgrade pip && \
     pip install -r /app/requirements.txt && \
     pip uninstall -y fastapi && \
-    pip install git+https://github.com/jbkoh/fastapi.git@fix-bodyparsing
+    pip install git+https://github.com/jbkoh/fastapi.git@fix-bodyparsing && \
+    pip install httpx
 
 COPY configs/configs.json /app/configs/
 ENV BRICK_CONFIGFILE "/app/configs/configs.json"

@@ -88,3 +88,5 @@ yarl==1.4.2
 zipp==2.2.0
 git+https://github.com/jbkoh/brick_data.git@master
 httpx
+gino
+python-multipart

@@ -1,4 +1,4 @@
-import pdb
+from pdb import set_trace as bp
 import calendar
 from datetime import datetime
 from copy import deepcopy
@@ -42,12 +42,13 @@ class TimeseriesQuery():
                       )
     @authorized_admin
     async def post(self,
-                  query: str = Body(...,
-                                    media_type='application/sql',
-                                    description=sql_desc,
-                                    ),
-                  token: HTTPAuthorizationCredentials = Security(auth_scheme),
-                  ):
+                   request: Request,
+                   query: str = Body(...,
+                                     media_type='application/sql',
+                                     description=sql_desc,
+                                     ),
+                   token: HTTPAuthorizationCredentials = Security(auth_scheme),
+                   ):
         res = await self.ts_db.raw_query(query)
         formatted = format_raw_query(res)
         return formatted
@@ -73,11 +74,13 @@ class SparqlQuery():
                        )
     @authorized_admin
     async def post(self,
+                   request: Request,
                    query: str = Body(...,
                                      media_type='application/sparql-query',
                                      description='sparql_desc'
                                      ),
                    token: HTTPAuthorizationCredentials = Security(auth_scheme),
                    ) -> SparqlResult:
+        body = await request.body()
         raw_res = await self.brick_db.query(query)
         return raw_res

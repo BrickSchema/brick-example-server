@@ -1,9 +1,20 @@
-import pdb
+from pdb import set_trace as bp
 import numbers
 
 from mongoengine import Document, StringField, DateTimeField, ListField, DictField, BooleanField, ReferenceField
 from mongoengine import IntField
-from werkzeug import exceptions
+from mongoengine import connect as mongo_connect
+
+from .configs import configs
+from .exceptions import DoesNotExistError, MultipleObjectsFoundError
+
+mongo_connect(
+    db = configs['users']['dbname'],
+    #username = configs['apps']['user'],
+    #password = configs['apps']['password'],
+    host = configs['users']['host'],
+    connect=False,
+)
 
 DEFAULT_TOKEN_LIFETIME = 24 * 60 * 60 * 100 # 100 day in secounds TODO: This is only for dev
 DEFAULT_PERMISSION_LIFETIME = 24 * 60 * 60 * 100 # 100 day in secounds TODO: This is only for dev.
@@ -69,16 +80,35 @@ class AppOnMarket(Document):
 
 class User(Document):
     name = StringField(required=True)
-    userid = StringField(required=True)
+    userid = StringField(required=True, unique=True)
     email = StringField(required=True)
     installed_apps = ListField(ReferenceField(App))
     is_admin = BooleanField(default=False)
+    is_approved = BooleanField(default=False)
+    registration_time = DateTimeField(required=True)
+    meta = {
+        'indexes': ['$userid'],
+    }
+    app_tokens = ListField(StringField(), default=[])
 
-def get_doc(doc_type, unique=True, **query):
+class OAuthRefreshToken(Document):
+    user = ReferenceField(User)
+    token = StringField(required=True)
+
+class OAuthAccessToken(Document): # TODO: Might not need this one.
+    user = ReferenceField(User)
+    token = StringField(required=True)
+
+def get_doc(doc_type, **query):
+    try:
+        doc = doc_type.objects.get(**query)
+    except doc_type.DoesNotExist:
+        raise DoesNotExistError(doc_type, str(query))
+    except doc_type.MultipleObjectsReturned:
+        raise MultipleObjectsFoundError(doc_type, str(query))
+    return doc
+
+def get_docs(doc_type, **query):
     docs = doc_type.objects(**query)
-    if not docs:
-        raise exceptions.NotFound('{0} for {1} does not exist.'.format(doc_type.__name__, query))
-    if len(docs) > 1:
-        raise exceptions.Conflict('Multiple {0} for {1} are found.'.format(doc_type.__name__, query))
-    return docs[0]
+    return docs
 

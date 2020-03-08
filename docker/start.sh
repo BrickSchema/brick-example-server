@@ -47,8 +47,8 @@ if [ $ENABLE_SSL = true ]; then
     fi
 
     echo "SSL is enabled"
-    exec gunicorn -k uvicorn.workers.UvicornWorker -c "$GUNICORN_CONF" "$APP_MODULE" --certfile $CERTFILE --keyfile $KEYFILE
+    exec gunicorn -k uvicorn.workers.UvicornWorker -c "$GUNICORN_CONF" "$APP_MODULE" --certfile $CERTFILE --keyfile $KEYFILE -t 3600
 else
     echo "SSL is disabled"
-    exec gunicorn -k uvicorn.workers.UvicornWorker -c "$GUNICORN_CONF" "$APP_MODULE"
+    exec gunicorn -k uvicorn.workers.UvicornWorker -c "$GUNICORN_CONF" "$APP_MODULE" -t 3600
 fi

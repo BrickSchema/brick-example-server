@@ -43,6 +43,7 @@ class TimeseriesById:
                      )
     @authorized_admin
     async def get(self,
+                  request: Request,
                   entity_id: str = Path(..., description=entity_id_desc,),
                   start_time: float = Query(default=None, description=start_time_desc),
                   end_time: float = Query(default=None, description=end_time_desc),
@@ -64,6 +65,7 @@ class TimeseriesById:
                         )
     @authorized_admin
     async def delete(self,
+                     request: Request,
                      entity_id: str = Path(..., description=entity_id_desc),
                      start_time: float = Query(default=None, description=start_time_desc),
                      end_time: float = Query(None, description=end_time_desc),
@@ -85,6 +87,7 @@ class Timeseries():
                       )
     @authorized_admin
     async def post(self,
+                   request: Request,
                    data: TimeseriesData = Body(...,
                                                description=timeseries_data_desc,
                                                ),
