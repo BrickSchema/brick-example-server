@@ -101,18 +101,6 @@ class AppTokensRouter(object):
         user.save()
         return valid_tokens
 
-    #TODO:
-    # 1. Check the user
-    # 2. Check the app
-    # 3. Generate the token
-    # 4. Return the token
-
-@auth_router.get('/')
-def login_main(request: Request,
-               response_class: HTMLResponse,
-               ):
-    return HTMLResponse('<a href="https://bd-testbed.ucsd.edu:8000/auth/login">login</a>')
-
 
 # NOTE: This is the API to register a user.
 @auth_router.get('/register',

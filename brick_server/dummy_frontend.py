@@ -20,3 +20,9 @@ dummy_frontend_router = InferringRouter('dummy-frontend')
 @dummy_frontend_router.get('/loggedin_page') # TODO: This is supposed to be a main page for the user in the frontend.
 def get_dummy_register_user(request: Request):
     return 'successful'
+
+@dummy_frontend_router.get('/main')
+def login_main(request: Request,
+               response_class: HTMLResponse,
+               ):
+    return HTMLResponse('<a href="https://bd-testbed.ucsd.edu:8000/auth/login">login</a>')
