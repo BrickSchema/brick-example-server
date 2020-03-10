@@ -88,8 +88,6 @@ Ansible is a piece of provisioning software that simplifies the process of insta
 6. Change `remote_user` inside `ansible-playbook brick-server-playbook.yml` to be matched to the one created in 5. (e.g., `prod`)
 7. Run `ansible-playbook brick-server-playbook.yml` from the `ansible` directory.
 
-
-
 ## Getting Started
 1. API document is available at `YOUR_HOSTNAME/docs`
 2. Example codes are available at `tests/remote/*.py`
@@ -109,8 +107,14 @@ Ansible is a piece of provisioning software that simplifies the process of insta
 
 ## Authorization
 - Currently, we only support a very primitive authorization. A user can manually generate a JWT token with the privkey used in Brick Server, which can be used as a bearer token. The token will authorize the usage of any APIs until it expires.
-    - (A full-fledged authorization mechanism is coming.)
+    - You can get it through `tools/get_jwt_token $expiration_time_in_seconds`.
 - You can retrieve the public key at `/auth/jwt_pubkey`.
+
+
+# Tutorials
+## BrickBACnet as a BACnet connector
+1. Prepare an app token.
+2. Check the instruction at TODO
 
 
 # References
