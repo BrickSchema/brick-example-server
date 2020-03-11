@@ -26,30 +26,33 @@ O = 'O' # owning
 
 auth_scheme = HTTPBearer(bearerFormat='JWT')
 
-google_config = configs['auth']['oauth_connections']['google']
-oauth = OAuth()
-oauth.register(
-    name='google',
-    client_id=google_config['client_id'],
-    client_secret=google_config['client_secret'],
-    api_base_url=google_config['api_base_url'],
-    request_token_url=None,
-    request_token_params={
-        'scope': 'email openid profile',
-        'access_type': 'offline',
-        'prompt': 'consent',
-    },
-    access_token_url = google_config['access_token_url'],
-    authorize_url = google_config['authorize_url'],
-    client_kwargs = google_config['client_kwargs'],
-    jwks_uri = google_config['jwks_uri'],
-    access_type='offline',
-    prompt='consent',
-)
+if 'oauth_connections' in configs['auth']:
+    google_config = configs['auth']['oauth_connections']['google']
+    oauth = OAuth()
+    oauth.register(
+        name='google',
+        client_id=google_config['client_id'],
+        client_secret=google_config['client_secret'],
+        api_base_url=google_config['api_base_url'],
+        request_token_url=None,
+        request_token_params={
+            'scope': 'email openid profile',
+            'access_type': 'offline',
+            'prompt': 'consent',
+        },
+        access_token_url = google_config['access_token_url'],
+        authorize_url = google_config['authorize_url'],
+        client_kwargs = google_config['client_kwargs'],
+        jwks_uri = google_config['jwks_uri'],
+        access_type='offline',
+        prompt='consent',
+    )
 
-with open(configs['auth']['jwt']['privkey_path'], 'r') as fp:
+privkey_path = configs['auth']['jwt'].get('privkey_path', 'configs/jwtRS256.key')
+pubkey_path = configs['auth']['jwt'].get('pubkey_path', 'configs/jwtRS256.key.pub')
+with open(privkey_path, 'r') as fp:
     _jwt_priv_key = fp.read()
-with open(configs['auth']['jwt']['pubkey_path'], 'r') as fp:
+with open(pubkey_path, 'r') as fp:
     _jwt_pub_key = fp.read()
 
 

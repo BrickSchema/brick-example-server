@@ -11,7 +11,7 @@ from .auth.authorization import create_user, oauth
 
 from pdb import set_trace as bp
 
-frontend_hostname = configs['frontend']['hostname']
+frontend_hostname = configs['frontend'].get('hostname', configs['hostname'])
 loggedin_frontend = frontend_hostname + '/loggedin_page'
 
 

@@ -90,3 +90,4 @@ git+https://github.com/jbkoh/brick_data.git@master
 httpx
 gino
 python-multipart
+pytest-env

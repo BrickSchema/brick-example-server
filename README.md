@@ -111,11 +111,14 @@ Ansible is a piece of provisioning software that simplifies the process of insta
 - You can retrieve the public key at `/auth/jwt_pubkey`.
 
 
+# Tests
+1. Add a JWT token into `pytest.ini`.
+2. Execute `pytest -c pytest.ini tests/remote`.
+
 # Tutorials
 ## BrickBACnet as a BACnet connector
 1. Prepare an app token.
 2. Check the instruction at TODO
-
 
 # References
 - Metadata Models and Methods for Smart Buildings (Dissertation, UCSD, 2020)
