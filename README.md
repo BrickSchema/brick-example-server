@@ -4,7 +4,7 @@ Reference Brick Server
 Brick Server is an implementation of Brick API on top of a timeseries database (TimescaleDB) and a Brick database (Virtuoso). Data in buildings are represented as streams of timestamped-values generated from [Point](http://brickschema.org/schema/1.0.3/Brick#Point)s which may record a physical property or actuate a device. Metadata helps to find the right data streams that an application needs. Data and metadata are in different formats, and thus we have to store them in different databases. Brick Server provides a single API endpoint to access those two different data sources.
 
 Brick Server is
-- a fully functional, minimal Bulding Operating System (BOS),
+- a minimal but fully functional Bulding Operating System (BOS),
 - an interface for Brick applications,
 - an emulator of a building for Brick applications development,
 - a demonstration of general methods to integrate your system with Brick, and
@@ -32,7 +32,7 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
     1. Change `docker-compose.yml.template` to `docker-compose.yml`.
     2. Modify the configuration in `docker-compose.yml`.
         - Choose if you want to run https inside the docker. You can enable HTTPS by uncommenting `ENABLE_SSL=true`. In that case, you should specify the location of cert files (`CERTFILE` and `KEYFILE`)as well as bind the files from the host machine (e.g., `/etc/letsencrypt`.).
-        - You can further configure `brickserver` module for optimization. The current image uses `gunicorn` as a web server and `uvicorn` as an ASGI. Please refer to [the image's doc](https://github.com/tiangolo/uvicorn-gunicorn-fastapi-docker) for more information.
+        - You can further configure `brickserver` module for more optimization. The current image uses `gunicorn` as a web server and `uvicorn` as an ASGI. Please refer to [the image's doc](https://github.com/tiangolo/uvicorn-gunicorn-fastapi-docker) for more information.
 
 3. Run docker-compose
     1. Execute `docker-compose up`.
@@ -57,38 +57,7 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 10. Install and run the fronted based on its instruction: https://gitlab.com/jbkoh/brick-server-frontend
 
 
-### Ansible (Unmaintained)
-
-Ansible is a piece of provisioning software that simplifies the process of installing software on local or remote machines. Ansible is launched from a **control machine** (usually your laptop or personal computer) and targets a set of **hosts**, which consists of a list of IP addresses (this can contain your local machine if you use `localhost`). If you are unfamiliar with Ansible, we recommend reading the [Getting Started Documentation](https://docs.ansible.com/ansible/2.7/user_guide/intro_getting_started.html#getting-started)
-
-1. Instal dependencies:
-    - Make sure Python >=3.6 is installed on the deployment server.
-    - Enable Filesystem ACL  in the host. ([for Ubuntu](https://help.ubuntu.com/community/FilePermissionsACLs<Paste>))
-2. Install ansible on your local machine
-    - follow instructions for the [control machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-the-control-machine)
-3. Edit your `/etc/ansible/hosts` file to include the remote host and any SSH key you need; for example
-
-    ```ini
-    [ec2test]
-    52.91.98.98 ansible_ssh_private_key_file=/path/to/my/ssh/key
-    ```
-    Ansible documentation for this step can be found [here](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html)
-4. Edit the `ansible/brick-server-playbook.yml` file:
-
-    ```yaml
-    - hosts:
-      - ec2test
-      remote_user: ubuntu
-      # ...
-    ```
-
-    Edit the remote user name and the hosts designator appropriately. Note that the `ec2test` here is
-    the same as in the `/etc/ansible/hosts` file.
-5. In the host machine, create a Linux user such as `prod` and assign sudo access to it. The user also should be able to execute sudo without password. ([example](https://www.cyberciti.biz/faq/linux-unix-running-sudo-command-without-a-password/))
-6. Change `remote_user` inside `ansible-playbook brick-server-playbook.yml` to be matched to the one created in 5. (e.g., `prod`)
-7. Run `ansible-playbook brick-server-playbook.yml` from the `ansible` directory.
-
-## Getting Started
+# Getting Started
 1. API document is available at `YOUR_HOSTNAME/docs`
 2. Example codes are available at `tests/remote/*.py`
 3. Jupyter Notebooks will be available.
