@@ -23,4 +23,10 @@ def create_jwt_token(token_lifetime: int = 3600):
     jwt_token = jwt.encode(payload, _jwt_priv_key, algorithm='RS256')
     return jwt_token
 
-print(create_jwt_token(3600*24*365).decode('utf-8'))
+if __name__ == '__main__':
+    if len(sys.argv) > 2:
+        token_lifetime = sys.argv[2]
+    else:
+        token_lifetime = 3600
+    print(create_jwt_token(token_lifetime).decode('utf-8'))
+    #print(create_jwt_token(3600*24*365).decode('utf-8'))
