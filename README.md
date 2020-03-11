@@ -64,7 +64,8 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 
 # Core Concepts
 ## Entities in Brick
-- An entity (sensor, room, VAV, etc.) is associated with a UUID.
+- An entity (sensor, room, VAV, etc.) is represented by its UUID under the [UUID namespace](https://tools.ietf.org/html/rfc4122).
+    - E.g.,
 - An entity is an instance of at least one Brick Class. The Brick Class can be arbitrary even outside the standard though not preferred.
 - An entity can have relationships with other entities.
 - An entity's metadata consists of its direct relationships with other entities (or properties.)
@@ -88,6 +89,10 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 ## BrickBACnet as a BACnet connector
 1. Prepare an app token.
 2. Check the instruction at TODO
+
+# TODO
+- Integration with Traefik
+- Implementation of full authorization.
 
 # References
 - Metadata Models and Methods for Smart Buildings (Dissertation, UCSD, 2020)
