@@ -1,0 +1,36 @@
+{
+    "timeseries": {
+        "dbtype": "timescaledb",
+        "dbname": "brick",
+        "user": "bricker",
+        "password": "brick-demo",
+        "host": "brickserver-postgres",
+        "port": 5432
+    },
+    "lockmanager": {
+        "dbname": "brick",
+        "user": "bricker",
+        "password": "brick-demo",
+        "host": "brickserver-postgres",
+        "port": 5432,
+        "dbtype": "postgresql"
+    },
+    "brick": {
+        "dbtype": "virtuoso",
+        "host": "http://brickserver-virtuoso:8890/sparql",
+        "brick_version": "1.0.3",
+        "base_ns": "bldg",
+        "base_graph": "brick-base-graph"
+    },
+    "users": {
+        "dbtype": "mongo",
+        "host": "mongodb://brickserver-mongo:27017",
+        "dbname": "brickserver"
+    },
+    "hostname": "https://YOUR_HOSTNAME.COM:8000",
+    "auth": {
+        "jwt": {},
+        "oauth_connections": {}
+    },
+    "frontend": {}
+}
