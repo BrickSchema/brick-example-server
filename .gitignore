@@ -2,6 +2,7 @@
 ansible/
 configs/
 docker-compose.yml
+run_*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
