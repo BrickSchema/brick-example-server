@@ -1,0 +1,39 @@
+version: '3'
+services:
+  brickserver-postgres:
+    container_name: brickserver-postgres
+    image: "jbkoh/brickserver-postgresql:latest"
+    environment: # Below secrets should be matched with the information in `configs.json` too.
+      - POSTGRES_USER=bricker
+      - POSTGRES_PASSWORD=brick-demo
+      - POSTGRES_DB=brick
+  brickserver-virtuoso:
+    container_name: brickserver-virtuoso
+    image: "tenforce/virtuoso:virtuoso7.2.5"
+    environment:
+      - SPARQL_UPDATE=true
+  brickserver-mongo:
+    container_name: brickserver-mongo
+    image: "mongo:4.2.3-bionic"
+  brickserver:
+    container_name: brickserver
+    image: "jbkoh/brickserver:0.1"
+    ports:
+      - "8000:80"
+    depends_on:
+      - brickserver-virtuoso
+      - brickserver-postgres
+      - brickserver-mongo
+    volumes:
+      #- /etc/letsencrypt/:/etc/letsencrypt/ # A typical location of the host machine's certificate files.
+      - ./configs:/app/configs # You have to bind a directory having `configs.json` like this.
+    environment:
+      - CERTFILE=/PATH/TO/YOUR/CERT_FILE
+      - KEYFILE=/PATH/TO/YOUR/KEY_FILE
+      #- ENABLE_SSL=true # Enable this if you want to enable SSL inside the container directly.
+      - LOG_LEVEL="debug"
+    command: >
+      /bin/bash -c "
+        sleep 10;
+        /app/docker/start.sh
+      "
