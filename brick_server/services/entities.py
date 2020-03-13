@@ -22,7 +22,7 @@ from .namespaces import URN, UUID
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
-from ..auth.authorization import authorized_admin, auth_scheme, parse_jwt_token
+from ..auth.authorization import authorized_admin, auth_scheme, parse_jwt_token, authorized, get_auth_logic
 from ..models import get_all_relationships
 from ..configs import configs
 from ..dbs import get_brick_db
@@ -65,6 +65,7 @@ async def get_name(db, entity_id):
 class EntitiesByFileResource:
 
     brick_db: BrickSparqlAsync = Depends(get_brick_db)
+    auth_logic: object = Depends(get_auth_logic)
 
     @entity_router.post('/upload',
                         status_code=200,
@@ -73,7 +74,7 @@ class EntitiesByFileResource:
                         summary='Uplaod a Turtle file',
                         tags=['Entities'],
                         )
-    @authorized_admin
+    @authorized
     async def upload(self,
                      request: Request,
                      turtle: str = Body(...,

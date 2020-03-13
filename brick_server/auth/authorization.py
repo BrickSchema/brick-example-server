@@ -82,6 +82,18 @@ def parse_jwt_token(jwt_token):
     payload = jwt.decode(jwt_token, _jwt_pub_key, algorithm='RS256')
     return payload
 
+def check_admin(*args, **kwargs):
+    payload = parse_jwt_token(kwargs['token'].credentials)
+    user_id = payload['user_id']
+    if user_id != 'admin':
+        return False
+    else:
+        return True
+
+def get_auth_logic():
+    #TODO: Parameterize this
+    return check_admin
+
 def authorized_admin(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
@@ -89,6 +101,18 @@ def authorized_admin(f):
         payload = parse_jwt_token(kwargs['token'].credentials)
         user_id = payload['user_id']
         if user_id != 'admin':
+            raise HTTPException(status_code=401,
+                                detail='{user_id} does not have the right permission.',
+                                )
+        return await f(*args, **kwargs)
+    return decorated
+
+def authorized(f):
+    @wraps(f)
+    async def decorated(*args, **kwargs):
+        # Intentionally empty not to check anything as a dummy authorization
+        self = kwargs['self']
+        if not self.auth_logic(*args, **kwargs):
             raise HTTPException(status_code=401,
                                 detail='{user_id} does not have the right permission.',
                                 )
