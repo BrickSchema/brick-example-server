@@ -10,11 +10,11 @@ from starlette.responses import HTMLResponse, RedirectResponse, PlainTextRespons
 from starlette.requests import Request
 
 from ..configs import configs
-from .authorization import FRONTEND_APP, oauth, _get_user, authenticated, _jwt_pub_key
-from .models import TokensResponse, TokenResponse
+from .authorization import FRONTEND_APP, oauth, _get_id_token_user, authenticated, _jwt_pub_key
+from .models import TokensResponse, TokenResponse, AppTokenModel
 from ..dummy_frontend import loggedin_frontend
 from ..exceptions import DoesNotExistError
-from ..models import get_doc, User
+from ..models import get_doc, User, AppToken
 
 from pdb import set_trace as bp
 
@@ -77,29 +77,38 @@ class AppTokensRouter(object):
                       )
     @authenticated
     async def gen_token(request: Request,
-                        app_name: str = Query(FRONTEND_APP,
+                        app_name: str = Query(...,
                                               description='The name of an app the user needs to generate a token for'),
                         ) -> TokenResponse:
-        user = _get_user(request)
-        jwt_token = create_jwt_token(app_name=app_name)
-        user.app_tokens.append(jwt_token)
-        user.save()
-        return jwt_token
+        user = await _get_id_token_user(request)
+        app_token_str = create_jwt_token(app_name=app_name)
+        app_token = AppToken(user=user,
+                             token=app_token_str,
+                             name=app_name,
+                             )
+        app_token.save()
+        return app_token_str
 
     @auth_router.get('/app_tokens',
-                      status_code=200,
-                      tags=['Auth'],
+                     status_code=200,
+                     tags=['Auth'],
                      response_model=TokensResponse,
                      )
     @authenticated
     async def get_tokens(request: Request) -> TokensResponse:
-        user = _get_user(request)
-        tokens = user.app_tokens
-        valid_tokens = [token for token in tokens
-                        if parse_jwt_token(token)['exp'] < time.time()]
-        user.app_tokens = valid_tokens
-        user.save()
-        return valid_tokens
+        user = await _get_id_token_user(request)
+        app_tokens = []
+        for app_token in get_docs(AppToken, user=user):
+            payload = parse_jwt_token(app_token.token)
+            if payload['exp'] < time.time():
+                app_token.delete()
+            else:
+                app_tokens.append(AppTokenModel(token=app_token.token,
+                                                name=app_token.name,
+                                                exp=payload['exp'],
+                                                )
+                                  )
+        return app_tokens
 
 
 # NOTE: This is the API to register a user.

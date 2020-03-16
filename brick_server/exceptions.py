@@ -28,3 +28,7 @@ class UserNotApprovedError(BrickServerError, HTTPException):
     def __init__(self, *args, **kwargs):
         super(UserNotApprovedError, self).__init__(*args, **kwargs)
 
+class NotAuthorizedError(BrickServerError, HTTPException):
+    def __init__(self, *args, **kwargs):
+        super(NotAuthorizedError, self).__init__(status_code=401, *args, **kwargs)
+

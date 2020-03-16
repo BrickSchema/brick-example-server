@@ -1,4 +1,5 @@
 import os
+from pdb import set_trace as bp
 import asyncio
 import pdb
 import json
@@ -15,6 +16,7 @@ import asyncpg
 
 from .configs import configs
 from .interfaces import DummyActuation, BrickTimeseries, AsyncpgTimeseries
+from .auth.authorization import check_admin
 
 
 lockmanager_configs = configs['lockmanager']
@@ -46,15 +48,3 @@ try:
     asyncio.ensure_future(ts_db.init())
 except asyncpg.exceptions.DuplicateTableError:
     print('Timescale tabels have been already created.')
-
-def get_brick_db():
-    return brick_sparql
-
-def get_lock_manager():
-    return lock_manager
-
-def get_ts_db():
-    return ts_db
-
-def get_actuation_iface():
-    return actuation_iface

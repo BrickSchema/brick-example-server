@@ -3,7 +3,7 @@ from copy import deepcopy
 from uuid import uuid4 as gen_uuid
 from io import StringIO
 import asyncio
-from typing import ByteString, Any, Dict
+from typing import ByteString, Any, Dict, Callable
 
 import arrow
 import rdflib
@@ -17,13 +17,12 @@ from starlette.requests import Request
 from .models import TimeseriesData, ValueTypes, ValueType, IsSuccess, jwt_security_scheme
 from .models import entity_id_desc, graph_desc, relationships_desc, start_time_desc, end_time_desc
 from .models import value_type_desc, timeseries_data_desc
-from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
-from ..auth.authorization import authorized_admin, authorized, O
+from ..auth.authorization import authorized, O
 from ..models import get_all_relationships
 from ..configs import configs
-from ..dbs import get_brick_db, get_ts_db
+from ..dependencies import get_brick_db, get_ts_db, dependency_supplier
 from ..interfaces import BaseTimeseries
 
 
@@ -34,6 +33,7 @@ data_router = InferringRouter('data')
 @cbv(data_router)
 class TimeseriesById:
     ts_db: BaseTimeseries = Depends(get_ts_db)
+    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
 
     @data_router.get('/timeseries/{entity_id}',
                      status_code=200,
@@ -41,7 +41,7 @@ class TimeseriesById:
                      response_model=TimeseriesData,
                      tags=['Data'],
                      )
-    @authorized_admin
+    @authorized
     async def get(self,
                   request: Request,
                   entity_id: str = Path(..., description=entity_id_desc,),
@@ -63,7 +63,7 @@ class TimeseriesById:
                         response_model=IsSuccess,
                         tags=['Data'],
                         )
-    @authorized_admin
+    @authorized
     async def delete(self,
                      request: Request,
                      entity_id: str = Path(..., description=entity_id_desc),
@@ -78,6 +78,7 @@ class TimeseriesById:
 @cbv(data_router)
 class Timeseries():
     ts_db: BaseTimeseries = Depends(get_ts_db)
+    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
 
     @data_router.post('/timeseries',
                       status_code=200,
@@ -85,7 +86,7 @@ class Timeseries():
                       response_model=IsSuccess,
                       tags=['Data'],
                       )
-    @authorized_admin
+    @authorized
     async def post(self,
                    request: Request,
                    data: TimeseriesData = Body(...,

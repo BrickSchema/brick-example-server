@@ -1,6 +1,7 @@
 import pdb
 from contextlib import contextmanager
 import random
+from typing import Callable
 import time
 
 import arrow
@@ -16,9 +17,9 @@ from fastapi.security import HTTPAuthorizationCredentials
 
 
 from .models import IsSuccess, ActuationRequest, jwt_security_scheme
-from ..dbs import get_ts_db, get_lock_manager, get_actuation_iface
+from ..dependencies import get_ts_db, get_lock_manager, get_actuation_iface, dependency_supplier
 from brick_server.extensions.lockmanager import LockManager
-from ..auth.authorization import authorized_admin, auth_scheme
+from ..auth.authorization import auth_scheme, authorized
 from ..interfaces import BaseActuation, BaseTimeseries
 from ..configs import configs
 
@@ -31,6 +32,7 @@ class ActuationEntity():
     lock_manager: LockManager = Depends(get_lock_manager)
     actuation_iface: BaseActuation = Depends(get_actuation_iface)
     ts_db: BaseTimeseries = Depends(get_ts_db)
+    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
 
     @actuation_router.post('/{entity_id}',
                            description='Actuate an entity to a value',
@@ -38,7 +40,7 @@ class ActuationEntity():
                            status_code=200,
                            tags=['Actuation'],
                            )
-    @authorized_admin
+    @authorized
     async def post(self,
                    request: Request,
                    entity_id: str = Path(...),

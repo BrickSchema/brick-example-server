@@ -15,6 +15,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from .common import DUMMY_USER, DUMMY_APP
 from ..configs import configs
+from ..exceptions import NotAuthorizedError
 from ..models import User
 
 FRONTEND_APP = 'brickserver_frontend'
@@ -56,7 +57,11 @@ with open(pubkey_path, 'r') as fp:
     _jwt_pub_key = fp.read()
 
 
-def authorized(permission_required, get_entity_ids=None):
+def _get_jwt_token_user(token):
+    payload = parse_jwt_token(kwargs['token'].credentials)
+    return payload['user_id']
+
+def authorized_dep(permission_required, get_entity_ids=None):
     def auth_enabled_decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -90,9 +95,12 @@ def check_admin(*args, **kwargs):
     else:
         return True
 
-def get_auth_logic():
-    #TODO: Parameterize this
-    return check_admin
+def validate_token(*args, **kwargs):
+    try:
+        payload = parse_jwt_token(kwargs['token'].credentials)
+    except jwt.exceptions.InvalidSignatureError as e:
+        raise NotAuthorizedError(detail='Given JWT token is not valid')
+    return True
 
 def authorized_admin(f):
     @wraps(f)
@@ -106,6 +114,20 @@ def authorized_admin(f):
                                 )
         return await f(*args, **kwargs)
     return decorated
+
+def authorized_arg(permission_type):
+    def auth_wrapper(f):
+        @wraps(f)
+        async def decorated(*args, **kwargs):
+            # Intentionally empty not to check anything as a dummy authorization
+            self = kwargs['self']
+            if not self.auth_logic(*args, **kwargs):
+                raise HTTPException(status_code=401,
+                                    detail='{user_id} does not have the right permission.',
+                                    )
+            return await f(*args, **kwargs)
+        return decorated
+    return auth_wrapper
 
 def authorized(f):
     @wraps(f)
@@ -142,8 +164,9 @@ def create_user(name, userid, email,is_admin=False):
                         )
     created_user.save()
 
-async def _get_user(request):
+async def _get_id_token_user(request):
     id_token = request.session['id_token']
     oauth_user = await oauth.google.parse_id_token(request, token)
     return get_doc(User, userid=oauth_user['email'])
+
 

@@ -3,7 +3,7 @@ from copy import deepcopy
 from uuid import uuid4 as gen_uuid
 from io import StringIO
 import asyncio
-from typing import ByteString, Any, Dict
+from typing import ByteString, Any, Dict, Callable
 from collections import defaultdict
 
 import arrow
@@ -22,10 +22,10 @@ from .namespaces import URN, UUID
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
-from ..auth.authorization import authorized_admin, auth_scheme, parse_jwt_token, authorized, get_auth_logic
+from ..auth.authorization import auth_scheme, parse_jwt_token, authorized
 from ..models import get_all_relationships
 from ..configs import configs
-from ..dbs import get_brick_db
+from ..dependencies import get_brick_db, dependency_supplier
 
 entity_router = InferringRouter('entities')
 
@@ -65,7 +65,7 @@ async def get_name(db, entity_id):
 class EntitiesByFileResource:
 
     brick_db: BrickSparqlAsync = Depends(get_brick_db)
-    auth_logic: object = Depends(get_auth_logic)
+    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
 
     @entity_router.post('/upload',
                         status_code=200,
@@ -80,6 +80,9 @@ class EntitiesByFileResource:
                      turtle: str = Body(...,
                                         media_type='text/turtle',
                                         description='The text of a Turtle file.'),
+                     add_owner: bool = Query(True,
+                                             description='If true, add the current user as an owner of all the entities in the graph.',
+                                             ),
                      graph: str = Query(configs['brick']['base_graph'],
                                         description=graph_desc,
                                         ),
@@ -93,21 +96,22 @@ class EntitiesByFileResource:
             ttl_io = StringIO(turtle)
             ttl_backup = deepcopy(ttl_io)
             await self.brick_db.load_rdffile(ttl_io, graph=graph)
-            g = rdflib.Graph()
-            g.parse(ttl_backup, format='turtle')
-            res = g.query("""
-            select ?s where {
-                ?s a ?o.
-            }
-            """)
-            user_entity = URIRef(user_id)
-            res = list(res)
-            for rows in striding_windows(res, 500):
-                new_triples = []
-                for row in rows:
-                    entity = row[0]
-                    new_triples.append((URIRef(entity), self.brick_db.BRICK.hasOwner, user_entity))
-                await self.brick_db.add_triples(new_triples)
+            if add_owner:
+                g = rdflib.Graph()
+                g.parse(ttl_backup, format='turtle')
+                res = g.query("""
+                select ?s where {
+                    ?s a ?o.
+                }
+                """)
+                user_entity = URIRef(user_id)
+                res = list(res)
+                for rows in striding_windows(res, 500):
+                    new_triples = []
+                    for row in rows:
+                        entity = row[0]
+                        new_triples.append((URIRef(entity), self.brick_db.BRICK.hasOwner, user_entity))
+                    await self.brick_db.add_triples(new_triples)
         else:
             raise HTTPException(status_code=405, detail='{0} is not supported'.format(content_type))
         return IsSuccess()
@@ -116,6 +120,7 @@ class EntitiesByFileResource:
 class EntitiesByIdResource:
 
     brick_db: BrickSparqlAsync = Depends(get_brick_db)
+    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
 
 
     @entity_router.get('/{entity_id}',
@@ -124,7 +129,7 @@ class EntitiesByIdResource:
                        description='Get information about an entity including type and its relationships with others. The definition of entity: {0}'.format(entity_desc),
                        tags=['Entities'],
                        )
-    @authorized_admin
+    @authorized
     async def get_entity_by_id(self,
                                request: Request,
                                entity_id: str = Path(..., description=entity_id_desc),
@@ -149,7 +154,7 @@ class EntitiesByIdResource:
                           description='Delete an entity along with its relationships and data',
                           tags=['Entities'],
                           )
-    @authorized_admin
+    @authorized
     async def entity_delete(self,
                             request: Request,
                             entity_id: str = Path(..., description=entity_id_desc),
@@ -185,7 +190,7 @@ class EntitiesByIdResource:
                         description='Add relationships of an entity',
                         tags=['Entities'],
                         )
-    @authorized_admin
+    @authorized
     async def update_entity(self,
                             request: Request,
                             entity_id: str = Path(..., description=entity_id_desc),
@@ -201,6 +206,7 @@ class EntitiesByIdResource:
 class EntitiesResource:
 
     brick_db: BrickSparqlAsync = Depends(get_brick_db)
+    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
 
 
     @entity_router.get('/',
@@ -209,7 +215,7 @@ class EntitiesResource:
                        description='List all entities with their types.',
                        tags=['Entities'],
                        )
-    @authorized_admin
+    @authorized
     async def get(self,
                   request: Request,
                   token: HTTPAuthorizationCredentials = jwt_security_scheme,
@@ -229,7 +235,7 @@ class EntitiesResource:
                         description='Add entities with their triples.',
                         tags=['Entities'],
                         )
-    @authorized_admin
+    @authorized
     async def post(self,
                    request: Request,
                    create_entities: CreateEntitiesRequest = Body(..., description='A dictionary to describe entities to create. Keys are Brick Classes and values are the number of instances to create for the Class'),

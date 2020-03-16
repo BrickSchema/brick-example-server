@@ -1,4 +1,5 @@
 from pdb import set_trace as bp
+from typing import Callable
 import calendar
 from datetime import datetime
 from copy import deepcopy
@@ -21,10 +22,10 @@ from .models import sql_desc, sparql_desc
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
-from ..auth.authorization import authorized_admin, authorized, auth_scheme
+from ..auth.authorization import authorized, auth_scheme
 from ..models import get_all_relationships
 from ..configs import configs
-from ..dbs import get_brick_db, get_ts_db
+from ..dependencies import get_brick_db, get_ts_db, dependency_supplier
 from ..interfaces import BaseTimeseries
 
 
@@ -34,13 +35,14 @@ query_router = InferringRouter('raw_queries')
 @cbv(query_router)
 class TimeseriesQuery():
     ts_db: BaseTimeseries = Depends(get_ts_db)
+    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
 
     @query_router.post('/timeseries',
                       description='Raw PostgreSQL query for timeseries. (May not be exposed in the production deployment.)',
                       #response_model = TimeseriesData,
                       tags=['Raw Queries'],
                       )
-    @authorized_admin
+    @authorized
     async def post(self,
                    request: Request,
                    query: str = Body(...,
@@ -65,14 +67,14 @@ def format_raw_query(res):
 
 @cbv(query_router)
 class SparqlQuery():
-    brick_db: BaseTimeseries = Depends(get_brick_db)
-
+    brick_db: BrickSparqlAsync = Depends(get_brick_db)
+    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
 
     @query_router.post('/sparql',
                        description='Raw SPARQL for Brick metadata. (May not be exposed in the production deployment.',
                        tags=['Raw Queries'],
                        )
-    @authorized_admin
+    @authorized
     async def post(self,
                    request: Request,
                    query: str = Body(...,
