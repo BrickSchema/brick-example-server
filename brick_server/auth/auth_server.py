@@ -11,7 +11,7 @@ from starlette.requests import Request
 
 from ..configs import configs
 from .authorization import FRONTEND_APP, oauth, _get_id_token_user, authenticated, _jwt_pub_key
-from .models import TokensResponse, TokenResponse, AppTokenModel
+from .models import TokensResponse, TokenResponse
 from ..dummy_frontend import loggedin_frontend
 from ..exceptions import DoesNotExistError
 from ..models import get_doc, User, AppToken
@@ -77,7 +77,7 @@ class AppTokensRouter(object):
                       )
     @authenticated
     async def gen_token(request: Request,
-                        app_name: str = Query(...,
+                        app_name: str = Query(None,
                                               description='The name of an app the user needs to generate a token for'),
                         ) -> TokenResponse:
         user = await _get_id_token_user(request)
@@ -86,8 +86,8 @@ class AppTokensRouter(object):
                              token=app_token_str,
                              name=app_name,
                              )
-        app_token.save()
-        return app_token_str
+        payload = parse_jwt_token(app_token_str)
+        return TokenResponse(token=app_token_str, exp=payload['exp'], name=app_name)
 
     @auth_router.get('/app_tokens',
                      status_code=200,
@@ -103,7 +103,7 @@ class AppTokensRouter(object):
             if payload['exp'] < time.time():
                 app_token.delete()
             else:
-                app_tokens.append(AppTokenModel(token=app_token.token,
+                app_tokens.append(TokenResponse(token=app_token.token,
                                                 name=app_token.name,
                                                 exp=payload['exp'],
                                                 )

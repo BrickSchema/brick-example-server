@@ -56,7 +56,7 @@ class AppToken(Document):
     token = StringField(required=True)
     name = StringField(default=None)
     meta = {
-        'indexes': ['$user_id'],
+        'indexes': ['user'],
     }
 
 class OAuthRefreshToken(Document):
