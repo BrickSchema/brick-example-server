@@ -43,7 +43,6 @@ class User(Document):
     name = StringField(required=True)
     userid = StringField(required=True, unique=True)
     email = StringField(required=True)
-    installed_apps = ListField(ReferenceField(App))
     is_admin = BooleanField(default=False)
     is_approved = BooleanField(default=False)
     registration_time = DateTimeField(required=True)
