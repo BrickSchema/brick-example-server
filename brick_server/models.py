@@ -53,7 +53,7 @@ class User(Document):
 
 class AppToken(Document):
     user = ReferenceField(User, required=True)
-    token = StrinfField(required=True)
+    token = StringField(required=True)
     name = StringField(default=None)
     meta = {
         'indexes': ['$user_id'],
