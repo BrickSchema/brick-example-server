@@ -78,7 +78,7 @@ def create_jwt_token(app_name: str,
     payload = {
         'user_id': 'admin',
         'exp': time.time() + token_lifetime, # TODO: Think about the timezone
-        'app': app_name,
+        'app_id': app_name,
     }
     jwt_token = jwt.encode(payload, _jwt_priv_key, algorithm='RS256')
     return jwt_token
@@ -98,8 +98,8 @@ def check_admin(*args, **kwargs):
 
 # A list of auth_logics
 
-def auth_logic_template(requester, action_type, target_ids, *args, **kwargs):
-    pass
+def auth_logic_template(action_type, target_ids, *args, **kwargs):
+    raise Exception('Not Implemented and this is not meant to be used but just for reference.')
 
 def validate_token(action_type, target_ids, *args, **kwargs):
     try:
