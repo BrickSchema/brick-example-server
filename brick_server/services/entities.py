@@ -22,7 +22,7 @@ from .namespaces import URN, UUID
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
-from ..auth.authorization import auth_scheme, parse_jwt_token, authorized, authorized_arg, R
+from ..auth.authorization import auth_scheme, parse_jwt_token, authorized, authorized_arg, R, O
 from ..models import get_all_relationships
 from ..configs import configs
 from ..dependencies import get_brick_db, dependency_supplier
@@ -154,7 +154,7 @@ class EntitiesByIdResource:
                           description='Delete an entity along with its relationships and data',
                           tags=['Entities'],
                           )
-    @authorized
+    @authorized_arg(O)
     async def entity_delete(self,
                             request: Request,
                             entity_id: str = Path(..., description=entity_id_desc),
@@ -190,7 +190,7 @@ class EntitiesByIdResource:
                         description='Add relationships of an entity',
                         tags=['Entities'],
                         )
-    @authorized
+    @authorized_arg(O)
     async def update_entity(self,
                             request: Request,
                             entity_id: str = Path(..., description=entity_id_desc),
@@ -202,6 +202,8 @@ class EntitiesByIdResource:
         return 'Success', 200
 
 
+
+#TODO: In the auth model, this resource's target is a `graph`
 @cbv(entity_router)
 class EntitiesResource:
 
@@ -215,7 +217,7 @@ class EntitiesResource:
                        description='List all entities with their types.',
                        tags=['Entities'],
                        )
-    @authorized
+    @authorized #TODO: Think about the auth logic for access those.
     async def get(self,
                   request: Request,
                   token: HTTPAuthorizationCredentials = jwt_security_scheme,

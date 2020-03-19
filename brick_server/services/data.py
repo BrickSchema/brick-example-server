@@ -19,7 +19,7 @@ from .models import entity_id_desc, graph_desc, relationships_desc, start_time_d
 from .models import value_type_desc, timeseries_data_desc
 from ..helpers import striding_windows
 
-from ..auth.authorization import authorized, O
+from ..auth.authorization import authorized, authorized_arg, O, R, W
 from ..models import get_all_relationships
 from ..configs import configs
 from ..dependencies import get_brick_db, get_ts_db, dependency_supplier
@@ -41,7 +41,7 @@ class TimeseriesById:
                      response_model=TimeseriesData,
                      tags=['Data'],
                      )
-    @authorized
+    @authorized_arg(R)
     async def get(self,
                   request: Request,
                   entity_id: str = Path(..., description=entity_id_desc,),
@@ -63,7 +63,7 @@ class TimeseriesById:
                         response_model=IsSuccess,
                         tags=['Data'],
                         )
-    @authorized
+    @authorized_arg(W)
     async def delete(self,
                      request: Request,
                      entity_id: str = Path(..., description=entity_id_desc),
@@ -74,6 +74,13 @@ class TimeseriesById:
         await self.ts_db.delete([entity_id], start_time, end_time)
         return IsSuccess()
 
+
+def _get_entity_ids_ts_post(*args, **kwargs):
+    rows = kwargs['data'].data
+    columns = kwargs['data'].columns
+    uuid_idx = columns.index('uuid')
+    uuids = set([row[uuid_idx] for row in rows])
+    return uuids
 
 @cbv(data_router)
 class Timeseries():
@@ -86,7 +93,7 @@ class Timeseries():
                       response_model=IsSuccess,
                       tags=['Data'],
                       )
-    @authorized
+    @authorized_arg(W, _get_entity_ids_ts_post)
     async def post(self,
                    request: Request,
                    data: TimeseriesData = Body(...,
