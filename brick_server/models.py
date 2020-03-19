@@ -1,8 +1,9 @@
 from pdb import set_trace as bp
 import numbers
 
-from mongoengine import Document, StringField, DateTimeField, ListField, DictField, BooleanField, ReferenceField
-from mongoengine import IntField
+from mongoengine import Document, DynamicDocument
+from mongoengine import StringField, DateTimeField, ListField, DictField, BooleanField
+from mongoengine import ReferenceField, IntField
 from mongoengine import connect as mongo_connect
 
 from .configs import configs
@@ -39,7 +40,7 @@ async def get_all_relationships(sparql_db, entity_id):
     res = await sparql_db.query(qstr)
     return [(row['p']['value'], row['o']['value']) for row in res['results']['bindings']]
 
-class User(Document):
+class User(DynamicDocument):
     name = StringField(required=True)
     userid = StringField(required=True, unique=True)
     email = StringField(required=True)
@@ -48,6 +49,7 @@ class User(Document):
     registration_time = DateTimeField(required=True)
     meta = {
         'indexes': ['$userid'],
+        'allow_inheritance': True,
     }
     app_tokens = ListField(StringField(), default=[])
 

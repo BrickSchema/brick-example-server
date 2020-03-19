@@ -14,6 +14,7 @@ dependency_supplier.auth_logic = validate_token
 
 def update_dependency_supplier(dep, obj):
     global dependency_supplier
+    assert getattr(dependency_supplier, dep)
     setattr(dependency_supplier, dep, obj)
 
 def get_brick_db():

@@ -22,7 +22,7 @@ from .namespaces import URN, UUID
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
 
-from ..auth.authorization import auth_scheme, parse_jwt_token, authorized
+from ..auth.authorization import auth_scheme, parse_jwt_token, authorized, authorized_arg, R
 from ..models import get_all_relationships
 from ..configs import configs
 from ..dependencies import get_brick_db, dependency_supplier
@@ -129,7 +129,7 @@ class EntitiesByIdResource:
                        description='Get information about an entity including type and its relationships with others. The definition of entity: {0}'.format(entity_desc),
                        tags=['Entities'],
                        )
-    @authorized
+    @authorized_arg(R)
     async def get_entity_by_id(self,
                                request: Request,
                                entity_id: str = Path(..., description=entity_id_desc),
