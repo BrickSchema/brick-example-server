@@ -48,7 +48,6 @@ class User(DynamicDocument):
     is_approved = BooleanField(default=False)
     registration_time = DateTimeField(required=True)
     meta = {
-        'indexes': ['$userid'],
         'allow_inheritance': True,
     }
     app_tokens = ListField(StringField(), default=[])
