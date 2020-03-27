@@ -109,6 +109,19 @@ def validate_token(action_type, target_ids, *args, **kwargs):
         raise NotAuthorizedError(detail='Given JWT token is not valid')
     return True
 
+def authorized_frontend(f):
+    @wraps(f)
+    async def decorated(*args, **kwargs):
+        # Intentionally empty not to check anything as a dummy authorization
+        payload = parse_jwt_token(kwargs['token'].credentials)
+        app_name = payload['app_name']
+        if app_name != FRONTEND_APP:
+            raise HTTPException(status_code=401,
+                                detail='{user_id} does not have the right permission.',
+                                )
+        return await f(*args, **kwargs)
+    return decorated
+
 def authorized_admin(f):
     @wraps(f)
     async def decorated(*args, **kwargs):

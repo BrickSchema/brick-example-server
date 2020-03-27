@@ -6,7 +6,7 @@ import pytest
 BRICK_VERSION = '1.0.3'
 BRICK = Namespace(f'https://brickschema.org/schema/{BRICK_VERSION}/Brick#')
 
-HOSTNAME = 'https://bd-testbed.ucsd.edu:8000'
+HOSTNAME = 'https://bd-testbed.ucsd.edu:9000'
 #HOSTNAME = 'https://bd-testbed.ucsd.edu'
 #HOSTNAME = 'http://bd-testbed.ucsd.edu:8000'
 #HOSTNAME = ''
@@ -15,6 +15,7 @@ ENTITY_BASE = API_BASE + '/entities'
 QUERY_BASE = API_BASE + '/rawqueries'
 DATA_BASE = API_BASE + '/data'
 ACTUATION_BASE = API_BASE + '/actuation'
+AUTH_BASE = HOSTNAME + '/auth'
 
 
 default_headers = {
