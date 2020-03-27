@@ -38,8 +38,8 @@ def get_jwt_pubkey():
                  tags=['Auth'],
                  )
 async def get_login_via_google(request: Request):
-    redirect_url = auth_base_url + '/is_registered'
-    res = await oauth.google.authorize_redirect(request, redirect_url)
+    redirect_uri = auth_base_url + '/is_registered'
+    res = await oauth.google.authorize_redirect(request, redirect_uri)
     return res
 
 @auth_router.get('/is_registered',
@@ -65,6 +65,7 @@ async def get_is_registered(request: Request):
                                          app_name=FRONTEND_APP,
                                          ).decode('utf-8')
         redirect_uri += '?app_token=' + app_token_str
+        bp()
         return RedirectResponse(redirect_uri)
     except DoesNotExistError:
         request.session['access_token'] = token
@@ -136,6 +137,7 @@ async def post_register_user(request: Request,
                              is_admin: bool=Form(False, description='Designate if the user is going to be an admin or not.'),
                              ):
     # TODO: Check if is_admin is allowed somwehow. (Maybe endorsed by the first admin or check the number of admins in the database and allow only one.
+    bp()
     token = request.session['access_token']
     oauth_user = await oauth.google.parse_id_token(request, token)
     profile = (await oauth.google.get('userinfo', token=token)).json()
@@ -153,4 +155,8 @@ async def post_register_user(request: Request,
                     registration_time=arrow.get().datetime
                     )
     new_user.save()
-    return RedirectResponse(loggedin_frontend)
+    app_token_str = create_jwt_token(user_id=profile['email'],
+                                     app_name=FRONTEND_APP,
+                                     ).decode('utf-8')
+    redirect_uri = loggedin_frontend + '?app_token=' + app_token_str
+    return RedirectResponse(redirect_uri)
