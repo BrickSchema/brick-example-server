@@ -72,11 +72,12 @@ def authorized_dep(permission_required, get_entity_ids=None):
     return auth_enabled_decorator
 
 
-def create_jwt_token(app_name: str,
+def create_jwt_token(user_id: str = 'admin',
+                     app_name: str = None,
                      token_lifetime: int = 3600,
                      ):
     payload = {
-        'user_id': 'admin',
+        'user_id': user_id,
         'exp': time.time() + token_lifetime, # TODO: Think about the timezone
         'app_id': app_name,
     }
