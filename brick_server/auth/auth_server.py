@@ -65,7 +65,6 @@ async def get_is_registered(request: Request):
                                          app_name=FRONTEND_APP,
                                          ).decode('utf-8')
         redirect_uri += '?app_token=' + app_token_str
-        bp()
         return RedirectResponse(redirect_uri)
     except DoesNotExistError:
         request.session['access_token'] = token
@@ -127,7 +126,6 @@ class AppTokensRouter(object):
         return app_tokens
 
 
-# NOTE: This is the API to register a user.
 @auth_router.get('/register',
                  status_code=302,
                  response_class=RedirectResponse,
@@ -137,7 +135,6 @@ async def post_register_user(request: Request,
                              is_admin: bool=Form(False, description='Designate if the user is going to be an admin or not.'),
                              ):
     # TODO: Check if is_admin is allowed somwehow. (Maybe endorsed by the first admin or check the number of admins in the database and allow only one.
-    bp()
     token = request.session['access_token']
     oauth_user = await oauth.google.parse_id_token(request, token)
     profile = (await oauth.google.get('userinfo', token=token)).json()
