@@ -57,4 +57,3 @@ select ?child ?parent where {
     })
     resp = requests.post(QUERY_BASE + '/sparql', data=qstr, headers=headers)
     assert resp.json()['results']['bindings']
-    bp()
