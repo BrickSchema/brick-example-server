@@ -17,7 +17,7 @@ from .models import TokensResponse, TokenResponse
 from ..dummy_frontend import loggedin_frontend
 from ..exceptions import DoesNotExistError
 from ..models import get_doc, User, AppToken
-from ..services.models import jwt_security_scheme
+from ..services.models import jwt_security_scheme, IsSuccess
 
 from pdb import set_trace as bp
 
@@ -78,6 +78,29 @@ async def get_authorize(request: Request):
     user = await oauth.google.parse_id_token(request, token)
     request.session['id_token'] = token
     return dict(user)
+
+
+@cbv(auth_router)
+class AppTokenRouter(object):
+
+    @auth_router.delete('/app_tokens/{app_token}',
+                        status_code=200,
+                        tags=['Auth'],
+                        response_model=IsSuccess,
+                        )
+    @authorized_frontend
+    async def del_token(self,
+                        app_token: str = Path(...,
+                                              description='Token to delete.'
+                                              ),
+                        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+                        ) -> IsSuccess:
+        #user = await _get_id_token_user(request) TODO
+        user = parse_jwt_token(token)['user_id']
+        token_doc = get_doc(AppToken, user=user, token=app_token)
+        token_doc.delete()
+        #TODO: Register deleted token in a db to check in runtime.
+        return IsSuccess()
 
 @cbv(auth_router)
 class AppTokensRouter(object):
