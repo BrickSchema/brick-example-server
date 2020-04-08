@@ -117,7 +117,8 @@ class AppTokensRouter(object):
                         ) -> TokenResponse:
         user_id = parse_jwt_token(token.credentials)['user_id']
         app_token_str = create_jwt_token(app_name=app_name)
-        app_token = AppToken(user=user_id,
+        user = get_doc(User, userid=user_id)
+        app_token = AppToken(user=user,
                              token=app_token_str,
                              name=app_name,
                              )
