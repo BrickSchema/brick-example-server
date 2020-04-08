@@ -135,7 +135,8 @@ class AppTokensRouter(object):
                          token: HTTPAuthorizationCredentials = jwt_security_scheme,
                          ) -> TokensResponse:
         #user = await _get_id_token_user(request) TODO
-        user = parse_jwt_token(token)['user_id']
+        user_id = parse_jwt_token(token)['user_id']
+        user = get_doc(User, userid=user_id)
         app_tokens = []
         for app_token in get_docs(AppToken, user=user):
             payload = parse_jwt_token(app_token.token)
