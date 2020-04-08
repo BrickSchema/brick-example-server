@@ -16,7 +16,7 @@ from .authorization import _jwt_pub_key, create_jwt_token, parse_jwt_token
 from .models import TokensResponse, TokenResponse
 from ..dummy_frontend import loggedin_frontend
 from ..exceptions import DoesNotExistError
-from ..models import get_doc, User, AppToken
+from ..models import get_doc, get_docs, User, AppToken
 from ..services.models import jwt_security_scheme, IsSuccess
 
 from pdb import set_trace as bp
