@@ -122,6 +122,7 @@ class AppTokensRouter(object):
                              token=app_token_str,
                              name=app_name,
                              )
+        app_token.save()
         payload = parse_jwt_token(app_token_str)
         return TokenResponse(token=app_token_str, exp=payload['exp'], name=app_name)
 
