@@ -2,6 +2,7 @@ import time
 import arrow
 import requests
 
+from jwt import ExpiredSignatureError
 from fastapi_utils.inferring_router import InferringRouter
 from fastapi_utils.cbv import cbv
 from fastapi import Depends, Header, HTTPException, Body, Query, Path, Form, APIRouter
@@ -140,15 +141,15 @@ class AppTokensRouter(object):
         user = get_doc(User, userid=user_id)
         app_tokens = []
         for app_token in get_docs(AppToken, user=user):
-            payload = parse_jwt_token(app_token.token)
-            if payload['exp'] < time.time():
-                app_token.delete()
-            else:
+            try:
+                payload = parse_jwt_token(app_token.token)
                 app_tokens.append(TokenResponse(token=app_token.token,
                                                 name=app_token.name,
                                                 exp=payload['exp'],
                                                 )
                                   )
+            except ExpiredSignatureError:
+                app_token.delete()
         return app_tokens
 
 
