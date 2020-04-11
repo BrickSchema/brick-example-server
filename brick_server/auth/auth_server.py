@@ -23,6 +23,7 @@ from ..services.models import jwt_security_scheme, IsSuccess
 from pdb import set_trace as bp
 
 
+frontend_url = configs['frontend']['hostname']
 
 auth_router = InferringRouter('auth')
 auth_base_url = configs['hostname'] + '/auth'
@@ -61,7 +62,7 @@ async def get_is_registered(request: Request):
     assert user['email_verified']
     try:
         user_doc = get_doc(User, userid=user['email'])
-        redirect_uri = loggedin_frontend
+        redirect_uri = frontend_url + "/logged-in-success"
         app_token_str = create_jwt_token(user_id=user['email'],
                                          app_name=FRONTEND_APP,
                                          ).decode('utf-8')
@@ -70,7 +71,8 @@ async def get_is_registered(request: Request):
     except DoesNotExistError:
         request.session['access_token'] = token
         profile = (await oauth.google.get('userinfo', token=token)).json()
-        redirect_uri = auth_base_url + '/register?name={0}&email={1}'.format(profile['name'], profile['email'])
+        redirect_uri = frontend_url + '/register'
+
         return RedirectResponse(redirect_uri)
 
 @auth_router.get('/logincallback') # NOTE: Dummy function
@@ -97,7 +99,8 @@ class AppTokenRouter(object):
                         token: HTTPAuthorizationCredentials = jwt_security_scheme,
                         ) -> IsSuccess:
         #user = await _get_id_token_user(request) TODO
-        user = parse_jwt_token(token)['user_id']
+        user_id = parse_jwt_token(token.credentials)['user_id']
+        user = get_doc(User, userid=user_id)
         token_doc = get_doc(AppToken, user=user, token=app_token)
         token_doc.delete()
         #TODO: Register deleted token in a db to check in runtime.
@@ -137,7 +140,7 @@ class AppTokensRouter(object):
                          token: HTTPAuthorizationCredentials = jwt_security_scheme,
                          ) -> TokensResponse:
         #user = await _get_id_token_user(request) TODO
-        user_id = parse_jwt_token(token)['user_id']
+        user_id = parse_jwt_token(token.credentials)['user_id']
         user = get_doc(User, userid=user_id)
         app_tokens = []
         for app_token in get_docs(AppToken, user=user):
@@ -182,5 +185,5 @@ async def post_register_user(request: Request,
     app_token_str = create_jwt_token(user_id=profile['email'],
                                      app_name=FRONTEND_APP,
                                      ).decode('utf-8')
-    redirect_uri = loggedin_frontend + '?app_token=' + app_token_str
+    redirect_uri = frontend_url + '/logged-in-success?app_token=' + app_token_str
     return RedirectResponse(redirect_uri)

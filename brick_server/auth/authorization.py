@@ -114,7 +114,7 @@ def authorized_frontend(f):
     async def decorated(*args, **kwargs):
         # Intentionally empty not to check anything as a dummy authorization
         payload = parse_jwt_token(kwargs['token'].credentials)
-        app_name = payload['app_name']
+        app_name = payload['app_id']
         if app_name != FRONTEND_APP:
             raise HTTPException(status_code=401,
                                 detail='{user_id} does not have the right permission.',

@@ -12,8 +12,16 @@
 :BLDG a brick:Building.
 :FL1 a brick:Floor.
 
+:AHU1 a brick:AHU;
+  brick:feeds :VAV101;
+  brick:feeds :VAV102;
+  brick:hasPart :SF1.
+
+:SF1 a brick:Supply_Fan.
+
 :VAV101 a brick:VAV;
     brick:feeds :RM101.
+
 :VAV102 a brick:VAV;
     brick:feeds :RM102.
 

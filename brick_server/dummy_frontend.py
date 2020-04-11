@@ -36,5 +36,4 @@ def login_main(request: Request,
                name: str,
                email: str,
                ):
-    bp()
     return HTMLResponse('Please register here')

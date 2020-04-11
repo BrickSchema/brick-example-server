@@ -25,9 +25,10 @@ def create_jwt_token(token_lifetime: int = 3600, app_name: str='brickserver_fron
     return jwt_token
 
 if __name__ == '__main__':
-    if len(sys.argv) > 2:
-        token_lifetime = sys.argv[2]
+    if len(sys.argv) > 1:
+        token_lifetime = int(sys.argv[1])
     else:
         token_lifetime = 3600
+    print(token_lifetime)
     print(create_jwt_token(token_lifetime).decode('utf-8'))
     #print(create_jwt_token(3600*24*365).decode('utf-8'))
