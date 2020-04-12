@@ -117,10 +117,13 @@ class AppTokensRouter(object):
     async def gen_token(self,
                         app_name: str = Query('',
                                               description='The name of an app the user needs to generate a token for'),
+                        token_lifetime: int = Query(3600,
+                                                     description='Expiration time of the requested token in seconds.',
+                                                     ),
                         token: HTTPAuthorizationCredentials = jwt_security_scheme,
                         ) -> TokenResponse:
         user_id = parse_jwt_token(token.credentials)['user_id']
-        app_token_str = create_jwt_token(app_name=app_name)
+        app_token_str = create_jwt_token(token_lifetime=token_lifetime, app_name=app_name)
         user = get_doc(User, userid=user_id)
         app_token = AppToken(user=user,
                              token=app_token_str,
