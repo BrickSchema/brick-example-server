@@ -15,8 +15,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from .common import DUMMY_USER, DUMMY_APP
 from ..configs import configs
-from ..exceptions import NotAuthorizedError
-from ..models import User
+from ..exceptions import NotAuthorizedError, TokenSignatureInvalid, TokenSignatureExpired
+from ..models import User, get_doc
 
 FRONTEND_APP = 'brickserver_frontend'
 
@@ -113,11 +113,17 @@ def authorized_frontend(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
         # Intentionally empty not to check anything as a dummy authorization
-        payload = parse_jwt_token(kwargs['token'].credentials)
+        try:
+            payload = parse_jwt_token(kwargs['token'].credentials)
+        except jwt.exceptions.InvalidSignatureError:
+            raise TokenSignatureInvalid()
+        except jwt.exceptions.ExpiredSignatureError:
+            raise TokenSignatureExpired()
+        user_id = payload['user_id']
         app_name = payload['app_id']
         if app_name != FRONTEND_APP:
             raise HTTPException(status_code=401,
-                                detail='{user_id} does not have the right permission.',
+                                detail=f'This token is not for the app "{FRONTEND_APP}".',
                                 )
         return await f(*args, **kwargs)
     return decorated
@@ -171,11 +177,9 @@ def authenticated(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
         # Intentionally empty not to check anything as a dummy authorization
-        request = kwargs['request']
-        id_token = request.session['id_token']
-        oauth_user = await oauth.google.parse_id_token(request, token)
-        user_doc = get_doc(User, userid=oauth_user['email'])
-        if not user_doc.approved:
+        payload = parse_jwt_token(kwargs['token'].credentials)
+        user = get_doc(User, userid=payload['user_id'])
+        if not user.is_approved:
             raise UserNotApprovedError(status_code=401, detail='The user account has not been approved by the admin yet.')
         return await f(*args, **kwargs)
     return decorated

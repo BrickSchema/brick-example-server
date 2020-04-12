@@ -19,7 +19,7 @@ def create_jwt_token(token_lifetime: int = 3600, app_name: str='brickserver_fron
     payload = {
         'user_id': 'admin',
         'exp': time.time() + token_lifetime, # TODO: Think about the timezone
-        'app_name': app_name,
+        'app_id': app_name,
     }
     jwt_token = jwt.encode(payload, _jwt_priv_key, algorithm='RS256')
     return jwt_token
