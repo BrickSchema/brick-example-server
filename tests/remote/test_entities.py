@@ -13,6 +13,7 @@ def test_load_ttl():
             'Content-Type': 'text/turtle',
         })
         resp = requests.post(ENTITY_BASE + '/upload', headers=headers, data=fp, allow_redirects=False)
+        bp()
         assert resp.status_code == 200
 
 def test_get_an_entity():
