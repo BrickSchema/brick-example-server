@@ -29,7 +29,10 @@
     },
     "hostname": "https://YOUR_HOSTNAME.COM:8000",
     "auth": {
-        "jwt": {},
+        "jwt": {
+            "privkey_path": "/app/configs/jwtRS256.key",
+            "pubkey_path": "/app/configs/jwtRS256.key.pub"
+        },
         "oauth_connections": {}
     },
     "frontend": {}
