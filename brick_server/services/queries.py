@@ -83,7 +83,6 @@ class SparqlQuery():
                                      ),
                    token: HTTPAuthorizationCredentials = Security(auth_scheme),
                    ) -> SparqlResult:
-        bp()
         body = await request.body()
         raw_res = await self.brick_db.query(query)
         return raw_res
