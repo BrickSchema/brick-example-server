@@ -166,7 +166,6 @@ def authorized(f):
         # Intentionally empty not to check anything as a dummy authorization
         self = kwargs['self']
         #jwt_token = parse_jwt_token(kwargs['token'].credentials)
-        bp()
         if not self.auth_logic(None, [], *args, **kwargs):
             raise HTTPException(status_code=401,
                                 detail='{user_id} does not have the right permission.',
@@ -178,7 +177,6 @@ def authenticated(f):
     @wraps(f)
     async def decorated(*args, **kwargs):
         # Intentionally empty not to check anything as a dummy authorization
-        bp()
         payload = parse_jwt_token(kwargs['token'].credentials)
         user = get_doc(User, userid=payload['user_id'])
         if not user.is_approved:
