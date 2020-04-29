@@ -5,10 +5,10 @@ if [ -z ${ENABLE_SSL+x} ]; then
     ENABLE_SSL=false
 fi
 
-if [ -f /app/app/main.py ]; then
-    DEFAULT_MODULE_NAME=app.main
-elif [ -f /app/main.py ]; then
-    DEFAULT_MODULE_NAME=main
+if [ -f /app/app/main_dev.py ]; then
+    DEFAULT_MODULE_NAME=app.main_dev
+elif [ -f /app/main_dev.py ]; then
+    DEFAULT_MODULE_NAME=main_dev
 fi
 MODULE_NAME=${MODULE_NAME:-$DEFAULT_MODULE_NAME}
 VARIABLE_NAME=${VARIABLE_NAME:-app}
