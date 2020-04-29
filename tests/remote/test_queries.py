@@ -41,7 +41,7 @@ select * from brick_data;
 def test_sparql_equip_tree():
     qstr = """
 select ?child ?parent where {
-    {?parent brick:isPartOf ?child.}
+    {?parent brick:hasPart ?child.}
     UNION
     {?child brick:isPartOf ?parent.}
     UNION
