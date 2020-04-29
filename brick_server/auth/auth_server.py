@@ -20,13 +20,9 @@ from ..exceptions import DoesNotExistError
 from ..models import get_doc, get_docs, User, AppToken
 from ..services.models import jwt_security_scheme, IsSuccess
 
-from pdb import set_trace as bp
-
-
-frontend_url = configs['frontend']['hostname']
-
 auth_router = InferringRouter('auth')
 auth_base_url = configs['hostname'] + '/auth'
+frontend_url = configs['frontend']['hostname']
 
 @auth_router.get('/jwt_pubkey',
                  status_code=200,
@@ -72,7 +68,6 @@ async def get_is_registered(request: Request):
         request.session['access_token'] = token
         profile = (await oauth.google.get('userinfo', token=token)).json()
         redirect_uri = frontend_url + '/register'
-
         return RedirectResponse(redirect_uri)
 
 @auth_router.get('/logincallback') # NOTE: Dummy function
@@ -145,6 +140,7 @@ class AppTokensRouter(object):
         #user = await _get_id_token_user(request) TODO
         user_id = parse_jwt_token(token.credentials)['user_id']
         user = get_doc(User, userid=user_id)
+
         app_tokens = []
         for app_token in get_docs(AppToken, user=user):
             try:

@@ -25,4 +25,3 @@ app.include_router(dummy_frontend_router, prefix='/dummy-frontend')
 
 app.secret_key = os.urandom(24)
 app.add_middleware(SessionMiddleware, secret_key=os.urandom(24))
-
