@@ -45,9 +45,9 @@ select ?child ?parent where {
     UNION
     {?child brick:isPartOf ?parent.}
     UNION
-    {?parent brick:feeds ?child.}
+    {?parent bf:feeds ?child.}
     UNION
-    {?child brick:isFedBy ?parent.}
+    {?child bf:isFedBy ?parent.}
     ?parent a/rdfs:subClassOf* brick:Equipment.
     ?child a/rdfs:subClassOf* brick:Equipment.
 }
@@ -56,4 +56,4 @@ select ?child ?parent where {
         'Content-Type': 'sparql-query'
     })
     resp = requests.post(QUERY_BASE + '/sparql', data=qstr, headers=headers)
-    assert resp.json()['results']['bindings']
+    assert len(resp.json()['results']['bindings']) > 2
