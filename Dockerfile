@@ -18,7 +18,6 @@ RUN pip install --upgrade pip && \
     pip install git+https://github.com/jbkoh/fastapi.git@fix-bodyparsing && \
     pip install httpx
 
-COPY configs/configs.json /app/configs/
 ENV BRICK_CONFIGFILE "/app/configs/configs.json"
 
 CMD /app/docker/start.sh
