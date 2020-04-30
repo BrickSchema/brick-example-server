@@ -178,16 +178,16 @@ def authenticated(f):
     async def decorated(*args, **kwargs):
         # Intentionally empty not to check anything as a dummy authorization
         payload = parse_jwt_token(kwargs['token'].credentials)
-        user = get_doc(User, userid=payload['user_id'])
+        user = get_doc(User, user_id=payload['user_id'])
         if not user.is_approved:
             raise UserNotApprovedError(status_code=401, detail='The user account has not been approved by the admin yet.')
         return await f(*args, **kwargs)
     return decorated
 
 
-def create_user(name, userid, email,is_admin=False):
+def create_user(name, user_id, email,is_admin=False):
     created_user = User(name=name,
-                        userid=userid,
+                        user_id=user_id,
                         email=email,
                         is_admin=is_admin,
                         registration_time=arrow.get().datetime,
@@ -197,6 +197,6 @@ def create_user(name, userid, email,is_admin=False):
 async def _get_id_token_user(request):
     id_token = request.session['id_token']
     oauth_user = await oauth.google.parse_id_token(request, token)
-    return get_doc(User, userid=oauth_user['email'])
+    return get_doc(User, user_id=oauth_user['email'])
 
 

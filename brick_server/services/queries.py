@@ -76,13 +76,12 @@ class SparqlQuery():
                        )
     @authorized
     async def post(self,
-                   request: Request,
+                   #request: Request,
                    query: str = Body(...,
                                      media_type='application/sparql-query',
                                      description='sparql_desc'
                                      ),
                    token: HTTPAuthorizationCredentials = Security(auth_scheme),
                    ) -> SparqlResult:
-        body = await request.body()
         raw_res = await self.brick_db.query(query)
         return raw_res

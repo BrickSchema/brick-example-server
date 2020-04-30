@@ -57,7 +57,7 @@ async def get_is_registered(request: Request):
     #resp = requests.get(oauth.google.api_base_url + '/userinfo', params=params)
     assert user['email_verified']
     try:
-        user_doc = get_doc(User, userid=user['email'])
+        user_doc = get_doc(User, user_id=user['email'])
         redirect_uri = frontend_url + "/logged-in-success"
         app_token_str = create_jwt_token(user_id=user['email'],
                                          app_name=FRONTEND_APP,
@@ -95,7 +95,7 @@ class AppTokenRouter(object):
                         ) -> IsSuccess:
         #user = await _get_id_token_user(request) TODO
         user_id = parse_jwt_token(token.credentials)['user_id']
-        user = get_doc(User, userid=user_id)
+        user = get_doc(User, user_id=user_id)
         token_doc = get_doc(AppToken, user=user, token=app_token)
         token_doc.delete()
         #TODO: Register deleted token in a db to check in runtime.
@@ -119,7 +119,7 @@ class AppTokensRouter(object):
                         ) -> TokenResponse:
         user_id = parse_jwt_token(token.credentials)['user_id']
         app_token_str = create_jwt_token(token_lifetime=token_lifetime, app_name=app_name)
-        user = get_doc(User, userid=user_id)
+        user = get_doc(User, user_id=user_id)
         app_token = AppToken(user=user,
                              token=app_token_str,
                              name=app_name,
@@ -139,7 +139,7 @@ class AppTokensRouter(object):
                          ) -> TokensResponse:
         #user = await _get_id_token_user(request) TODO
         user_id = parse_jwt_token(token.credentials)['user_id']
-        user = get_doc(User, userid=user_id)
+        user = get_doc(User, user_id=user_id)
 
         app_tokens = []
         for app_token in get_docs(AppToken, user=user):
@@ -174,7 +174,7 @@ async def post_register_user(request: Request,
     else:
         is_approved = False
     new_user = User(name=profile['name'],
-                    userid=oauth_user['email'],
+                    user_id=oauth_user['email'],
                     email=oauth_user['email'],
                     is_admin=is_admin,
                     is_approved=False,

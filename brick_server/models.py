@@ -42,7 +42,7 @@ async def get_all_relationships(sparql_db, entity_id):
 
 class User(DynamicDocument):
     name = StringField(required=True)
-    userid = StringField(required=True, unique=True)
+    user_id = StringField(required=True, unique=True)
     email = StringField(required=True)
     is_admin = BooleanField(default=False)
     is_approved = BooleanField(default=False)
