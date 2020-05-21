@@ -85,7 +85,14 @@ def create_jwt_token(user_id: str = 'admin',
     return jwt_token
 
 def parse_jwt_token(jwt_token):
-    payload = jwt.decode(jwt_token, _jwt_pub_key, algorithm='RS256')
+    try:
+        payload = jwt.decode(jwt_token, _jwt_pub_key, algorithm='RS256')
+    except jwt.exceptions.InvalidSignatureError as e:
+        raise NotAuthorizedError(detail='The token\'s signature is invalid.')
+    except jwt.exceptions.ExpiredSignatureError as e:
+        raise NotAuthorizedError(detail='The token has been expired')
+    except Exception as e:
+        raise HTTPException(status_code=400, detail='The token is invalid')
     return payload
 
 def check_admin(*args, **kwargs):

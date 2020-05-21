@@ -31,8 +31,8 @@ class UserNotApprovedError(BrickServerError, HTTPException):
         super(UserNotApprovedError, self).__init__(*args, **kwargs)
 
 class NotAuthorizedError(BrickServerError, HTTPException):
-    def __init__(self, *args, **kwargs):
-        super(NotAuthorizedError, self).__init__(status_code=401, *args, **kwargs)
+    def __init__(self, **kwargs):
+        super(NotAuthorizedError, self).__init__(status_code=401, **kwargs)
 
 class TokenSignatureInvalid(NotAuthorizedError):
     def __init__(self, *args, **kwargs):
