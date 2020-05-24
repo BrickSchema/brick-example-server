@@ -1,7 +1,7 @@
 from typing import Callable
 
 from .dbs import lock_manager, brick_sparql, ts_db, actuation_iface
-from .auth.authorization import check_admin, validate_token
+from .auth.authorization import validate_token
 
 
 class DependencySupplier(object):

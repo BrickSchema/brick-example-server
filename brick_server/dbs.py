@@ -16,7 +16,6 @@ import asyncpg
 
 from .configs import configs
 from .interfaces import DummyActuation, BrickTimeseries, AsyncpgTimeseries
-from .auth.authorization import check_admin
 
 
 lockmanager_configs = configs['lockmanager']

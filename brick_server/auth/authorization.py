@@ -95,14 +95,6 @@ def parse_jwt_token(jwt_token):
         raise HTTPException(status_code=400, detail='The token is invalid')
     return payload
 
-def check_admin(*args, **kwargs):
-    payload = parse_jwt_token(kwargs['token'].credentials)
-    user_id = payload['user_id']
-    if user_id != 'admin':
-        return False
-    else:
-        return True
-
 
 # A list of auth_logics
 
@@ -141,7 +133,8 @@ def authorized_admin(f):
         # Intentionally empty not to check anything as a dummy authorization
         payload = parse_jwt_token(kwargs['token'].credentials)
         user_id = payload['user_id']
-        if user_id != 'admin':
+        user = get_doc(User, user_id=user_id)
+        if not user.is_admin:
             raise HTTPException(status_code=401,
                                 detail='{user_id} does not have the right permission.',
                                 )
