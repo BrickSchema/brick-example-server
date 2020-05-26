@@ -15,7 +15,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from .common import DUMMY_USER, DUMMY_APP
 from ..configs import configs
-from ..exceptions import NotAuthorizedError, TokenSignatureInvalid, TokenSignatureExpired
+from ..exceptions import NotAuthorizedError, TokenSignatureInvalid, TokenSignatureExpired, UserNotApprovedError
 from ..models import User, get_doc
 
 FRONTEND_APP = 'brickserver_frontend'
@@ -179,8 +179,9 @@ def authenticated(f):
         # Intentionally empty not to check anything as a dummy authorization
         payload = parse_jwt_token(kwargs['token'].credentials)
         user = get_doc(User, user_id=payload['user_id'])
-        if not user.is_approved:
-            raise UserNotApprovedError(status_code=401, detail='The user account has not been approved by the admin yet.')
+        # TODO: Activate below.
+        #if not user.is_approved:
+        #    raise UserNotApprovedError(status_code=401, detail='The user account has not been approved by the admin yet.')
         return await f(*args, **kwargs)
     return decorated
 
