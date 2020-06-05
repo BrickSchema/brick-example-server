@@ -17,7 +17,7 @@ from .authorization import FRONTEND_APP, oauth, _get_id_token_user, authenticate
 from .authorization import _jwt_pub_key, create_jwt_token, parse_jwt_token
 from .models import TokensResponse, TokenResponse
 from ..dummy_frontend import loggedin_frontend
-from ..exceptions import DoesNotExistError
+from ..exceptions import DoesNotExistError, NotAuthorizedError
 from ..models import get_doc, get_docs, User, AppToken
 from ..services.models import jwt_security_scheme, IsSuccess
 
@@ -151,8 +151,11 @@ class AppTokensRouter(object):
                                                 exp=payload['exp'],
                                                 )
                                   )
-            except ExpiredSignatureError:
-                app_token.delete()
+            except NotAuthorizedError as e:
+                if e.detail == 'The token has been expired':
+                    app_token.delete()
+                else:
+                    raise e
         return app_tokens
 
 

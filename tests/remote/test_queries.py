@@ -22,7 +22,7 @@ select ?s where {
     headers = authorize_headers({
         'Content-Type': 'sparql-query'
     })
-    resp = requests.post(QUERY_BASE + '/sparql', data=qstr, headers=headers)
+    resp = requests_post(QUERY_BASE + '/sparql', data=qstr, headers=headers)
     assert resp.json()['results']['bindings']
 
 

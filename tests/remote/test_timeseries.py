@@ -17,7 +17,7 @@ def test_post_timeseries():
     assert resp.status_code == 200
 
 def test_get_timeseries():
-    url = DATA_BASE + '/timeseries/' + quote_plus(znt_id) + '?start_time={0}&?end_time={1}'.format(znt_t0 - 1, znt_t1 + 1)
+    url = DATA_BASE + '/timeseries/' + quote_plus(znt_id) + '?start_time={0}&end_time={1}'.format(znt_t0 - 1, znt_t1 + 1)
     headers = authorize_headers()
     resp = requests.get(url, headers=headers)
     assert resp.status_code == 200

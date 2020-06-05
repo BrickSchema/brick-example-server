@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, conlist
 from typing import List, Dict, Any
 from enum import Enum
+from copy import deepcopy
 
 from fastapi import Security
 
@@ -37,7 +38,10 @@ sql_desc = 'A raw SQL query for timeseries data. The table consist of the column
 sparql_desc = 'A raw SPARQL query.'
 actuation_value_desc = 'A value to set the target entity.'
 
-Relationship = List[str] ## [Predicate, Object] for the Subject
+#Relationship = List[str] ## [Predicate, Object] for the Subject
+TripleModel = conlist(str, min_items=3, max_items=3)
+TupleModel = conlist(str, min_items=2, max_items=2)
+Relationship = deepcopy(TupleModel)
 
 class Relationships(BaseModel):
     relationships: List[Relationship]
