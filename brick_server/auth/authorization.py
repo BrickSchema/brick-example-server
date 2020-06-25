@@ -48,6 +48,8 @@ if 'oauth_connections' in configs['auth']:
         access_type='offline',
         prompt='consent',
     )
+else:
+    oauth = None
 
 privkey_path = configs['auth']['jwt'].get('privkey_path', 'configs/jwtRS256.key')
 pubkey_path = configs['auth']['jwt'].get('pubkey_path', 'configs/jwtRS256.key.pub')
