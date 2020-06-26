@@ -5,10 +5,7 @@ RUN apt update && \
 
 ARG SRC="/usr/src/brick-server"
 
-RUN git clone https://gitlab.com/jbkoh/brick-server-minimal.git $SRC  && \
-    cd $SRC
-    #&& \
-    #git checkout --track origin/fastapi
+COPY ./ $SRC
 
 RUN rm -rf /app  && \
     mv $SRC /app
