@@ -14,6 +14,5 @@ def test_actuation():
     body = {
         'value': 60,
     }
-    bp()
     resp = requests.post(url, json=body, headers=headers)
     assert resp.status_code == 200
