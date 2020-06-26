@@ -28,9 +28,9 @@ services:
       #- /etc/letsencrypt/:/etc/letsencrypt/ # A typical location of the host machine's certificate files.
       - ./configs:/app/configs # You have to bind a directory having `configs.json` like this.
     environment:
-      - CERTFILE=/PATH/TO/YOUR/CERT_FILE
-      - KEYFILE=/PATH/TO/YOUR/KEY_FILE
-      #- ENABLE_SSL=true # Enable this if you want to enable SSL inside the container directly.
+      - CERTFILE=/PATH/TO/YOUR/CERT_FILE # This will be ignored if ENABLE_SSL=false
+      - KEYFILE=/PATH/TO/YOUR/KEY_FILE # This will be ignored if ENABLE_SSL=false
+      - ENABLE_SSL=true # Chante this to `false` if you do not want to use SSL inside the container directly.
       - LOG_LEVEL="debug"
     command: >
       /bin/bash -c "
