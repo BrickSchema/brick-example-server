@@ -34,6 +34,11 @@ services:
       - LOG_LEVEL="debug"
     command: >
       /bin/bash -c "
-        sleep 10;
+        sleep 4;
+        echo 'Waiting for others';
+        sleep 4;
+        echo 'Waiting for others';
+        sleep 4;
+        echo 'Waiting for others';
         /app/docker/start.sh
       "
