@@ -234,7 +234,7 @@ class EntitiesResource:
     @entity_router.get('/',
                        status_code=200,
                        response_model=EntityIds,
-                       description='List all entities with their types.',
+                       description='List all entities with their types and relations.',
                        tags=['Entities'],
                        )
     @authorized #TODO: Think about the auth logic for access those.
