@@ -37,6 +37,7 @@ columns_desc = 'Columns explain how to interpret the values in the data. `uuid` 
 sql_desc = 'A raw SQL query for timeseries data. The table consist of the columns as in `value_types`.'
 sparql_desc = 'A raw SPARQL query.'
 actuation_value_desc = 'A value to set the target entity.'
+relation_query_desc = 'A list of object URIs for the corresponding predicate. Brick Server will find entities having relations with all the objects with the predicate (i.e., AND operation.)'
 
 #Relationship = List[str] ## [Predicate, Object] for the Subject
 TripleModel = conlist(str, min_items=3, max_items=3)

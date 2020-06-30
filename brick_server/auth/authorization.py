@@ -27,7 +27,7 @@ O = 'O' # owning
 
 auth_scheme = HTTPBearer(bearerFormat='JWT')
 
-if 'oauth_connections' in configs['auth']:
+if configs['auth'].get('oauth_connections', None):
     google_config = configs['auth']['oauth_connections']['google']
     oauth = OAuth()
     oauth.register(

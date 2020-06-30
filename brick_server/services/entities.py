@@ -3,7 +3,7 @@ from copy import deepcopy
 from uuid import uuid4 as gen_uuid
 from io import StringIO
 import asyncio
-from typing import ByteString, Any, Dict, Callable
+from typing import ByteString, Any, Dict, Callable, List
 from collections import defaultdict
 
 import arrow
@@ -17,7 +17,7 @@ from starlette.requests import Request
 
 from .models import Entity, Relationships, EntityIds, Entities, IsSuccess
 from .models import EntitiesCreateResponse, CreateEntitiesRequest
-from .models import entity_id_desc, graph_desc, jwt_security_scheme, relationships_desc, entity_desc
+from .models import entity_id_desc, graph_desc, jwt_security_scheme, relationships_desc, entity_desc, relation_query_desc
 from .namespaces import URN, UUID
 from ..dbs import BrickSparqlAsync
 from ..helpers import striding_windows
@@ -201,6 +201,26 @@ class EntitiesByIdResource:
             self.brick_db.add_triple(URIRef(entity_id), prop, obj)
         return 'Success', 200
 
+def get_brick_relation_base(brick_version): #TODO: Implement this in brick-data.
+    version_parts = brick_version.split('.')
+    major = int(version_parts[0])
+    minor = int(version_parts[1])
+    if major >=1 and minor >=1:
+        return 'brick'
+    else:
+        return 'bf'
+
+def get_brick_topclass(brick_version): #TODO: Implement this in brick-data.
+    version_parts = brick_version.split('.')
+    major = int(version_parts[0])
+    minor = int(version_parts[1])
+    if major >=1 and minor >=1:
+        return 'brick:Class'
+    else:
+        return 'bf:TagSet'
+
+brick_predicates = ['hasPoint', 'isPointOf', 'hasPart', 'isPartOf', 'hasLocation', 'isLocationOf',
+                   'feeds', 'isFedBy']
 
 
 #TODO: In the auth model, this resource's target is a `graph`
@@ -220,13 +240,27 @@ class EntitiesResource:
     @authorized #TODO: Think about the auth logic for access those.
     async def get(self,
                   request: Request,
+                  hasPoint: List[str] = Query([], description=relation_query_desc),
+                  isPointOf: List[str] = Query([], description=relation_query_desc),
+                  hasPart: List[str] = Query([], description=relation_query_desc),
+                  isPartOf: List[str] = Query([], description=relation_query_desc),
+                  hasLocation: List[str] = Query([], description=relation_query_desc),
+                  isLocationOf: List[str] = Query([], description=relation_query_desc),
+                  feeds: List[str] = Query([], description=relation_query_desc),
+                  isFedBy: List[str] = Query([], description=relation_query_desc),
                   token: HTTPAuthorizationCredentials = jwt_security_scheme,
                   ) -> EntityIds:
-        qstr = """
-        select ?entity where {
-        ?entity a/rdfs:subClassOf* bf:TagSet.
-        }
+        topclass = get_brick_topclass(self.brick_db.BRICK_VERSION)
+        qstr = f"""
+        select ?entity where {{
+        ?entity a/rdfs:subClassOf* {topclass}.
         """ # TODO The query should be generalized to Class
+        for predicate in brick_predicates:
+            objects = locals()[predicate]
+            for object in objects:
+                qstr += f'?entity brick:{predicate} <{object}>.\n' #TODO: Parameterize property base between bf vs brick.
+        qstr += '}'
+        print(qstr)
         res = await self.brick_db.query(qstr)
         entity_ids = [row['entity']['value'] for row in res['results']['bindings']]
         return EntityIds(entity_ids=entity_ids)

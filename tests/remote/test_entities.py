@@ -55,3 +55,17 @@ def test_create_entities():
     assert resp.status_code == 200
     assert len(resp.json()[str(BRICK.Zone_Temperature_Sensor)]) == 2
 
+def test_get_all_entities():
+    headers = authorize_headers()
+    resp = requests.get(ENTITY_BASE, headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()['entity_ids']
+
+def test_get_entities_by_relation():
+    headers = authorize_headers()
+    params = {
+        'feeds': ['bldg:VAV102', 'bldg:VAV101'],
+    }
+    resp = requests.get(ENTITY_BASE, params=params, headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()

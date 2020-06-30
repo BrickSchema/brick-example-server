@@ -23,7 +23,7 @@ from ..services.models import jwt_security_scheme, IsSuccess
 
 auth_router = InferringRouter('auth')
 auth_base_url = configs['hostname'] + '/auth'
-frontend_url = configs['frontend']['hostname']
+frontend_url = configs['frontend'].get('hostname', 'DUMMY-NOT-WORK')
 
 @auth_router.get('/jwt_pubkey',
                  status_code=200,
