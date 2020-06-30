@@ -474,7 +474,7 @@
           "Entities"
         ],
         "summary": "Get",
-        "description": "List all entities with their types.",
+        "description": "List all entities with their types and relations.",
         "operationId": "get_brickapi_v1_entities__get",
         "parameters": [
           {
