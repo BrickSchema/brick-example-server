@@ -15,6 +15,14 @@ services:
   brickserver-mongo:
     container_name: brickserver-mongo
     image: "mongo:4.2.3-bionic"
+  brickserver-grafana:
+    container_name: brickserver-grafana
+    image: "grafana/grafana:7.0.5"
+    volumes:
+      - ${PWD}/configs/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/brickserver.yaml
+      - ${PWD}/configs/grafana/grafana.ini:/etc/grafana/grafana.ini
+    ports:
+      - 3000:3000
   brickserver:
     container_name: brickserver
     image: "jbkoh/brickserver:0.1"
