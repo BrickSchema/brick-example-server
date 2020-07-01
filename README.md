@@ -75,10 +75,16 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 - Each row is a timestamped value.
 - The `uuids` in the timeseries database are the same uuids in Brick.
 
+### Grafana
+- If you use `docker-compose.yaml.template` to run Brick Server, a Grafana will be automatically instantiated on your localhost as well. The default username/password is `bricker/brick-demo` as specified in `config/grafana/grafana.ini`.
+
 ## Authorization
 - Currently, we only support a very primitive authorization. A user can manually generate a JWT token with the privkey used in Brick Server, which can be used as a bearer token. The token will authorize the usage of any APIs until it expires.
     - You can get it through `tools/get_jwt_token $expiration_time_in_seconds`.
 - You can retrieve the public key at `/auth/jwt_pubkey`.
+
+## Create Self-Signed SSL Certificate
+- `tools/gen_selfsigned_certificate`
 
 
 # Tests
