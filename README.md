@@ -77,6 +77,7 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 
 ### Grafana
 - If you use `docker-compose.yaml.template` to run Brick Server, a Grafana will be automatically instantiated on your localhost as well. The default username/password is `bricker/brick-demo` as specified in `config/grafana/grafana.ini`.
+- You need to run `docker-compose up` once to instantiate a Grafana container. In the container instance, you need to get an API token (possibly without expiration) that BrickServer can use for maintenance. The generated API token should be added to `configs/configs.json` as in the example file.
 
 ## Authorization
 - Currently, we only support a very primitive authorization. A user can manually generate a JWT token with the privkey used in Brick Server, which can be used as a bearer token. The token will authorize the usage of any APIs until it expires.

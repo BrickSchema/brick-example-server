@@ -35,5 +35,9 @@
         },
         "oauth_connections": {}
     },
-    "frontend": {}
+    "frontend": {},
+    "grafana": {
+        "hostname": "http://brickserver-grafana:3000/api",
+        "apikey": "YOUR_APIE_TOKEN"
+    }
 }
