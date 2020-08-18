@@ -12,6 +12,7 @@ ENTITY_BASE = API_BASE + '/entities'
 QUERY_BASE = API_BASE + '/rawqueries'
 DATA_BASE = API_BASE + '/data'
 ACTUATION_BASE = API_BASE + '/actuation'
+GRAFANA_BASE = API_BASE + '/grafana'
 AUTH_BASE = HOSTNAME + '/auth'
 
 

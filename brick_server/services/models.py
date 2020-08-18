@@ -20,6 +20,7 @@ class ColumnType(str, Enum):
     timestamp = 'timestamp'
 
 
+
 value_types = [val.value for val in ValueType]
 
 entity_desc = "An entity can be defined in two ways. It's an instance of a (Brick) Class. More specifically, it is either a physical or a virtual thing whose properties are well-maintained to be a thing. Top three Brick Classes are Point (e.g., sensors, setpoints, etc.), Equipment (e.g., VAV, Luminaire, AHU, etc.), and Location (e.g., Room, Floor, etc.)"
@@ -94,3 +95,5 @@ EntitiesCreateResponse = Dict[BrickClass, List[str]]
 jwt_security_scheme = Security(auth_scheme)
 
 
+class GrafanaDashboardResponse(BaseModel):
+    url: str = Field(..., description='Grafana dashboard url for the user')

@@ -68,6 +68,12 @@ class OAuthAccessToken(Document): # TODO: Might not need this one.
     user = ReferenceField(User)
     token = StringField(required=True)
 
+class GrafanaDashboard(Document):
+    user = ReferenceField(User)
+    uid = StringField(required=True)
+    url = StringField(required=True)
+
+
 def get_doc(doc_type, **query):
     try:
         doc = doc_type.objects.get(**query)

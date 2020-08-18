@@ -1,6 +1,6 @@
 from typing import Callable
 
-from .dbs import lock_manager, brick_sparql, ts_db, actuation_iface
+from .dbs import lock_manager, brick_sparql, ts_db, actuation_iface, grafana_endpoint
 from .auth.authorization import validate_token
 
 
@@ -28,3 +28,6 @@ def get_ts_db():
 
 def get_actuation_iface():
     return actuation_iface
+
+def get_grafana():
+    return grafana_endpoint

@@ -36,7 +36,7 @@ class GrafanaDashboardResource:
     auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
     grafana: Callable = Depends(get_grafana)
 
-    @grafana_router.get('/test',
+    @grafana_router.get('/',
                         status_code=200,
                         #description='Get data of an entity with in a time range.',
                         response_model=GrafanaDashboardResponse,
@@ -52,7 +52,7 @@ class GrafanaDashboardResource:
         gd = get_doc(GrafanaDashboard, user=user)
         return GrafanaDashboardResponse(url=gd.url)
 
-    @grafana_router.post('/test',
+    @grafana_router.post('/',
                      status_code=201,
                      #description='Get data of an entity with in a time range.',
                      response_model=GrafanaDashboardResponse,

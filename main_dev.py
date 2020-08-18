@@ -12,6 +12,7 @@ from brick_server.dependencies import update_dependency_supplier
 frontend = configs['frontend'].get('hostname', configs['hostname'])
 
 origins = [frontend]
+print(origins)
 
 app.add_middleware(
         CORSMiddleware,

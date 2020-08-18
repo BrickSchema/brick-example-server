@@ -16,6 +16,7 @@ import asyncpg
 
 from .configs import configs
 from .interfaces import DummyActuation, BrickTimeseries, AsyncpgTimeseries
+from .interfaces.grafana import GrafanaEndpoint
 
 
 lockmanager_configs = configs['lockmanager']
@@ -54,3 +55,5 @@ try:
     asyncio.ensure_future(ts_db.init())
 except asyncpg.exceptions.DuplicateTableError:
     print('Timescale tabels have been already created.')
+
+grafana_endpoint = GrafanaEndpoint(configs['grafana']['hostname'], configs['grafana']['apikey'])

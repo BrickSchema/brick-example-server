@@ -4,7 +4,7 @@ datasources:
   - name: BrickData
     type: postgres
     url: brickserver-postgres:5432
-    database: brick_data
+    database: brick
     user: bricker
     secureJsonData:
       password: "brick-demo"
