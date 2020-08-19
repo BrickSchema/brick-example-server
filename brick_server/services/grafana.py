@@ -50,7 +50,10 @@ class GrafanaDashboardResource:
         user_id = payload['user_id']
         user = get_doc(User, user_id=user_id)
         gd = get_doc(GrafanaDashboard, user=user)
-        return GrafanaDashboardResponse(url=gd.url)
+        return GrafanaDashboardResponse(url=gd.url,
+                                        id=gd.id,
+                                        uid=gd.uid
+                                        )
 
     @grafana_router.post('/',
                      status_code=201,
@@ -83,6 +86,7 @@ class GrafanaDashboardResource:
             print(resp)
             gd = GrafanaDashboard(user=user,
                                   uid=resp['uid'],
+                                  id=resp['id'],
                                   url=resp['url']
                                   )
             gd.save()

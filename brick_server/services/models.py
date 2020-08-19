@@ -97,3 +97,5 @@ jwt_security_scheme = Security(auth_scheme)
 
 class GrafanaDashboardResponse(BaseModel):
     url: str = Field(..., description='Grafana dashboard url for the user')
+    uid: str = Field(..., description='Grafana dashboard uid for the user')
+    id: str = Field(..., description='Grafana dashboard id for the user')
