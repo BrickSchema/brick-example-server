@@ -51,7 +51,7 @@ class GrafanaDashboardResource:
         user = get_doc(User, user_id=user_id)
         gd = get_doc(GrafanaDashboard, user=user)
         return GrafanaDashboardResponse(url=gd.url,
-                                        id=gd.id,
+                                        grafana_id=gd.grafana_id,
                                         uid=gd.uid
                                         )
 
@@ -75,23 +75,21 @@ class GrafanaDashboardResource:
                 'title': user_id,
             }
         }
-        print(body)
         resp = await self.grafana.post('/dashboards/db', json=body)
-        print('------------------')
-        print(resp.text)
-        print(dir(resp))
-        print('------------------')
         if resp.status_code == 200:
             resp = resp.json()
-            print(resp)
             gd = GrafanaDashboard(user=user,
-                                  uid=resp['uid'],
-                                  id=resp['id'],
+                                  uid=str(resp['uid']),
+                                  grafana_id=str(resp['id']),
                                   url=resp['url']
                                   )
             gd.save()
 
-            return GrafanaDashboardResponse(url=gd.url)
+            return GrafanaDashboardResponse(
+                url=gd.url,
+                uid=gd.uid,
+                grafana_id=gd.grafana_id,
+            )
         else:
             if resp.json()['message'] == 'A dashboard with the same name in the folder already exists':
                 raise AlreadyExistsError('Grafana Dashboard', user_id)

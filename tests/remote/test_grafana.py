@@ -18,5 +18,5 @@ def test_get_dashboard():
     headers = authorize_headers()
     url = GRAFANA_BASE + '/'
     resp = requests.get(url, headers=headers)
-    assert resp.status_code in [201, 409]
+    assert resp.status_code == 200
 
