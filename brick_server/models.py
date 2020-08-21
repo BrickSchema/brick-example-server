@@ -71,7 +71,7 @@ class OAuthAccessToken(Document): # TODO: Might not need this one.
 class GrafanaDashboard(Document):
     user = ReferenceField(User)
     uid = StringField(required=True)
-    id = StringField(required=True)
+    grafana_id = StringField(required=True)
     url = StringField(required=True)
 
 
