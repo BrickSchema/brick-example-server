@@ -79,6 +79,7 @@ def get_doc(doc_type, **query):
     try:
         doc = doc_type.objects.get(**query)
     except doc_type.DoesNotExist:
+        print('WARNING: {0} does not exist for {1}'.format(doc_type, query))
         raise DoesNotExistError(doc_type, str(query))
     except doc_type.MultipleObjectsReturned:
         raise MultipleObjectsFoundError(doc_type, str(query))
