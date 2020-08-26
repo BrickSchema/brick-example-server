@@ -99,3 +99,6 @@ class GrafanaDashboardResponse(BaseModel):
     url: str = Field(..., description='Grafana dashboard url for the user')
     uid: str = Field(..., description='Grafana dashboard uid for the user')
     grafana_id: str = Field(..., description='Grafana dashboard id for the user')
+
+class GrafanaUpdateRequest(BaseModel):
+    grafana: Dict = Field(..., description='The complete Grafana Dashboard model as defined in `https://grafana.com/docs/grafana/latest/http_api/dashboard/`')
