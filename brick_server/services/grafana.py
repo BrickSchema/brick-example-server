@@ -95,7 +95,7 @@ class GrafanaDashboardResource:
         body['overwrite'] = True
 
         resp = await self.grafana.post('/dashboards/db', json=body)
-        if resp.status_code == 200:
+        if resp.status_code == 200 and resp.json()['status'] == 'success':
             return GrafanaDashboardResponse(
                 url=gd.url,
                 uid=gd.uid,
@@ -131,7 +131,7 @@ class GrafanaDashboardResource:
             print('===========================')
             print(grafana_model)
             print('===========================')
-            resp = await self.update_grafana_dashboard(user, grafana_model)
+            resp = await self.update_grafana_dashboard(user, grafana_model['dashboard'])
         else:
             resp = await self.create_grafana_dashboard(user)
         return resp
