@@ -84,17 +84,14 @@ class GrafanaDashboardResource:
             else:
                 raise HTTPException(detail='unknown error', status_code=500)
 
-    async def update_grafana_dashboard(self, user, grafana_model):
+    async def update_grafana_dashboard(self, user, grafana_request):
         gd = get_doc(GrafanaDashboard, user=user)
-        body = {
-            'dashboard': grafana_model
-        }
-        body['dashboard']['uid'] = gd.uid
-        body['dashboard']['id'] = gd.grafana_id
-        body['dashboard']['title'] = user.user_id
-        body['overwrite'] = True
+        grafana_request['dashboard']['uid'] = gd.uid
+        grafana_request['dashboard']['id'] = gd.grafana_id
+        grafana_request['dashboard']['title'] = user.user_id
+        grafana_request['overwrite'] = True
 
-        resp = await self.grafana.post('/dashboards/db', json=body)
+        resp = await self.grafana.post('/dashboards/db', json=grafana_request)
         if resp.status_code == 200 and resp.json()['status'] == 'success':
             return GrafanaDashboardResponse(
                 url=gd.url,
@@ -127,11 +124,11 @@ class GrafanaDashboardResource:
 
         body = await request.body()
         if body:
-            grafana_model = json.loads(body)
+            grafana_request = json.loads(body)
             print('===========================')
-            print(grafana_model)
+            print(grafana_request)
             print('===========================')
-            resp = await self.update_grafana_dashboard(user, grafana_model['dashboard'])
+            resp = await self.update_grafana_dashboard(user, grafana_request)
         else:
             resp = await self.create_grafana_dashboard(user)
         return resp
