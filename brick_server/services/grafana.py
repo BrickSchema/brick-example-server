@@ -32,6 +32,34 @@ from ..exceptions import AlreadyExistsError
 grafana_router = InferringRouter('grafana')
 
 
+
+@cbv(grafana_router)
+class GrafanaDashboardDetailsResource:
+    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
+    grafana: Callable = Depends(get_grafana)
+
+    @grafana_router.get('/details',
+                        status_code=200,
+                        description='Get dashbaord metadata for the `uid`.',
+                        tags=['Data'],
+                        )
+    @authenticated
+    async def get(self,
+                  token: HTTPAuthorizationCredentials = jwt_security_scheme,
+                  ):
+        payload = parse_jwt_token(token.credentials)
+        user_id = payload['user_id']
+        user = get_doc(User, user_id=user_id)
+        gd = get_doc(GrafanaDashboard, user=user)
+        uid = gd.uid
+
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+        resp = await self.grafana.get(f'/dashboards/uid/{uid}', headers=headers)
+        return resp.json()
+
 @cbv(grafana_router)
 class GrafanaDashboardResource:
     auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
