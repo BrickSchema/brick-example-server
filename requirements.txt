@@ -1,4 +1,4 @@
-aiohttp==3.6.2
+aiohttp==3.7.4
 aiosparql==0.11.0
 aniso8601==8.0.0
 apispec==3.3.0
