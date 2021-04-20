@@ -5,7 +5,7 @@ apispec==3.3.0
 apispec-webframeworks==0.5.2
 arrow==0.15.5
 async-timeout==3.0.1
-asyncpg==0.20.1
+asyncpg==0.21.0
 attrs==19.3.0
 Authlib==0.14.1
 backcall==0.1.0
