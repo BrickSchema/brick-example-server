@@ -3,7 +3,7 @@ from copy import deepcopy
 from rdflib import Namespace
 import pytest
 
-BRICK_VERSION = '1.0.3'
+BRICK_VERSION = '1.1'
 BRICK = Namespace(f'https://brickschema.org/schema/{BRICK_VERSION}/Brick#')
 
 HOSTNAME = os.environ['HOSTNAME']

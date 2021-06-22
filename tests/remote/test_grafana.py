@@ -29,7 +29,7 @@ def test_get_dashboard_detail():
 
 def test_update_dashboard():
     headers = authorize_headers()
-    grafana_model = json.load(open('tests/remote/grafana_body2.json'))
+    grafana_model = json.load(open('brick-server-minimal/tests/remote/grafana_body2.json'))
 
     url = GRAFANA_BASE + '/'
     resp = requests.post(url, headers=headers, json=grafana_model)
