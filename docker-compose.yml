@@ -3,12 +3,14 @@ services:
   playground-postgres:
     container_name: playground-postgres
     image: jbkoh/brickserver-postgresql:latest
-    environment: # Below secrets should be matched with the information in `configs.json` too.
+    environment: # Below secrets should be matched with the information in `.env` too.
       - POSTGRES_USER=bricker
       - POSTGRES_PASSWORD=brick-demo
       - POSTGRES_DB=brick
     networks:
       - playground-backend-network
+    ports:
+      - "5432:5432"
   playground-virtuoso:
     container_name: playground-virtuoso
     image: tenforce/virtuoso:virtuoso7.2.5
@@ -17,39 +19,40 @@ services:
     networks:
       - playground-backend-network
     ports:
-      - 8890:8890
+      - "8890:8890"
   playground-mongo:
     container_name: playground-mongo
     image: mongo:4.2.3-bionic
     networks:
       - playground-backend-network
+    ports:
+      - "27017:27017"
   playground-redis:
     container_name: playground-redis
     image: 'redis:5.0.8'
     command: redis-server --requirepass brick-demo
     networks:
       - playground-backend-network
-    #ports:
-    #  - '127.0.0.6379:6379'
-  playground:
-    container_name: playground
-    image: jbkoh/playground:0.1
-    volumes:
-      - .:/app
-      - /etc/letsencrypt/:/etc/letsencrypt/
-      - /var/run/docker.sock:/var/run/docker.sock
     ports:
-      - 10000:80
-    networks:
-      - playground-backend-network
-      - isolated_nw
-    environment:
-      - LOG_LEVEL=debug
-      - ENABLE_SSL=false
-    privileged: true
-    entrypoint: /app/docker/start-reload.sh
+      - "6379:6379"
+#  playground:
+#    container_name: playground
+#    image: jbkoh/playground:0.1
+#    volumes:
+#      - .:/app
+#      - /etc/letsencrypt/:/etc/letsencrypt/
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    ports:
+#      - 10000:80
+#    networks:
+#      - playground-backend-network
+#      - isolated_nw
+#    environment:
+#      - LOG_LEVEL=debug
+#      - ENABLE_SSL=false
+#    privileged: true
+#    entrypoint: /app/docker/start-reload.sh
 
 networks:
   playground-backend-network:
   isolated_nw:
-
