@@ -123,7 +123,7 @@ class EntitiesByIdResource:
     auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
 
 
-    @entity_router.get('/{entity_id}',
+    @entity_router.get('/{entity_id:path}',
                        status_code=200,
                        response_model=Entity,
                        description='Get information about an entity including type and its relationships with others. The definition of entity: {0}'.format(entity_desc),
