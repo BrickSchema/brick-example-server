@@ -84,7 +84,6 @@ six==1.14.0
 sniffio==1.1.0
 SPARQLWrapper==1.8.5
 SQLAlchemy==1.3.13
-starlette==0.12.9
 timeout-decorator==0.4.1
 traitlets==4.3.3
 typing-extensions==3.7.4.1
