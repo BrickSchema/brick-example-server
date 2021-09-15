@@ -29,7 +29,7 @@ from ..exceptions import AlreadyExistsError
 
 
 
-grafana_router = InferringRouter('grafana')
+grafana_router = InferringRouter(prefix='/grafana')
 
 
 

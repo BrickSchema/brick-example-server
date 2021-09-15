@@ -27,7 +27,7 @@ from ..models import get_all_relationships
 from ..configs import configs
 from ..dependencies import get_brick_db, dependency_supplier
 
-entity_router = InferringRouter('entities')
+entity_router = InferringRouter(prefix='/entities')
 
 
 async def get_entity_type(db, entity_id):

@@ -1,6 +1,6 @@
 from typing import Callable
 
-from brick_server.minimal.dbs import brick_sparql, ts_db, actuation_iface, grafana_endpoint
+from brick_server.minimal.dbs import brick_sparql, ts_db, actuation_iface, grafana_endpoint, lock_manager
 from brick_server.minimal.auth.authorization import validate_token
 
 
@@ -25,8 +25,8 @@ def get_brick_db():
     return brick_sparql
 
 
-# def get_lock_manager():
-#     return lock_manager
+def get_lock_manager():
+    return lock_manager
 
 
 def get_ts_db():

@@ -11,27 +11,30 @@ from fastapi import Depends, Header, HTTPException, Body, Query, Path, Form, API
 from fastapi.security import HTTPAuthorizationCredentials
 from starlette.responses import HTMLResponse, RedirectResponse, PlainTextResponse
 from starlette.requests import Request
+from fastapi_rest_framework.config import settings
 
-from ..configs import configs
+# from ..configs import configs
 from .authorization import FRONTEND_APP, oauth, _get_id_token_user, authenticated, authorized_frontend
-from .authorization import _jwt_pub_key, create_jwt_token, parse_jwt_token
+from .authorization import create_jwt_token, parse_jwt_token
 from .models import TokensResponse, TokenResponse
 from ..dummy_frontend import loggedin_frontend
 from ..exceptions import DoesNotExistError, NotAuthorizedError
 from ..models import get_doc, get_docs, User, AppToken
 from ..services.models import jwt_security_scheme, IsSuccess
 
-auth_router = InferringRouter('auth')
-auth_base_url = configs['hostname'] + '/auth'
-frontend_url = configs['frontend'].get('hostname', 'DUMMY-NOT-WORK')
+auth_router = InferringRouter(prefix='/auth')
+auth_base_url = settings.hostname + '/auth'
+frontend_url = settings.frontend
 
-@auth_router.get('/jwt_pubkey',
-                 status_code=200,
-                 description='Get the current JWT Public Key',
-                 tags=['Auth'],
-                 )
-def get_jwt_pubkey():
-    return PlainTextResponse(_jwt_pub_key, media_type='text/plain')
+
+# @auth_router.get('/jwt_pubkey',
+#                  status_code=200,
+#                  description='Get the current JWT Public Key',
+#                  tags=['Auth'],
+#                  )
+# def get_jwt_pubkey():
+#     return PlainTextResponse(_jwt_pub_key, media_type='text/plain')
+
 
 @auth_router.get('/login',
                  tags=['Auth'],

@@ -13,7 +13,7 @@ frontend_hostname = configs['frontend'].get('hostname', configs['hostname'])
 loggedin_frontend = frontend_hostname + '/loggedin_page'
 
 
-dummy_frontend_router = InferringRouter('dummy-frontend')
+dummy_frontend_router = InferringRouter(prefix='/dummy-frontend')
 
 @dummy_frontend_router.get('/loggedin_page') # TODO: This is supposed to be a main page for the user in the frontend.
 def get_dummy_register_user(request: Request,

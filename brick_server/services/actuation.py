@@ -24,7 +24,7 @@ from ..interfaces import BaseActuation, BaseTimeseries
 from ..configs import configs
 
 
-actuation_router = InferringRouter('actuation')
+actuation_router = InferringRouter(prefix='/actuation')
 
 
 @cbv(actuation_router)

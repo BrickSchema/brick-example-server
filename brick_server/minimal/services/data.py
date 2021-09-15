@@ -34,15 +34,15 @@ from .models import value_type_desc, timeseries_data_desc
 from ..helpers import striding_windows
 
 from ..auth.authorization import authorized, authorized_arg, O, R, W
-from ..auth.authorization import PermissionChecker
+from ..auth.authorization import PermissionCheckerWithEntityId
 
 from ..models import get_all_relationships
-from ..configs import configs
+# from ..configs import configs
 from ..dependencies import get_brick_db, get_ts_db, dependency_supplier
 from ..interfaces import BaseTimeseries
 
 
-data_router = InferringRouter("data")
+data_router = InferringRouter(prefix="/data")
 
 
 @cbv(data_router)

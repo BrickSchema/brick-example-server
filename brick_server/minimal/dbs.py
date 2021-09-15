@@ -19,7 +19,6 @@ from fastapi_rest_framework.config import settings
 from .interfaces import DummyActuation, BrickTimeseries, AsyncpgTimeseries
 from .interfaces.grafana import GrafanaEndpoint
 
-print(settings._settings)
 mongo_connection = mongo_connect(
     host=settings.mongo_host,
     port=settings.mongo_port,
@@ -30,13 +29,13 @@ mongo_connection = mongo_connect(
 )
 
 # lockmanager_configs = configs["lockmanager"]
-# lock_manager = LockManager(
-#     settings.lockmanager_host,
-#     settings.lockmanager_port,
-#     settings.lockmanager_dbname,
-#     settings.lockmanager_username,
-#     settings.lockmanager_password,
-# )
+lock_manager = LockManager(
+    settings.lockmanager_host,
+    settings.lockmanager_port,
+    settings.lockmanager_dbname,
+    settings.lockmanager_username,
+    settings.lockmanager_password,
+)
 
 actuation_iface = DummyActuation()
 
@@ -59,7 +58,6 @@ brick_sparql_sync = BrickSparql(
     base_ns=settings.brick_base_ns,
 )
 
-asyncio.ensure_future(brick_sparql.load_schema())
 
 # brick_ts_configs = configs["timeseries"]
 ts_db = AsyncpgTimeseries(

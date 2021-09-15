@@ -29,7 +29,7 @@ from ..dependencies import get_brick_db, get_ts_db, dependency_supplier
 from ..interfaces import BaseTimeseries
 
 
-query_router = InferringRouter('raw_queries')
+query_router = InferringRouter(prefix='/raw_queries')
 
 
 @cbv(query_router)

@@ -15,6 +15,9 @@ class BaseConfig(BaseModel):
     host: str = "localhost"
     port: int = 9000
 
+    hostname: str = "http://localhost:9000"
+    frontend: str = "DUMMY-NOT-WORK"
+
 
 @config.add
 class AuthConfig(BaseModel):
@@ -46,11 +49,11 @@ class DatabaseConfig(BaseModel):
     mongo_password: str = ""
     mongo_dbname: str = "brickserver"
 
-    # lockmanager_host: str = "localhost"
-    # lockmanager_port: int = 5432
-    # lockmanager_username: str = "bricker"
-    # lockmanager_password: str = "brick-demo"
-    # lockmanager_dbname: str = "brick"
+    lockmanager_host: str = "localhost"
+    lockmanager_port: int = 5432
+    lockmanager_username: str = "bricker"
+    lockmanager_password: str = "brick-demo"
+    lockmanager_dbname: str = "brick"
 
     timescale_host: str = "localhost"
     timescale_port: int = 5432
@@ -61,7 +64,7 @@ class DatabaseConfig(BaseModel):
     brick_host: str = "localhost"
     brick_port: int = 8890
     brick_api_endpoint: str = "sparql"
-    brick_version: str = "1.0.3"
+    brick_version: str = "1.1"
     brick_base_ns: str = "bldg:"
     brick_base_graph: str = "brick-base-graph"
 

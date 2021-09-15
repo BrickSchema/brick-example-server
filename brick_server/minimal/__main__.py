@@ -7,14 +7,14 @@ from brick_server.minimal.config import FastAPIConfig
 @cli.command()
 def main() -> None:
     settings = config.init_settings(FastAPIConfig)
-    print(settings)
-    print(FastAPIConfig.Config)
     uvicorn.run(
         "brick_server.minimal.app:app",
         host=settings.host,
         port=settings.port,
+        debug=settings.debug,
         reload=settings.debug,
-        reload_dirs=["brick_server"],
+        log_level="debug",
+        # reload_dirs=["brick_server"],
     )
 
 

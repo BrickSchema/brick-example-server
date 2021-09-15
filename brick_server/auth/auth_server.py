@@ -21,7 +21,7 @@ from ..exceptions import DoesNotExistError, NotAuthorizedError
 from ..models import get_doc, get_docs, User, AppToken
 from ..services.models import jwt_security_scheme, IsSuccess
 
-auth_router = InferringRouter('auth')
+auth_router = InferringRouter(prefix='/auth')
 auth_base_url = configs['hostname'] + '/auth'
 frontend_url = configs['frontend'].get('hostname', 'DUMMY-NOT-WORK')
 

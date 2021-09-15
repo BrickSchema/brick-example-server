@@ -25,7 +25,6 @@ from ..exceptions import (
     UserNotApprovedError,
 )
 from ..models import User, get_doc
-from ..dependencies import dependency_supplier
 
 FRONTEND_APP = "brickserver_frontend"
 
@@ -200,6 +199,8 @@ from fastapi import Path
 
 
 class PermissionCheckerWithEntityId:
+    from ..dependencies import dependency_supplier
+
     def __init__(self, permission_type: str):
         self.permission_type = permission_type
 

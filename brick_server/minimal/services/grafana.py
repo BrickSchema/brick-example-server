@@ -22,14 +22,14 @@ from ..helpers import striding_windows
 
 from ..auth.authorization import authorized, authorized_arg, O, R, W, parse_jwt_token, authenticated
 from ..models import get_all_relationships, get_doc, User, GrafanaDashboard
-from ..configs import configs
+# from ..configs import configs
 from ..dependencies import get_brick_db, get_ts_db, dependency_supplier, get_grafana
 from ..interfaces import BaseTimeseries
 from ..exceptions import AlreadyExistsError
 
 
 
-grafana_router = InferringRouter('grafana')
+grafana_router = InferringRouter(prefix='/grafana')
 
 
 
