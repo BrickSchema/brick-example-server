@@ -1,6 +1,6 @@
 from brick_data.timeseries import BrickTimeseries
 
-from .base_timeseries import BaseTimeseries
+from brick_server.minimal.interfaces.timeseries.base_timeseries import BaseTimeseries
 
 
 class BrickTimeseries(BrickTimeseries, BaseTimeseries):

@@ -1,47 +1,42 @@
-from pdb import set_trace as bp
-from copy import deepcopy
-from uuid import uuid4 as gen_uuid
-from io import StringIO
 import asyncio
-from typing import ByteString, Any, Dict, Callable, List
 from collections import defaultdict
+from copy import deepcopy
+from io import StringIO
+from typing import Callable, List
+from uuid import uuid4 as gen_uuid
 
-import arrow
 import rdflib
-from rdflib import RDF, URIRef
-from fastapi import Depends, Header, HTTPException, Body, Query, Path, APIRouter
+from fastapi import Body, Depends, Header, HTTPException, Path, Query
 from fastapi.security import HTTPAuthorizationCredentials
-from fastapi_utils.inferring_router import InferringRouter
-from fastapi_utils.cbv import cbv
-from starlette.requests import Request
 from fastapi_rest_framework.config import settings
+from fastapi_utils.cbv import cbv
+from fastapi_utils.inferring_router import InferringRouter
+from rdflib import RDF, URIRef
+from starlette.requests import Request
 
-from .models import Entity, Relationships, EntityIds, Entities, IsSuccess
-from .models import EntitiesCreateResponse, CreateEntitiesRequest
-from .models import (
-    entity_id_desc,
-    graph_desc,
-    jwt_security_scheme,
-    relationships_desc,
-    entity_desc,
-    relation_query_desc,
-)
-from .namespaces import URN, UUID
-from ..dbs import BrickSparqlAsync
-from ..helpers import striding_windows
-
-from ..auth.authorization import (
-    auth_scheme,
-    parse_jwt_token,
+from brick_server.minimal.auth.authorization import (
+    O,
+    R,
     authorized,
     authorized_arg,
-    R,
-    O,
+    parse_jwt_token,
 )
-from ..models import get_all_relationships
+from brick_server.minimal.dbs import BrickSparqlAsync
+from brick_server.minimal.dependencies import dependency_supplier, get_brick_db
+from brick_server.minimal.descriptions import Descriptions
+from brick_server.minimal.helpers import striding_windows
+from brick_server.minimal.models import get_all_relationships
+from brick_server.minimal.schemas import (
+    CreateEntitiesRequest,
+    EntitiesCreateResponse,
+    Entity,
+    EntityIds,
+    IsSuccess,
+    Relationships,
+    jwt_security_scheme,
+)
 
-# from ..configs import configs
-from ..dependencies import get_brick_db, dependency_supplier
+from .namespaces import UUID
 
 entity_router = InferringRouter(prefix="/entities")
 
@@ -108,7 +103,7 @@ class EntitiesByFileResource:
         ),
         graph: str = Query(
             settings.brick_base_graph,
-            description=graph_desc,
+            description=Descriptions.graph,
         ),
         content_type: str = Header("text/turtle"),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
@@ -142,7 +137,7 @@ class EntitiesByFileResource:
                     await self.brick_db.add_triples(new_triples)
         else:
             raise HTTPException(
-                status_code=405, detail="{0} is not supported".format(content_type)
+                status_code=405, detail="{} is not supported".format(content_type)
             )
         return IsSuccess()
 
@@ -157,8 +152,8 @@ class EntitiesByIdResource:
         "/{entity_id:path}",
         status_code=200,
         response_model=Entity,
-        description="Get information about an entity including type and its relationships with others. The definition of entity: {0}".format(
-            entity_desc
+        description="Get information about an entity including type and its relationships with others. The definition of entity: {}".format(
+            Descriptions.entity
         ),
         tags=["Entities"],
     )
@@ -166,13 +161,13 @@ class EntitiesByIdResource:
     async def get_entity_by_id(
         self,
         request: Request,
-        entity_id: str = Path(..., description=entity_id_desc),
+        entity_id: str = Path(..., description=Descriptions.entity_id),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
     ) -> Entity:
         entity_type = await get_entity_type(self.brick_db, entity_id)
         if not entity_type:
             raise HTTPException(
-                status_code=404, detail="{0} does not exist".format(entity_id)
+                status_code=404, detail="{} does not exist".format(entity_id)
             )
         relationships = await get_all_relationships(self.brick_db, entity_id)
         name = await get_name(self.brick_db, entity_id)
@@ -195,7 +190,7 @@ class EntitiesByIdResource:
     async def entity_delete(
         self,
         request: Request,
-        entity_id: str = Path(..., description=entity_id_desc),
+        entity_id: str = Path(..., description=Descriptions.entity_id),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
     ) -> IsSuccess:
         futures = []
@@ -237,8 +232,10 @@ class EntitiesByIdResource:
     async def update_entity(
         self,
         request: Request,
-        entity_id: str = Path(..., description=entity_id_desc),
-        relationships: Relationships = Body(..., description=relationships_desc),
+        entity_id: str = Path(..., description=Descriptions.entity_id),
+        relationships: Relationships = Body(
+            ..., description=Descriptions.relationships
+        ),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
     ):
         for [prop, obj] in relationships:
@@ -296,14 +293,14 @@ class EntitiesResource:
     async def get(
         self,
         request: Request,
-        hasPoint: List[str] = Query([], description=relation_query_desc),
-        isPointOf: List[str] = Query([], description=relation_query_desc),
-        hasPart: List[str] = Query([], description=relation_query_desc),
-        isPartOf: List[str] = Query([], description=relation_query_desc),
-        hasLocation: List[str] = Query([], description=relation_query_desc),
-        isLocationOf: List[str] = Query([], description=relation_query_desc),
-        feeds: List[str] = Query([], description=relation_query_desc),
-        isFedBy: List[str] = Query([], description=relation_query_desc),
+        hasPoint: List[str] = Query([], description=Descriptions.relation_query),
+        isPointOf: List[str] = Query([], description=Descriptions.relation_query),
+        hasPart: List[str] = Query([], description=Descriptions.relation_query),
+        isPartOf: List[str] = Query([], description=Descriptions.relation_query),
+        hasLocation: List[str] = Query([], description=Descriptions.relation_query),
+        isLocationOf: List[str] = Query([], description=Descriptions.relation_query),
+        feeds: List[str] = Query([], description=Descriptions.relation_query),
+        isFedBy: List[str] = Query([], description=Descriptions.relation_query),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
     ) -> EntityIds:
         topclass = get_brick_topclass(self.brick_db.BRICK_VERSION)
@@ -336,7 +333,7 @@ class EntitiesResource:
             ...,
             description="A dictionary to describe entities to create. Keys are Brick Classes and values are the number of instances to create for the Class",
         ),
-        graph: str = Query(settings.brick_base_graph, description=graph_desc),
+        graph: str = Query(settings.brick_base_graph, description=Descriptions.graph),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
     ) -> EntitiesCreateResponse:
         resp = defaultdict(list)

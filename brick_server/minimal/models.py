@@ -1,16 +1,14 @@
-from pdb import set_trace as bp
-import numbers
+from mongoengine import (
+    BooleanField,
+    DateTimeField,
+    Document,
+    DynamicDocument,
+    ListField,
+    ReferenceField,
+    StringField,
+)
 
-from mongoengine import Document, DynamicDocument
-from mongoengine import StringField, DateTimeField, ListField, DictField, BooleanField
-from mongoengine import ReferenceField, IntField
-from mongoengine import connect as mongo_connect
-from fastapi_rest_framework.config import settings
-
-# from .configs import configs
-from .exceptions import DoesNotExistError, MultipleObjectsFoundError
-from brick_server.minimal.dbs import mongo_connection
-
+from brick_server.minimal.exceptions import DoesNotExistError, MultipleObjectsFoundError
 
 # DEFAULT_TOKEN_LIFETIME = (
 #     24 * 60 * 60 * 100
@@ -87,7 +85,7 @@ def get_doc(doc_type, **query):
     try:
         doc = doc_type.objects.get(**query)
     except doc_type.DoesNotExist:
-        print("WARNING: {0} does not exist for {1}".format(doc_type, query))
+        print("WARNING: {} does not exist for {}".format(doc_type, query))
         raise DoesNotExistError(doc_type, str(query))
     except doc_type.MultipleObjectsReturned:
         raise MultipleObjectsFoundError(doc_type, str(query))

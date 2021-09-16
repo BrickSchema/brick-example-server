@@ -1,15 +1,7 @@
-import time
-
-import arrow
-from fastapi_utils.inferring_router import InferringRouter
-from fastapi import Depends, Header, HTTPException, Body, Query, Path
-from starlette.responses import HTMLResponse, RedirectResponse
-from starlette.requests import Request
 from fastapi_rest_framework.config import settings
-
-# from .configs import configs
-from .auth.authorization import create_user, oauth
-
+from fastapi_utils.inferring_router import InferringRouter
+from starlette.requests import Request
+from starlette.responses import HTMLResponse
 
 frontend_hostname = settings.frontend
 loggedin_frontend = frontend_hostname + "/loggedin_page"
@@ -28,7 +20,7 @@ def get_dummy_register_user(
     return f"Frontend App token: {app_token}"
 
 
-login_link_tag = '<a href="{0}/auth/login">login</a>'.format(settings.hostname)
+login_link_tag = '<a href="{}/auth/login">login</a>'.format(settings.hostname)
 
 
 @dummy_frontend_router.get("/main")
@@ -40,7 +32,7 @@ def login_main(
 
 
 @dummy_frontend_router.get("/register")
-def login_main(
+def login_main_register(
     request: Request,
     name: str,
     email: str,

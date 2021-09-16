@@ -327,7 +327,7 @@ sqlmodel = "^0.0.4"
 type = "git"
 url = "https://github.com/joint-online-judge/fastapi-rest-framework"
 reference = "master"
-resolved_reference = "180565be165aa2a2c29d195f82ca4ff41f4bf8aa"
+resolved_reference = "3ec3829e6bd9735e23d92a630ec1358ce3cf3c64"
 
 [[package]]
 name = "fastapi-utils"
@@ -1149,7 +1149,7 @@ test = ["pytest (>=2.2.3)", "flake8 (>=2.4.0)", "isort (>=4.2.2)"]
 
 [[package]]
 name = "virtualenv"
-version = "20.7.2"
+version = "20.8.0"
 description = "Virtual Python Environment builder"
 category = "dev"
 optional = false
@@ -2124,8 +2124,8 @@ validators = [
     {file = "validators-0.18.2.tar.gz", hash = "sha256:37cd9a9213278538ad09b5b9f9134266e7c226ab1fede1d500e29e0a8fbb9ea6"},
 ]
 virtualenv = [
-    {file = "virtualenv-20.7.2-py2.py3-none-any.whl", hash = "sha256:e4670891b3a03eb071748c569a87cceaefbf643c5bac46d996c5a45c34aa0f06"},
-    {file = "virtualenv-20.7.2.tar.gz", hash = "sha256:9ef4e8ee4710826e98ff3075c9a4739e2cb1040de6a2a8d35db0055840dc96a0"},
+    {file = "virtualenv-20.8.0-py2.py3-none-any.whl", hash = "sha256:a4b987ec31c3c9996cf1bc865332f967fe4a0512c41b39652d6224f696e69da5"},
+    {file = "virtualenv-20.8.0.tar.gz", hash = "sha256:4da4ac43888e97de9cf4fdd870f48ed864bbfd133d2c46cbdec941fed4a25aef"},
 ]
 websocket-client = [
     {file = "websocket-client-1.2.1.tar.gz", hash = "sha256:8dfb715d8a992f5712fff8c843adae94e22b22a99b2c5e6b0ec4a1a981cc4e0d"},

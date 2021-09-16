@@ -1,23 +1,15 @@
-import os
-from pdb import set_trace as bp
 import asyncio
-import pdb
-import json
 
-import redis
-from mongoengine import connect as mongo_connect
+import asyncpg
 
 # from brick_data.timeseries import BrickTimeseries
-from brick_data.sparql import BrickSparqlAsync, BrickSparql
-from brick_data.common import TS_DB, BRICK_DB
-from brick_data.queryprocessor.querysynthesizer import TimescaledbSynthesizer
-from brick_server.minimal.extensions.lockmanager import LockManager
-import asyncpg
+from brick_data.sparql import BrickSparql, BrickSparqlAsync
 from fastapi_rest_framework.config import settings
+from mongoengine import connect as mongo_connect
 
-# from .configs import configs
-from .interfaces import DummyActuation, BrickTimeseries, AsyncpgTimeseries
-from .interfaces.grafana import GrafanaEndpoint
+from brick_server.minimal.extensions.lockmanager import LockManager
+from brick_server.minimal.interfaces import AsyncpgTimeseries, DummyActuation
+from brick_server.minimal.interfaces.grafana import GrafanaEndpoint
 
 mongo_connection = mongo_connect(
     host=settings.mongo_host,
@@ -27,6 +19,7 @@ mongo_connection = mongo_connect(
     db=settings.mongo_dbname,
     connect=False,
 )
+
 
 # lockmanager_configs = configs["lockmanager"]
 lock_manager = LockManager(

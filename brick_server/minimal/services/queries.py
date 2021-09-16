@@ -1,43 +1,23 @@
-from pdb import set_trace as bp
-from typing import Callable
 import calendar
 from datetime import datetime
-from copy import deepcopy
-from uuid import uuid4 as gen_uuid
-from io import StringIO
-import asyncio
-from typing import ByteString, Any, Dict
+from typing import Callable
 
-import arrow
-import rdflib
-from rdflib import URIRef
+from fastapi import Body, Depends, Security
+from fastapi.security import HTTPAuthorizationCredentials
 from fastapi_utils.cbv import cbv
-from fastapi import (
-    Depends,
-    Header,
-    HTTPException,
-    Body,
-    APIRouter,
-    Query,
-    Path,
-    Security,
-)
 from fastapi_utils.inferring_router import InferringRouter
 from starlette.requests import Request
-from fastapi.security import HTTPAuthorizationCredentials
 
-from .models import TimeseriesData, SparqlResult
-from .models import sql_desc, sparql_desc
-from ..dbs import BrickSparqlAsync
-from ..helpers import striding_windows
-
-from ..auth.authorization import authorized, auth_scheme
-from ..models import get_all_relationships
-
-# from ..configs import configs
-from ..dependencies import get_brick_db, get_ts_db, dependency_supplier
-from ..interfaces import BaseTimeseries
-
+from brick_server.minimal.auth.authorization import auth_scheme, authorized
+from brick_server.minimal.dbs import BrickSparqlAsync
+from brick_server.minimal.dependencies import (
+    dependency_supplier,
+    get_brick_db,
+    get_ts_db,
+)
+from brick_server.minimal.descriptions import Descriptions
+from brick_server.minimal.interfaces import BaseTimeseries
+from brick_server.minimal.schemas import SparqlResult
 
 query_router = InferringRouter(prefix="/raw_queries")
 
@@ -60,7 +40,7 @@ class TimeseriesQuery:
         query: str = Body(
             ...,
             media_type="application/sql",
-            description=sql_desc,
+            description=Descriptions.sql,
         ),
         token: HTTPAuthorizationCredentials = Security(auth_scheme),
     ):
@@ -95,7 +75,7 @@ class SparqlQuery:
         self,
         # request: Request,
         query: str = Body(
-            ..., media_type="application/sparql-query", description="sparql_desc"
+            ..., media_type="application/sparql-query", description=Descriptions.sparql
         ),
         token: HTTPAuthorizationCredentials = Security(auth_scheme),
     ) -> SparqlResult:

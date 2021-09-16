@@ -1,7 +1,6 @@
-
 from brick_data.timeseries import AsyncpgTimeseries
 
-from .base_timeseries import BaseTimeseries
+from brick_server.minimal.interfaces.timeseries.base_timeseries import BaseTimeseries
 
 
 class AsyncpgTimeseries(AsyncpgTimeseries, BaseTimeseries):

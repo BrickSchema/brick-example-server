@@ -1,48 +1,29 @@
-import pdb
-from copy import deepcopy
-from uuid import uuid4 as gen_uuid
-from io import StringIO
 import asyncio
-from typing import ByteString, Any, Dict, Callable
+from typing import Any, Callable
 
-import arrow
-import rdflib
-from rdflib import URIRef
-from fastapi_utils.cbv import cbv
-from fastapi import Depends, Header, HTTPException, Body, APIRouter, Query, Path
-from fastapi_utils.inferring_router import InferringRouter
+from fastapi import Body, Depends, HTTPException, Path, Query
 from fastapi.security import HTTPAuthorizationCredentials
-from starlette.requests import Request
+from fastapi_utils.cbv import cbv
+from fastapi_utils.inferring_router import InferringRouter
 
-from ..auth.authorization import PermissionCheckerWithEntityId
-
-from .models import (
-    TimeseriesData,
-    ValueTypes,
-    ValueType,
+from brick_server.minimal.auth.authorization import (
+    PermissionCheckerWithEntityId,
+    R,
+    W,
+    authorized_arg,
+)
+from brick_server.minimal.dependencies import dependency_supplier, get_ts_db
+from brick_server.minimal.descriptions import Descriptions
+from brick_server.minimal.interfaces import BaseTimeseries
+from brick_server.minimal.schemas import (
     IsSuccess,
+    TimeseriesData,
+    ValueType,
+    ValueTypes,
     jwt_security_scheme,
 )
-from .models import (
-    entity_id_desc,
-    graph_desc,
-    relationships_desc,
-    start_time_desc,
-    end_time_desc,
-)
-from .models import value_type_desc, timeseries_data_desc
-from ..helpers import striding_windows
 
-from ..auth.authorization import authorized, authorized_arg, O, R, W
-from ..auth.authorization import PermissionCheckerWithEntityId
-
-from ..models import get_all_relationships
-# from ..configs import configs
-from ..dependencies import get_brick_db, get_ts_db, dependency_supplier
-from ..interfaces import BaseTimeseries
-
-
-data_router = InferringRouter(prefix="/data")
+data_router = InferringRouter(prefix="/data", tags=["Data"])
 
 
 @cbv(data_router)
@@ -55,20 +36,19 @@ class TimeseriesById:
         status_code=200,
         # description='Get data of an entity with in a time range.',
         response_model=TimeseriesData,
-        tags=["Data"],
     )
     @authorized_arg(R)
     async def get(
         self,
         entity_id: str = Path(
             ...,
-            description=entity_id_desc,
+            description=Descriptions.entity_id,
         ),
-        start_time: float = Query(default=None, description=start_time_desc),
-        end_time: float = Query(default=None, description=end_time_desc),
+        start_time: float = Query(default=None, description=Descriptions.start_time),
+        end_time: float = Query(default=None, description=Descriptions.end_time),
         value_types: ValueTypes = Query(
             default=[ValueType.number],
-            description=value_type_desc,
+            description=Descriptions.value_type,
         ),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
     ) -> TimeseriesData:
@@ -82,16 +62,15 @@ class TimeseriesById:
         status_code=200,
         description="Delete data of an entity with in a time range or all the data if a time range is not given.",
         response_model=IsSuccess,
-        tags=["Data"],
     )
     # @authorized_arg(W)
     async def delete(
         self,
-        entity_id: str = Path(..., description=entity_id_desc),
-        start_time: float = Query(default=None, description=start_time_desc),
-        end_time: float = Query(None, description=end_time_desc),
+        entity_id: str = Path(..., description=Descriptions.entity_id),
+        start_time: float = Query(default=None, description=Descriptions.start_time),
+        end_time: float = Query(None, description=Descriptions.end_time),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
-        checker: Any = Depends(PermissionCheckerWithEntityId("write"))
+        checker: Any = Depends(PermissionCheckerWithEntityId("write")),
     ) -> IsSuccess:
         # self.auth_logic(entity_id, "write")
         await self.ts_db.delete([entity_id], start_time, end_time)
@@ -102,7 +81,7 @@ def _get_entity_ids_ts_post(*args, **kwargs):
     rows = kwargs["data"].data
     columns = kwargs["data"].columns
     uuid_idx = columns.index("uuid")
-    uuids = set([row[uuid_idx] for row in rows])
+    uuids = {row[uuid_idx] for row in rows}
     return uuids
 
 
@@ -116,14 +95,13 @@ class Timeseries:
         status_code=200,
         description="Post data. If fields are not given, default values are assumed.",
         response_model=IsSuccess,
-        tags=["Data"],
     )
     @authorized_arg(W, _get_entity_ids_ts_post)
     async def post(
         self,
         data: TimeseriesData = Body(
             ...,
-            description=timeseries_data_desc,
+            description=Descriptions.timeseries_data,
         ),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
     ) -> IsSuccess:
@@ -137,7 +115,7 @@ class Timeseries:
         if unrecognized_fields:
             raise HTTPException(
                 status_code=400,
-                detail="There is an unrecognized field type: {0}".format(
+                detail="There is an unrecognized field type: {}".format(
                     unrecognized_fields
                 ),
             )

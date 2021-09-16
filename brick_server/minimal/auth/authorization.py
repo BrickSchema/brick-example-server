@@ -1,30 +1,20 @@
-from functools import wraps
-import arrow
 import time
-from pdb import set_trace as bp
-
-from pydantic import BaseModel, Field
+from functools import wraps
 from typing import Callable
-import jwt
 
-from authlib.integrations.starlette_client import OAuth
-from fastapi_utils.cbv import cbv
-from fastapi import Depends, Header, HTTPException, Body, Query
-from fastapi_utils.inferring_router import InferringRouter
-from starlette.requests import Request
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+import arrow
+import jwt
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPBearer
 from fastapi_rest_framework.config import settings
 
-from .common import DUMMY_USER, DUMMY_APP
+from brick_server.minimal.models import User, get_doc
 
-# from ..configs import configs
 from ..exceptions import (
     NotAuthorizedError,
-    TokenSignatureInvalid,
     TokenSignatureExpired,
-    UserNotApprovedError,
+    TokenSignatureInvalid,
 )
-from ..models import User, get_doc
 
 FRONTEND_APP = "brickserver_frontend"
 
@@ -35,30 +25,30 @@ O = "O"  # owning
 
 auth_scheme = HTTPBearer(bearerFormat="JWT")
 
-if False:
-    # if configs["auth"].get("oauth_connections", None):
-    google_config = configs["auth"]["oauth_connections"]["google"]
-    oauth = OAuth()
-    oauth.register(
-        name="google",
-        client_id=google_config["client_id"],
-        client_secret=google_config["client_secret"],
-        api_base_url=google_config["api_base_url"],
-        request_token_url=None,
-        request_token_params={
-            "scope": "email openid profile",
-            "access_type": "offline",
-            "prompt": "consent",
-        },
-        access_token_url=google_config["access_token_url"],
-        authorize_url=google_config["authorize_url"],
-        client_kwargs=google_config["client_kwargs"],
-        jwks_uri=google_config["jwks_uri"],
-        access_type="offline",
-        prompt="consent",
-    )
-else:
-    oauth = None
+# if False:
+#     # if configs["auth"].get("oauth_connections", None):
+#     google_config = configs["auth"]["oauth_connections"]["google"]
+#     oauth = OAuth()
+#     oauth.register(
+#         name="google",
+#         client_id=google_config["client_id"],
+#         client_secret=google_config["client_secret"],
+#         api_base_url=google_config["api_base_url"],
+#         request_token_url=None,
+#         request_token_params={
+#             "scope": "email openid profile",
+#             "access_type": "offline",
+#             "prompt": "consent",
+#         },
+#         access_token_url=google_config["access_token_url"],
+#         authorize_url=google_config["authorize_url"],
+#         client_kwargs=google_config["client_kwargs"],
+#         jwks_uri=google_config["jwks_uri"],
+#         access_type="offline",
+#         prompt="consent",
+#     )
+# else:
+oauth = None
 
 # privkey_path = configs["auth"]["jwt"].get("privkey_path", "configs/jwtRS256.key")
 # pubkey_path = configs["auth"]["jwt"].get("pubkey_path", "configs/jwtRS256.key.pub")
@@ -199,7 +189,7 @@ from fastapi import Path
 
 
 class PermissionCheckerWithEntityId:
-    from ..dependencies import dependency_supplier
+    from brick_server.minimal.dependencies import dependency_supplier
 
     def __init__(self, permission_type: str):
         self.permission_type = permission_type

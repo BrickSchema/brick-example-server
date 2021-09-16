@@ -1,6 +1,4 @@
-
-
-from .base_actuation import BaseActuation
+from brick_server.minimal.interfaces.actuation.base_actuation import BaseActuation
 
 
 class DummyActuation(BaseActuation):
