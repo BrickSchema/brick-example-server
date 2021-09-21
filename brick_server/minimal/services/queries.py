@@ -19,7 +19,7 @@ from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import BaseTimeseries
 from brick_server.minimal.schemas import SparqlResult
 
-query_router = InferringRouter(prefix="/raw_queries")
+query_router = InferringRouter(prefix="/raw_queries", tags=["Raw Queries"])
 
 
 @cbv(query_router)
@@ -31,7 +31,6 @@ class TimeseriesQuery:
         "/timeseries",
         description="Raw PostgreSQL query for timeseries. (May not be exposed in the production deployment.)",
         # response_model = TimeseriesData,
-        tags=["Raw Queries"],
     )
     @authorized
     async def post(
@@ -68,7 +67,6 @@ class SparqlQuery:
     @query_router.post(
         "/sparql",
         description="Raw SPARQL for Brick metadata. (May not be exposed in the production deployment.",
-        tags=["Raw Queries"],
     )
     @authorized
     async def post(

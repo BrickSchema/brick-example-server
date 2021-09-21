@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from typing import Type, Union
 
 from fastapi_rest_framework import config
 
 
 @config.add
-class BaseConfig(BaseModel):
+class BaseConfig(config.Base):
     """
     Server configuration
 
@@ -20,7 +20,7 @@ class BaseConfig(BaseModel):
 
 
 @config.add
-class AuthConfig(BaseModel):
+class AuthConfig(config.Base):
     """
     Auth configuration
 
@@ -36,7 +36,7 @@ class AuthConfig(BaseModel):
 
 
 @config.add
-class DatabaseConfig(BaseModel):
+class DatabaseConfig(config.Base):
     """
     Database configuration
 
@@ -74,6 +74,6 @@ class DatabaseConfig(BaseModel):
     grafana_api_key: str = "YOUR_API_TOKEN"
 
 
-FastAPIConfig = config.generate_config_class(
-    mixins=[config.EnvFileMixin, config.CLIMixin]
-)
+FastAPIConfig: Type[
+    Union[BaseConfig, AuthConfig, DatabaseConfig]
+] = config.generate_config_class(mixins=[config.EnvFileMixin, config.CLIMixin])

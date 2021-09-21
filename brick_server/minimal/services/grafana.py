@@ -15,7 +15,7 @@ from brick_server.minimal.schemas import GrafanaDashboardResponse, jwt_security_
 
 from ..exceptions import AlreadyExistsError
 
-grafana_router = InferringRouter(prefix="/grafana")
+grafana_router = InferringRouter(prefix="/grafana", tags=["Data"])
 
 
 @cbv(grafana_router)
@@ -27,7 +27,6 @@ class GrafanaDashboardDetailsResource:
         "/details",
         status_code=200,
         description="Get dashbaord metadata for the `uid`.",
-        tags=["Data"],
     )
     @authenticated
     async def get(
@@ -55,7 +54,6 @@ class GrafanaDashboardResource:
         status_code=200,
         # description='Get data of an entity with in a time range.',
         response_model=GrafanaDashboardResponse,
-        tags=["Data"],
     )
     @authenticated
     async def get(
@@ -128,7 +126,6 @@ class GrafanaDashboardResource:
         status_code=200,
         description="Create or update the Grafana Dashboard. If JSON body is not given, it creates a Dashboard and assign it to the user. If JSON body is given, the body should be same as Grafana's dashboard model as defined at `https://grafana.com/docs/grafana/latest/http_api/dashboard/` except that uid, id, and title should be empty.",
         response_model=GrafanaDashboardResponse,
-        tags=["Data"],
     )
     @authenticated
     async def post(

@@ -25,6 +25,7 @@ from brick_server.minimal.dbs import BrickSparqlAsync
 from brick_server.minimal.dependencies import dependency_supplier, get_brick_db
 from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.helpers import striding_windows
+from brick_server.minimal.interfaces.namespaces import UUID
 from brick_server.minimal.models import get_all_relationships
 from brick_server.minimal.schemas import (
     CreateEntitiesRequest,
@@ -36,9 +37,7 @@ from brick_server.minimal.schemas import (
     jwt_security_scheme,
 )
 
-from .namespaces import UUID
-
-entity_router = InferringRouter(prefix="/entities")
+entity_router = InferringRouter(prefix="/entities", tags=["Entities"])
 
 
 async def get_entity_type(db, entity_id):
@@ -88,7 +87,6 @@ class EntitiesByFileResource:
         response_model=IsSuccess,
         description="Upload a Turtle file. An example file: https://gitlab.com/jbkoh/brick-server-dev/blob/dev/examples/data/bldg.ttl",
         summary="Uplaod a Turtle file",
-        tags=["Entities"],
     )
     @authorized
     async def upload(
@@ -155,7 +153,6 @@ class EntitiesByIdResource:
         description="Get information about an entity including type and its relationships with others. The definition of entity: {}".format(
             Descriptions.entity
         ),
-        tags=["Entities"],
     )
     @authorized_arg(R)
     async def get_entity_by_id(
@@ -184,7 +181,6 @@ class EntitiesByIdResource:
         status_code=200,
         response_model=IsSuccess,
         description="Delete an entity along with its relationships and data",
-        tags=["Entities"],
     )
     @authorized_arg(O)
     async def entity_delete(
@@ -226,7 +222,6 @@ class EntitiesByIdResource:
         status_code=200,
         response_model=IsSuccess,
         description="Add relationships of an entity",
-        tags=["Entities"],
     )
     @authorized_arg(O)
     async def update_entity(
@@ -287,7 +282,6 @@ class EntitiesResource:
         status_code=200,
         response_model=EntityIds,
         description="List all entities with their types and relations.",
-        tags=["Entities"],
     )
     @authorized  # TODO: Think about the auth logic for access those.
     async def get(
@@ -323,7 +317,6 @@ class EntitiesResource:
         status_code=200,
         response_model=EntitiesCreateResponse,
         description="Add entities with their triples.",
-        tags=["Entities"],
     )
     @authorized
     async def post(
