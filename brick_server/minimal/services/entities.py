@@ -19,6 +19,7 @@ from brick_server.minimal.auth.authorization import (
     R,
     authorized,
     authorized_arg,
+    jwt_security_scheme,
     parse_jwt_token,
 )
 from brick_server.minimal.dbs import BrickSparqlAsync
@@ -34,7 +35,6 @@ from brick_server.minimal.schemas import (
     EntityIds,
     IsSuccess,
     Relationships,
-    jwt_security_scheme,
 )
 
 entity_router = InferringRouter(prefix="/entities", tags=["Entities"])
@@ -79,7 +79,7 @@ async def get_name(db, entity_id):
 class EntitiesByFileResource:
 
     brick_db: BrickSparqlAsync = Depends(get_brick_db)
-    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
+    auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @entity_router.post(
         "/upload",
@@ -144,7 +144,7 @@ class EntitiesByFileResource:
 class EntitiesByIdResource:
 
     brick_db: BrickSparqlAsync = Depends(get_brick_db)
-    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
+    auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @entity_router.get(
         "/{entity_id:path}",
@@ -275,7 +275,7 @@ brick_predicates = [
 class EntitiesResource:
 
     brick_db: BrickSparqlAsync = Depends(get_brick_db)
-    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
+    auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @entity_router.get(
         "/",

@@ -2,10 +2,8 @@ from copy import deepcopy
 from enum import Enum
 from typing import Any, Dict, List
 
-from fastapi import Security
 from pydantic import BaseModel, Field, conlist
 
-from brick_server.minimal.auth.authorization import auth_scheme
 from brick_server.minimal.descriptions import Descriptions
 
 
@@ -89,8 +87,6 @@ CreateEntitiesRequest = Dict[
 ]
 
 EntitiesCreateResponse = Dict[BrickClass, List[str]]
-
-jwt_security_scheme = Security(auth_scheme)
 
 
 class GrafanaDashboardResponse(BaseModel):

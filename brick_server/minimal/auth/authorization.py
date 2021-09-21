@@ -1,13 +1,16 @@
+import abc
 import time
+from enum import Enum
 from functools import wraps
-from typing import Callable
+from typing import Callable, Set
 
 import arrow
 import jwt
-from fastapi import Depends, HTTPException
-from fastapi.security import HTTPBearer
+from fastapi import Body, Depends, HTTPException, Security
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi_rest_framework.config import settings
 
+from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.models import User, get_doc
 
 from ..exceptions import (
@@ -24,6 +27,12 @@ R = "R"  # readable
 O = "O"  # owning
 
 auth_scheme = HTTPBearer(bearerFormat="JWT")
+
+
+class PermissionType(str, Enum):
+    read = "read"
+    write = "write"
+
 
 # if False:
 #     # if configs["auth"].get("oauth_connections", None):
@@ -113,13 +122,24 @@ def parse_jwt_token(jwt_token):
 #         "Not Implemented and this is not meant to be used but just for reference."
 #     )
 
+jwt_security_scheme = Security(auth_scheme)
 
-def validate_token(action_type, target_ids, *args, **kwargs):
+
+def validate_token(token: "jwt_security_scheme"):
     try:
-        payload = parse_jwt_token(kwargs["token"].credentials)
+        payload = parse_jwt_token(token.credentials)
     except jwt.exceptions.InvalidSignatureError as e:
         raise NotAuthorizedError(detail="Given JWT token is not valid")
     return True
+
+
+def default_auth_logic(
+    token: HTTPAuthorizationCredentials = jwt_security_scheme,
+) -> Callable[[Set[str], PermissionType], bool]:
+    def _auth_logic(entity_ids: Set[str], permission: PermissionType):
+        return validate_token(token)
+
+    return _auth_logic
 
 
 def authorized_frontend(f):
@@ -188,18 +208,47 @@ def authorized_arg(permission_type, get_target_ids=default_get_target_ids):
 from fastapi import Path
 
 
-class PermissionCheckerWithEntityId:
-    from brick_server.minimal.dependencies import dependency_supplier
-
-    def __init__(self, permission_type: str):
+class PermissionCheckerBase(abc.ABC):
+    def __init__(self, permission_type: PermissionType):
         self.permission_type = permission_type
+
+
+class PermissionCheckerWithEntityId(PermissionCheckerBase):
+    from brick_server.minimal.dependencies import dependency_supplier
 
     def __call__(
         self,
-        auth_logic: Callable = Depends(dependency_supplier.get_auth_logic),
+        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        auth_logic: Callable[[Set[str], PermissionType], bool] = Depends(
+            dependency_supplier.auth_logic
+        ),
         entity_id: str = Path(..., description=""),
     ):
-        auth_logic(entity_id, self.permission_type)
+        auth_logic({entity_id}, self.permission_type)
+
+
+class PermissionCheckerWithData(PermissionCheckerBase):
+    from brick_server.minimal.dependencies import dependency_supplier
+    from brick_server.minimal.schemas import TimeseriesData
+
+    @staticmethod
+    def get_entity_ids(data: TimeseriesData) -> Set[str]:
+        rows = data.data
+        columns = data.columns
+        uuid_idx = columns.index("uuid")
+        uuids = {row[uuid_idx] for row in rows}
+        return uuids
+
+    def __call__(
+        self,
+        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        auth_logic: Callable[[Set[str], PermissionType], bool] = Depends(
+            dependency_supplier.auth_logic
+        ),
+        data: TimeseriesData = Body(..., description=Descriptions.timeseries_data),
+    ):
+        entity_ids = self.get_entity_ids(data)
+        auth_logic(entity_ids, self.permission_type)
 
 
 def authorized(f):

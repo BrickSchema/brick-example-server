@@ -25,7 +25,7 @@ query_router = InferringRouter(prefix="/raw_queries", tags=["Raw Queries"])
 @cbv(query_router)
 class TimeseriesQuery:
     ts_db: BaseTimeseries = Depends(get_ts_db)
-    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
+    auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @query_router.post(
         "/timeseries",
@@ -62,7 +62,7 @@ def format_raw_query(res):
 @cbv(query_router)
 class SparqlQuery:
     brick_db: BrickSparqlAsync = Depends(get_brick_db)
-    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
+    auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @query_router.post(
         "/sparql",

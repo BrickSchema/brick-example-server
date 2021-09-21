@@ -8,7 +8,7 @@ from fastapi_rest_framework.config import settings
 from mongoengine import connect as mongo_connect
 
 from brick_server.minimal.extensions.lockmanager import LockManager
-from brick_server.minimal.interfaces import AsyncpgTimeseries, DummyActuation
+from brick_server.minimal.interfaces import AsyncpgTimeseries, RealActuation
 from brick_server.minimal.interfaces.grafana import GrafanaEndpoint
 
 mongo_connection = mongo_connect(
@@ -30,7 +30,7 @@ lock_manager = LockManager(
     settings.lockmanager_password,
 )
 
-actuation_iface = DummyActuation()
+actuation_iface = RealActuation()
 
 # brick_configs = configs["brick"]
 brick_url = (

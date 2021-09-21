@@ -8,10 +8,14 @@ from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from starlette.requests import Request
 
-from brick_server.minimal.auth.authorization import authenticated, parse_jwt_token
+from brick_server.minimal.auth.authorization import (
+    authenticated,
+    jwt_security_scheme,
+    parse_jwt_token,
+)
 from brick_server.minimal.dependencies import dependency_supplier, get_grafana
 from brick_server.minimal.models import GrafanaDashboard, User, get_doc
-from brick_server.minimal.schemas import GrafanaDashboardResponse, jwt_security_scheme
+from brick_server.minimal.schemas import GrafanaDashboardResponse
 
 from ..exceptions import AlreadyExistsError
 
@@ -20,7 +24,7 @@ grafana_router = InferringRouter(prefix="/grafana", tags=["Data"])
 
 @cbv(grafana_router)
 class GrafanaDashboardDetailsResource:
-    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
+    auth_logic: Callable = Depends(dependency_supplier.auth_logic)
     grafana: Callable = Depends(get_grafana)
 
     @grafana_router.get(
@@ -46,7 +50,7 @@ class GrafanaDashboardDetailsResource:
 
 @cbv(grafana_router)
 class GrafanaDashboardResource:
-    auth_logic: Callable = Depends(dependency_supplier.get_auth_logic)
+    auth_logic: Callable = Depends(dependency_supplier.auth_logic)
     grafana: Callable = Depends(get_grafana)
 
     @grafana_router.get(

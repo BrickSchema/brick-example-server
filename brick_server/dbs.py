@@ -5,10 +5,10 @@ import asyncpg
 # from brick_data.timeseries import BrickTimeseries
 from brick_data.sparql import BrickSparql, BrickSparqlAsync
 
-from brick_server.minimal.extensions.lockmanager import LockManager
+from brick_server.extensions.lockmanager import LockManager
 
 from .configs import configs
-from .interfaces import AsyncpgTimeseries, DummyActuation
+from .interfaces import AsyncpgTimeseries, RealActuation
 from .interfaces.grafana import GrafanaEndpoint
 
 lockmanager_configs = configs["lockmanager"]
@@ -20,7 +20,7 @@ lock_manager = LockManager(
     lockmanager_configs["password"],
 )
 
-actuation_iface = DummyActuation()
+actuation_iface = RealActuation()
 
 brick_configs = configs["brick"]
 brick_sparql = BrickSparqlAsync(

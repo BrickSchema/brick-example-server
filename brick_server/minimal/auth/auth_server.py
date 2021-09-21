@@ -11,22 +11,17 @@ from fastapi_utils.inferring_router import InferringRouter
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from brick_server.minimal.models import AppToken, User, get_doc, get_docs
-from brick_server.minimal.schemas import (
-    IsSuccess,
-    TokenResponse,
-    TokensResponse,
-    jwt_security_scheme,
-)
-
-from ..exceptions import DoesNotExistError, NotAuthorizedError
-from .authorization import (
+from brick_server.minimal.auth.authorization import (
     FRONTEND_APP,
     authorized_frontend,
     create_jwt_token,
+    jwt_security_scheme,
     oauth,
     parse_jwt_token,
 )
+from brick_server.minimal.exceptions import DoesNotExistError, NotAuthorizedError
+from brick_server.minimal.models import AppToken, User, get_doc, get_docs
+from brick_server.minimal.schemas import IsSuccess, TokenResponse, TokensResponse
 
 auth_router = InferringRouter(prefix="/auth")
 auth_base_url = settings.hostname + "/auth"
