@@ -20,7 +20,7 @@ from brick_server.minimal.schemas import (
     ValueTypes,
 )
 
-data_router = InferringRouter(prefix="/data", tags=["Data"])
+data_router = InferringRouter(tags=["Data"])
 
 
 @cbv(data_router)

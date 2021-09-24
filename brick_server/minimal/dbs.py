@@ -1,7 +1,3 @@
-import asyncio
-
-import asyncpg
-
 # from brick_data.timeseries import BrickTimeseries
 from brick_data.sparql import BrickSparql, BrickSparqlAsync
 from fastapi_rest_framework.config import settings
@@ -60,10 +56,7 @@ ts_db = AsyncpgTimeseries(
     settings.timescale_host,
     settings.timescale_port,
 )
-try:
-    asyncio.ensure_future(ts_db.init())
-except asyncpg.exceptions.DuplicateTableError:
-    print("Timescale tabels have been already created.")
+
 
 grafana_url = f"http://{settings.grafana_host}:{settings.grafana_port}/{settings.grafana_api_endpoint}"
 grafana_endpoint = GrafanaEndpoint(grafana_url, settings.grafana_api_key)

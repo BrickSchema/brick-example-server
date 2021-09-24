@@ -6,7 +6,7 @@ from typing import Callable, Set
 
 import arrow
 import jwt
-from fastapi import Body, Depends, HTTPException, Security
+from fastapi import Body, Depends, HTTPException, Path, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi_rest_framework.config import settings
 
@@ -103,7 +103,7 @@ def create_jwt_token(
 def parse_jwt_token(jwt_token):
     try:
         payload = jwt.decode(
-            jwt_token, settings.jwt_secret, algorithm=settings.jwt_algorithm
+            jwt_token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
         )
     except jwt.exceptions.InvalidSignatureError as e:
         raise NotAuthorizedError(detail="The token's signature is invalid.")
@@ -203,9 +203,6 @@ def authorized_arg(permission_type, get_target_ids=default_get_target_ids):
         return decorated
 
     return auth_wrapper
-
-
-from fastapi import Path
 
 
 class PermissionCheckerBase(abc.ABC):
