@@ -10,7 +10,7 @@ services:
     networks:
       - playground-backend-network
     ports:
-      - "5432:5432"
+      - "35432:5432"
   playground-virtuoso:
     container_name: playground-virtuoso
     image: tenforce/virtuoso:virtuoso7.2.5
@@ -19,14 +19,14 @@ services:
     networks:
       - playground-backend-network
     ports:
-      - "8890:8890"
+      - "38890:8890"
   playground-mongo:
     container_name: playground-mongo
     image: mongo:4.2.3-bionic
     networks:
       - playground-backend-network
     ports:
-      - "27017:27017"
+      - "37017:27017"
   playground-redis:
     container_name: playground-redis
     image: 'redis:5.0.8'
@@ -34,23 +34,27 @@ services:
     networks:
       - playground-backend-network
     ports:
-      - "6379:6379"
-#  playground:
-#    container_name: playground
-#    image: jbkoh/playground:0.1
-#    volumes:
-#      - .:/app
-#      - /etc/letsencrypt/:/etc/letsencrypt/
-#      - /var/run/docker.sock:/var/run/docker.sock
-#    ports:
-#      - 10000:80
-#    networks:
-#      - playground-backend-network
-#      - isolated_nw
-#    environment:
-#      - LOG_LEVEL=debug
-#      - ENABLE_SSL=false
-#    privileged: true
+      - "36379:6379"
+  playground:
+    container_name: playground
+    image: brick_server
+    volumes:
+      - ./brick_server:/root/brick_server
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9000:9000"
+    networks:
+      - playground-backend-network
+      - isolated_nw
+    environment:
+      - DEBUG=true
+      - HOST=playground
+      - MONGO_HOST=playground-mongo
+      - LOCKMANAGER_HOST=playground-postgres
+      - TIMESCALE_HOST=playground-postgres
+      - BRICK_HOST=playground-virtuoso
+#      - GRAFANA_HOST=playground-grafana
+    privileged: true
 #    entrypoint: /app/docker/start-reload.sh
 
 networks:
