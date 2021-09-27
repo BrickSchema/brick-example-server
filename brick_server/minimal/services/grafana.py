@@ -19,7 +19,7 @@ from brick_server.minimal.schemas import GrafanaDashboardResponse
 
 from ..exceptions import AlreadyExistsError
 
-grafana_router = InferringRouter(prefix="/grafana", tags=["Data"])
+grafana_router = InferringRouter(tags=["Data"])
 
 
 @cbv(grafana_router)

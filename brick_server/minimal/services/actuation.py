@@ -11,19 +11,16 @@ from brick_server.minimal.auth.authorization import authorized, jwt_security_sch
 from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_actuation_iface,
-    get_lock_manager,
     get_ts_db,
 )
-from brick_server.minimal.extensions.lockmanager import LockManager
 from brick_server.minimal.interfaces import BaseTimeseries, RealActuation
 from brick_server.minimal.schemas import ActuationRequest, IsSuccess
 
-actuation_router = InferringRouter(prefix="/actuation")
+actuation_router = InferringRouter(tags=["Actuation"])
 
 
 @cbv(actuation_router)
 class ActuationEntity:
-    lock_manager: LockManager = Depends(get_lock_manager)
     actuation_iface: RealActuation = Depends(get_actuation_iface)
     ts_db: BaseTimeseries = Depends(get_ts_db)
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
@@ -33,7 +30,6 @@ class ActuationEntity:
         description="Actuate an entity to a value",
         response_model=IsSuccess,
         status_code=200,
-        tags=["Actuation"],
     )
     @authorized
     async def post(
@@ -48,15 +44,6 @@ class ActuationEntity:
         #    raise exceptions.NotImplemented('Currently only immediate actuation is supported.')
 
         actuation_value = actuation_request.value
-        # with self.lock_manager.advisory_lock(entity_id) as lock_acquired:
-        #     assert lock_acquired, exceptions.BadRequest(
-        #         "Lock for {} cannot be acquired".format(entity_id)
-        #     )
-        #     self.actuation_iface.actuate(entity_id, actuation_value)
-        #     actuated_time = arrow.get()
-        #     data = [[entity_id, actuated_time.timestamp, actuation_value]]
-        #     await self.ts_db.add_data(data)
-        #     return IsSuccess()
 
         try:
             status, detail = self.actuation_iface.actuate(entity_id, actuation_value)

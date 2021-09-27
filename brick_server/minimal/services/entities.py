@@ -2,7 +2,7 @@ import asyncio
 from collections import defaultdict
 from copy import deepcopy
 from io import StringIO
-from typing import Callable, List
+from typing import Any, Callable, List
 from uuid import uuid4 as gen_uuid
 
 import rdflib
@@ -15,10 +15,9 @@ from rdflib import RDF, URIRef
 from starlette.requests import Request
 
 from brick_server.minimal.auth.authorization import (
-    O,
-    R,
-    authorized,
-    authorized_arg,
+    PermissionChecker,
+    PermissionCheckerWithEntityId,
+    PermissionType,
     jwt_security_scheme,
     parse_jwt_token,
 )
@@ -37,7 +36,7 @@ from brick_server.minimal.schemas import (
     Relationships,
 )
 
-entity_router = InferringRouter(prefix="/entities", tags=["Entities"])
+entity_router = InferringRouter(tags=["Entities"])
 
 
 async def get_entity_type(db, entity_id):
@@ -88,7 +87,6 @@ class EntitiesByFileResource:
         description="Upload a Turtle file. An example file: https://gitlab.com/jbkoh/brick-server-dev/blob/dev/examples/data/bldg.ttl",
         summary="Uplaod a Turtle file",
     )
-    @authorized
     async def upload(
         self,
         request: Request,
@@ -105,6 +103,7 @@ class EntitiesByFileResource:
         ),
         content_type: str = Header("text/turtle"),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ) -> IsSuccess:
         jwt_payload = parse_jwt_token(token.credentials)
         user_id = jwt_payload["user_id"]
@@ -154,12 +153,11 @@ class EntitiesByIdResource:
             Descriptions.entity
         ),
     )
-    @authorized_arg(R)
     async def get_entity_by_id(
         self,
         request: Request,
         entity_id: str = Path(..., description=Descriptions.entity_id),
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.read)),
     ) -> Entity:
         entity_type = await get_entity_type(self.brick_db, entity_id)
         if not entity_type:
@@ -182,12 +180,11 @@ class EntitiesByIdResource:
         response_model=IsSuccess,
         description="Delete an entity along with its relationships and data",
     )
-    @authorized_arg(O)
     async def entity_delete(
         self,
         request: Request,
         entity_id: str = Path(..., description=Descriptions.entity_id),
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.write)),
     ) -> IsSuccess:
         futures = []
         qstr = """
@@ -223,7 +220,6 @@ class EntitiesByIdResource:
         response_model=IsSuccess,
         description="Add relationships of an entity",
     )
-    @authorized_arg(O)
     async def update_entity(
         self,
         request: Request,
@@ -231,10 +227,10 @@ class EntitiesByIdResource:
         relationships: Relationships = Body(
             ..., description=Descriptions.relationships
         ),
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.write)),
     ):
         for [prop, obj] in relationships:
-            self.brick_db.add_triple(URIRef(entity_id), prop, obj)
+            await self.brick_db.add_triple(URIRef(entity_id), prop, obj)
         return "Success", 200
 
 
@@ -283,7 +279,7 @@ class EntitiesResource:
         response_model=EntityIds,
         description="List all entities with their types and relations.",
     )
-    @authorized  # TODO: Think about the auth logic for access those.
+    # @authorized  # TODO: Think about the auth logic for access those.
     async def get(
         self,
         request: Request,
@@ -296,6 +292,7 @@ class EntitiesResource:
         feeds: List[str] = Query([], description=Descriptions.relation_query),
         isFedBy: List[str] = Query([], description=Descriptions.relation_query),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ) -> EntityIds:
         topclass = get_brick_topclass(self.brick_db.BRICK_VERSION)
         qstr = f"""
@@ -318,7 +315,7 @@ class EntitiesResource:
         response_model=EntitiesCreateResponse,
         description="Add entities with their triples.",
     )
-    @authorized
+    # @authorized
     async def post(
         self,
         request: Request,
@@ -327,7 +324,7 @@ class EntitiesResource:
             description="A dictionary to describe entities to create. Keys are Brick Classes and values are the number of instances to create for the Class",
         ),
         graph: str = Query(settings.brick_base_graph, description=Descriptions.graph),
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        checker: Any = Depends(PermissionChecker(PermissionType.read)),
     ) -> EntitiesCreateResponse:
         resp = defaultdict(list)
         for brick_type, entities_num in create_entities.items():

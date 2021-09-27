@@ -32,6 +32,7 @@ auth_scheme = HTTPBearer(bearerFormat="JWT")
 class PermissionType(str, Enum):
     read = "read"
     write = "write"
+    unknown = "unknown"
 
 
 # if False:
@@ -206,8 +207,21 @@ def authorized_arg(permission_type, get_target_ids=default_get_target_ids):
 
 
 class PermissionCheckerBase(abc.ABC):
-    def __init__(self, permission_type: PermissionType):
+    def __init__(self, permission_type: PermissionType = PermissionType.unknown):
         self.permission_type = permission_type
+
+
+class PermissionChecker(PermissionCheckerBase):
+    from brick_server.minimal.dependencies import dependency_supplier
+
+    def __call__(
+        self,
+        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        auth_logic: Callable[[Set[str], PermissionType], bool] = Depends(
+            dependency_supplier.auth_logic
+        ),
+    ):
+        auth_logic(set(), self.permission_type)
 
 
 class PermissionCheckerWithEntityId(PermissionCheckerBase):

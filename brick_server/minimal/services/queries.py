@@ -1,14 +1,13 @@
 import calendar
 from datetime import datetime
-from typing import Callable
+from typing import Any, Callable
 
-from fastapi import Body, Depends, Security
-from fastapi.security import HTTPAuthorizationCredentials
+from fastapi import Body, Depends
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from starlette.requests import Request
 
-from brick_server.minimal.auth.authorization import auth_scheme, authorized
+from brick_server.minimal.auth.authorization import PermissionChecker, PermissionType
 from brick_server.minimal.dbs import BrickSparqlAsync
 from brick_server.minimal.dependencies import (
     dependency_supplier,
@@ -19,7 +18,7 @@ from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import BaseTimeseries
 from brick_server.minimal.schemas import SparqlResult
 
-query_router = InferringRouter(prefix="/raw_queries", tags=["Raw Queries"])
+query_router = InferringRouter(tags=["Raw Queries"])
 
 
 @cbv(query_router)
@@ -32,7 +31,6 @@ class TimeseriesQuery:
         description="Raw PostgreSQL query for timeseries. (May not be exposed in the production deployment.)",
         # response_model = TimeseriesData,
     )
-    @authorized
     async def post(
         self,
         request: Request,
@@ -41,7 +39,7 @@ class TimeseriesQuery:
             media_type="application/sql",
             description=Descriptions.sql,
         ),
-        token: HTTPAuthorizationCredentials = Security(auth_scheme),
+        checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ):
         res = await self.ts_db.raw_query(query)
         formatted = format_raw_query(res)
@@ -68,14 +66,13 @@ class SparqlQuery:
         "/sparql",
         description="Raw SPARQL for Brick metadata. (May not be exposed in the production deployment.",
     )
-    @authorized
     async def post(
         self,
         # request: Request,
         query: str = Body(
             ..., media_type="application/sparql-query", description=Descriptions.sparql
         ),
-        token: HTTPAuthorizationCredentials = Security(auth_scheme),
+        checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ) -> SparqlResult:
         raw_res = await self.brick_db.query(query)
         return raw_res

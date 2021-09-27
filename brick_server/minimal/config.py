@@ -49,12 +49,6 @@ class DatabaseConfig(config.Base):
     mongo_password: str = ""
     mongo_dbname: str = "brickserver"
 
-    lockmanager_host: str = "localhost"
-    lockmanager_port: int = 5432
-    lockmanager_username: str = "bricker"
-    lockmanager_password: str = "brick-demo"
-    lockmanager_dbname: str = "brick"
-
     timescale_host: str = "localhost"
     timescale_port: int = 5432
     timescale_username: str = "bricker"

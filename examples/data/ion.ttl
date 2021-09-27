@@ -102,4 +102,3 @@ ebu3b:WARREN_EBU3B_Server_Rm_BTU_C2521_RealTime_CHW_TOT a brick:Chilled_Water_Th
 
 ebu3b:RM_2150_Thermal_Power a brick:Thermal_Power_Sensor;
     bf:isPointOf ebu3b:EBU3B_VAV_Rm_2150.
-

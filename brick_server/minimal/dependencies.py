@@ -5,7 +5,6 @@ from brick_server.minimal.dbs import (
     actuation_iface,
     brick_sparql,
     grafana_endpoint,
-    lock_manager,
     ts_db,
 )
 from brick_server.minimal.interfaces import AsyncpgTimeseries
@@ -28,10 +27,6 @@ def update_dependency_supplier(func: Callable[[Set[str], PermissionType], bool])
 
 def get_brick_db():
     return brick_sparql
-
-
-def get_lock_manager():
-    return lock_manager
 
 
 def get_ts_db() -> AsyncpgTimeseries:
