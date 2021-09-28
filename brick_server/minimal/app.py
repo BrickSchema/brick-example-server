@@ -22,8 +22,7 @@ app = FastAPI(title="Brick Server", openapi_url="/docs/openapi.json")
 app.logger = logger
 
 
-@app.on_event("startup")
-async def startup_event() -> None:
+async def initialization() -> None:
     from brick_server.minimal.dbs import brick_sparql, ts_db
 
     logger.info("Brick SPARQL load schema")
@@ -33,6 +32,11 @@ async def startup_event() -> None:
         await ts_db.init()
     except asyncpg.exceptions.DuplicateTableError:
         print("Timescale tables have been already created.")
+
+
+@app.on_event("startup")
+async def startup_event() -> None:
+    await initialization()
 
 
 from .auth.auth_server import auth_router

@@ -1,4 +1,5 @@
 import abc
+import asyncio
 import time
 from enum import Enum
 from functools import wraps
@@ -210,24 +211,32 @@ class PermissionCheckerBase(abc.ABC):
     def __init__(self, permission_type: PermissionType = PermissionType.unknown):
         self.permission_type = permission_type
 
+    @staticmethod
+    async def call_auth_logic(
+        auth_logic, entity_ids: Set[str], permission: PermissionType
+    ):
+        if asyncio.iscoroutinefunction(auth_logic):
+            return await auth_logic(entity_ids, permission)
+        return auth_logic(entity_ids, permission)
+
 
 class PermissionChecker(PermissionCheckerBase):
     from brick_server.minimal.dependencies import dependency_supplier
 
-    def __call__(
+    async def __call__(
         self,
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
         auth_logic: Callable[[Set[str], PermissionType], bool] = Depends(
             dependency_supplier.auth_logic
         ),
     ):
-        auth_logic(set(), self.permission_type)
+        await self.call_auth_logic(auth_logic, set(), self.permission_type)
 
 
 class PermissionCheckerWithEntityId(PermissionCheckerBase):
     from brick_server.minimal.dependencies import dependency_supplier
 
-    def __call__(
+    async def __call__(
         self,
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
         auth_logic: Callable[[Set[str], PermissionType], bool] = Depends(
@@ -235,7 +244,7 @@ class PermissionCheckerWithEntityId(PermissionCheckerBase):
         ),
         entity_id: str = Path(..., description=""),
     ):
-        auth_logic({entity_id}, self.permission_type)
+        await self.call_auth_logic(auth_logic, {entity_id}, self.permission_type)
 
 
 class PermissionCheckerWithData(PermissionCheckerBase):
@@ -250,7 +259,7 @@ class PermissionCheckerWithData(PermissionCheckerBase):
         uuids = {row[uuid_idx] for row in rows}
         return uuids
 
-    def __call__(
+    async def __call__(
         self,
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
         auth_logic: Callable[[Set[str], PermissionType], bool] = Depends(
@@ -259,7 +268,7 @@ class PermissionCheckerWithData(PermissionCheckerBase):
         data: TimeseriesData = Body(..., description=Descriptions.timeseries_data),
     ):
         entity_ids = self.get_entity_ids(data)
-        auth_logic(entity_ids, self.permission_type)
+        await self.call_auth_logic(auth_logic, entity_ids, self.permission_type)
 
 
 def authorized(f):

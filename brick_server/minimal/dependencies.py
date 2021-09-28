@@ -9,9 +9,11 @@ from brick_server.minimal.dbs import (
 )
 from brick_server.minimal.interfaces import AsyncpgTimeseries
 
+auth_logic_func_type = Callable[[Set[str], PermissionType], bool]
+
 
 class DependencySupplier(object):
-    auth_logic: Callable[[Set[str], PermissionType], bool]
+    auth_logic: Callable[[], auth_logic_func_type]
 
     # def get_auth_logic(self) -> Callable[[Set[str], PermissionType], bool]:
     #     return self.auth_logic
@@ -21,7 +23,7 @@ dependency_supplier = DependencySupplier()
 dependency_supplier.auth_logic = default_auth_logic
 
 
-def update_dependency_supplier(func: Callable[[Set[str], PermissionType], bool]):
+def update_dependency_supplier(func: Callable[[], auth_logic_func_type]):
     dependency_supplier.auth_logic = func
 
 

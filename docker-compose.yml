@@ -35,27 +35,27 @@ services:
       - playground-backend-network
     ports:
       - "36379:6379"
-  playground:
-    container_name: playground
-    image: brick_server
-    volumes:
-      - ./brick_server:/root/brick_server
-      - /var/run/docker.sock:/var/run/docker.sock
-    ports:
-      - "9000:9000"
-    networks:
-      - playground-backend-network
-      - isolated_nw
-    environment:
-      - DEBUG=true
-      - HOST=playground
-      - MONGO_HOST=playground-mongo
-      - LOCKMANAGER_HOST=playground-postgres
-      - TIMESCALE_HOST=playground-postgres
-      - BRICK_HOST=playground-virtuoso
-#      - GRAFANA_HOST=playground-grafana
-    privileged: true
-#    entrypoint: /app/docker/start-reload.sh
+#  playground:
+#    container_name: playground
+#    image: brick_server
+#    volumes:
+#      - ./brick_server:/root/brick_server
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    ports:
+#      - "9000:9000"
+#    networks:
+#      - playground-backend-network
+#      - isolated_nw
+#    environment:
+#      - DEBUG=true
+#      - HOST=playground
+#      - MONGO_HOST=playground-mongo
+#      - LOCKMANAGER_HOST=playground-postgres
+#      - TIMESCALE_HOST=playground-postgres
+#      - BRICK_HOST=playground-virtuoso
+##      - GRAFANA_HOST=playground-grafana
+#    privileged: true
+##    entrypoint: /app/docker/start-reload.sh
 
 networks:
   playground-backend-network:
