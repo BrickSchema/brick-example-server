@@ -58,9 +58,13 @@ class DatabaseConfig(config.Base):
     brick_host: str = "localhost"
     brick_port: int = 8890
     brick_api_endpoint: str = "sparql"
-    brick_version: str = "1.1"
+    brick_version: str = "1.0.3"
     brick_base_ns: str = "bldg:"
     brick_base_graph: str = "brick-base-graph"
+
+    graphdb_host: str = "localhost"
+    graphdb_port: int = 7200
+    graphdb_repository: str = "brickserver"
 
     grafana_host: str = "localhost"
     grafana_port: int = 3000

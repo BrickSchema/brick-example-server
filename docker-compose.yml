@@ -20,6 +20,13 @@ services:
       - playground-backend-network
     ports:
       - "38890:8890"
+  playground-graphdb:
+    container_name: playground-graphdb
+    image: w1zzard/graphdb-free:9.9.0
+    networks:
+      - playground-backend-network
+    ports:
+      - "37200:7200"
   playground-mongo:
     container_name: playground-mongo
     image: mongo:4.2.3-bionic

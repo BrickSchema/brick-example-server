@@ -23,10 +23,14 @@ app.logger = logger
 
 
 async def initialization() -> None:
-    from brick_server.minimal.dbs import brick_sparql, ts_db
+    from brick_server.minimal.dbs import graphdb, ts_db
 
-    logger.info("Brick SPARQL load schema")
-    await brick_sparql.load_schema()
+    await graphdb.init_repository()
+    await graphdb.import_schema_from_url("https://brickschema.org/schema/1.1/Brick")
+
+    # logger.info("Brick SPARQL load schema")
+    # await brick_sparql.load_schema()
+
     try:
         logger.info("Init timescale tables")
         await ts_db.init()

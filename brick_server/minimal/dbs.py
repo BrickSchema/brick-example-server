@@ -5,6 +5,7 @@ from mongoengine import connect as mongo_connect
 
 from brick_server.minimal.interfaces import AsyncpgTimeseries, RealActuation
 from brick_server.minimal.interfaces.grafana import GrafanaEndpoint
+from brick_server.minimal.interfaces.graphdb import GraphDB
 
 mongo_connection = mongo_connect(
     host=settings.mongo_host,
@@ -37,6 +38,11 @@ brick_sparql_sync = BrickSparql(
     base_ns=settings.brick_base_ns,
 )
 
+graphdb = GraphDB(
+    host=settings.graphdb_host,
+    port=settings.graphdb_port,
+    repository=settings.graphdb_repository,
+)
 
 # brick_ts_configs = configs["timeseries"]
 ts_db = AsyncpgTimeseries(
