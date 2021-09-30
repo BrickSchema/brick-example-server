@@ -7,7 +7,7 @@ from typing import Callable, Set
 
 import arrow
 import jwt
-from fastapi import Body, Depends, HTTPException, Path, Security
+from fastapi import Body, Depends, HTTPException, Query, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi_rest_framework.config import settings
 
@@ -242,7 +242,7 @@ class PermissionCheckerWithEntityId(PermissionCheckerBase):
         auth_logic: Callable[[Set[str], PermissionType], bool] = Depends(
             dependency_supplier.auth_logic
         ),
-        entity_id: str = Path(..., description=""),
+        entity_id: str = Query(..., description=""),
     ):
         await self.call_auth_logic(auth_logic, {entity_id}, self.permission_type)
 

@@ -8,7 +8,7 @@ from fastapi_utils.inferring_router import InferringRouter
 from starlette.requests import Request
 
 from brick_server.minimal.auth.authorization import PermissionChecker, PermissionType
-from brick_server.minimal.dbs import BrickSparqlAsync
+from brick_server.minimal.dbs import BrickSparqlAsync, graphdb
 from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_brick_db,
@@ -74,5 +74,5 @@ class SparqlQuery:
         ),
         checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ) -> SparqlResult:
-        raw_res = await self.brick_db.query(query)
+        raw_res = await graphdb.query(query)
         return raw_res

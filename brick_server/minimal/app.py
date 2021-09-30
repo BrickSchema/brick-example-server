@@ -35,7 +35,7 @@ async def initialization() -> None:
         logger.info("Init timescale tables")
         await ts_db.init()
     except asyncpg.exceptions.DuplicateTableError:
-        print("Timescale tables have been already created.")
+        logger.info("Timescale tables have been already created.")
 
 
 @app.on_event("startup")

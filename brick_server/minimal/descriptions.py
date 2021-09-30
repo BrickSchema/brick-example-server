@@ -2,6 +2,9 @@ class Descriptions:
     entity = "An entity can be defined in two ways. It's an instance of a (Brick) Class. More specifically, it is either a physical or a virtual thing whose properties are well-maintained to be a thing. Top three Brick Classes are Point (e.g., sensors, setpoints, etc.), Equipment (e.g., VAV, Luminaire, AHU, etc.), and Location (e.g., Room, Floor, etc.)"
     entity_id = "The identifier of an entity. Often a URI. This should be unique across the target systems (i.e., the graphs of the interest.)"
     graph = "The name of the graph. This is similar to a database name in relational databases."
+    add_owner = (
+        "If true, add the current user as an owner of all the entities in the graph."
+    )
     relationships = "The list of relationships for the target entity. Assuming the target entity is the subject, each relation consists of the subject's predicate and object.s"
     type = "The entity's type, which is often a Brick Class."
     name = "An informative name for the entity. This does not have to be unique."

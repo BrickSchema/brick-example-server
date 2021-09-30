@@ -1,4 +1,3 @@
-import aiofiles
 import pytest
 
 from .common import ENTITY_BASE, QUERY_BASE
@@ -6,12 +5,15 @@ from .common import ENTITY_BASE, QUERY_BASE
 
 @pytest.mark.asyncio
 async def test_load_ttl(client, admin_headers):
-    async with aiofiles.open("examples/data/bldg.ttl", "rb") as fp:
-        admin_headers.update({"Content-Type": "text/turtle"})
+    with open("examples/data/bldg.ttl", "rb") as fp:
+        # admin_headers.update({"Content-Type": "text/turtle"})
+        files = {
+            "file": ("bldg.ttl", fp, "application/octet-stream"),
+        }
         resp = await client.post(
             ENTITY_BASE + "/upload",
             headers=admin_headers,
-            data=fp,
+            files=files,
             allow_redirects=False,
         )
         assert resp.status_code == 200

@@ -1,6 +1,13 @@
-from typing import Callable, Set
+from typing import Any, Callable, Dict, Set
 
-from brick_server.minimal.auth.authorization import PermissionType, default_auth_logic
+from fastapi.security import HTTPAuthorizationCredentials
+
+from brick_server.minimal.auth.authorization import (
+    PermissionType,
+    default_auth_logic,
+    jwt_security_scheme,
+    parse_jwt_token,
+)
 from brick_server.minimal.dbs import (
     actuation_iface,
     brick_sparql,
@@ -41,3 +48,9 @@ def get_actuation_iface():
 
 def get_grafana():
     return grafana_endpoint
+
+
+def get_jwt_payload(
+    token: HTTPAuthorizationCredentials = jwt_security_scheme,
+) -> Dict[str, Any]:
+    return parse_jwt_token(token.credentials)
