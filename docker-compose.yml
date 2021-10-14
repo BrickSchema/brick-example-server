@@ -1,69 +1,71 @@
 version: '3.5'
 services:
-  playground-postgres:
-    container_name: playground-postgres
-    image: jbkoh/brickserver-postgresql:latest
+  brick-server-postgres:
+    container_name: brick-server-postgres
+    image: timescale/timescaledb-postgis:latest-pg13
     environment: # Below secrets should be matched with the information in `.env` too.
       - POSTGRES_USER=bricker
       - POSTGRES_PASSWORD=brick-demo
       - POSTGRES_DB=brick
     networks:
-      - playground-backend-network
+      - brick-server-backend-network
     ports:
       - "35432:5432"
-  playground-virtuoso:
-    container_name: playground-virtuoso
-    image: tenforce/virtuoso:virtuoso7.2.5
-    environment:
-      - SPARQL_UPDATE=true
-    networks:
-      - playground-backend-network
-    ports:
-      - "38890:8890"
-  playground-graphdb:
-    container_name: playground-graphdb
+    volumes:
+      - ./docker/init_postgis.sh:/docker-entrypoint-initdb.d/003_init_postgis.sh
+#  brick-server-virtuoso:
+#    container_name: brick-server-virtuoso
+#    image: tenforce/virtuoso:virtuoso7.2.5
+#    environment:
+#      - SPARQL_UPDATE=true
+#    networks:
+#      - brick-server-backend-network
+#    ports:
+#      - "38890:8890"
+  brick-server-graphdb:
+    container_name: brick-server-graphdb
     image: w1zzard/graphdb-free:9.9.0
     networks:
-      - playground-backend-network
+      - brick-server-backend-network
     ports:
       - "37200:7200"
-  playground-mongo:
-    container_name: playground-mongo
+  brick-server-mongo:
+    container_name: brick-server-mongo
     image: mongo:4.2.3-bionic
     networks:
-      - playground-backend-network
+      - brick-server-backend-network
     ports:
       - "37017:27017"
-  playground-redis:
-    container_name: playground-redis
+  brick-server-redis:
+    container_name: brick-server-redis
     image: 'redis:5.0.8'
     command: redis-server --requirepass brick-demo
     networks:
-      - playground-backend-network
+      - brick-server-backend-network
     ports:
       - "36379:6379"
-#  playground:
-#    container_name: playground
-#    image: brick_server
-#    volumes:
-#      - ./brick_server:/root/brick_server
-#      - /var/run/docker.sock:/var/run/docker.sock
-#    ports:
-#      - "9000:9000"
-#    networks:
-#      - playground-backend-network
-#      - isolated_nw
-#    environment:
-#      - DEBUG=true
-#      - HOST=playground
-#      - MONGO_HOST=playground-mongo
-#      - LOCKMANAGER_HOST=playground-postgres
-#      - TIMESCALE_HOST=playground-postgres
-#      - BRICK_HOST=playground-virtuoso
-##      - GRAFANA_HOST=playground-grafana
-#    privileged: true
-##    entrypoint: /app/docker/start-reload.sh
+  brick-server:
+    container_name: brick-server
+    image: brick_server:minimal
+    volumes:
+      - ./brick_server:/root/brick_server
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9000:9000"
+    networks:
+      - brick-server-backend-network
+      - isolated_nw
+    environment:
+      - DEBUG=true
+      - HOST=brick-server
+      - MONGO_HOST=brick-server-mongo
+      - TIMESCALE_HOST=brick-server-postgres
+      - BRICK_HOST=brick-server-virtuoso
+      - GRAPHDB_HOST=brick-server-graphdb
+#      - GRAFANA_HOST=brick-server-grafana
+    privileged: true
+#    entrypoint: /app/docker/start-reload.sh
 
 networks:
-  playground-backend-network:
+  brick-server-backend-network:
   isolated_nw:
