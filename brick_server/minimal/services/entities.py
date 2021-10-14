@@ -1,14 +1,12 @@
-import asyncio
-from collections import defaultdict
 from typing import Any, Callable, List, Optional
-from uuid import uuid4 as gen_uuid
 
-from fastapi import Body, Depends, File, HTTPException, Path, Query, UploadFile
+from fastapi import Body, Depends, File, HTTPException, Query, UploadFile
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi_rest_framework.config import settings
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
-from rdflib import RDF, URIRef
+from loguru import logger
+from pydantic import BaseModel
 from starlette.requests import Request
 
 from brick_server.minimal.auth.authorization import (
@@ -20,16 +18,8 @@ from brick_server.minimal.auth.authorization import (
 from brick_server.minimal.dbs import BrickSparqlAsync, graphdb
 from brick_server.minimal.dependencies import dependency_supplier, get_brick_db
 from brick_server.minimal.descriptions import Descriptions
-from brick_server.minimal.interfaces.namespaces import UUID
 from brick_server.minimal.models import get_all_relationships
-from brick_server.minimal.schemas import (
-    CreateEntitiesRequest,
-    EntitiesCreateResponse,
-    Entity,
-    EntityIds,
-    IsSuccess,
-    Relationships,
-)
+from brick_server.minimal.schemas import Entity, EntityIds, IsSuccess
 
 entity_router = InferringRouter(tags=["Entities"])
 
@@ -55,7 +45,7 @@ async def get_entity_type(db, entity_id):
 async def get_name(graphdb, entity_id):
     qstr = """
     select ?name where {{
-        <{0}> bf:hasName ?name.
+        <{0}> brick:hasName ?name.
     }}
     """.format(
         entity_id
@@ -186,64 +176,64 @@ class EntitiesByIdResource:
         )
         return entity
 
-    @entity_router.delete(
-        "/{entity_id}",
-        status_code=200,
-        response_model=IsSuccess,
-        description="Delete an entity along with its relationships and data",
-    )
-    async def entity_delete(
-        self,
-        request: Request,
-        entity_id: str = Path(..., description=Descriptions.entity_id),
-        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.write)),
-    ) -> IsSuccess:
-        futures = []
-        qstr = """
-        delete {{
-            <{entity_id}> ?p ?o.
-        }}
-        WHERE {{
-            <{entity_id}> ?p ?o.
-        }}
-        """.format(
-            entity_id=entity_id
-        )
-        futures.append(self.brick_db.query(qstr, is_update=True, is_delete=True))
+    # @entity_router.delete(
+    #     "/{entity_id}",
+    #     status_code=200,
+    #     response_model=IsSuccess,
+    #     description="Delete an entity along with its relationships and data",
+    # )
+    # async def entity_delete(
+    #     self,
+    #     request: Request,
+    #     entity_id: str = Path(..., description=Descriptions.entity_id),
+    #     checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.write)),
+    # ) -> IsSuccess:
+    #     futures = []
+    #     qstr = """
+    #     delete {{
+    #         <{entity_id}> ?p ?o.
+    #     }}
+    #     WHERE {{
+    #         <{entity_id}> ?p ?o.
+    #     }}
+    #     """.format(
+    #         entity_id=entity_id
+    #     )
+    #     futures.append(self.brick_db.query(qstr, is_update=True, is_delete=True))
+    #
+    #     qstr = """
+    #     delete {{
+    #         ?s ?p <{entity_id}>.
+    #     }}
+    #     WHERE {{
+    #         ?s ?p <{entity_id}>.
+    #     }}
+    #     """.format(
+    #         entity_id=entity_id
+    #     )
+    #     futures.append(self.brick_db.query(qstr, is_update=True, is_delete=True))
+    #
+    #     await asyncio.gather(*futures)
+    #     return IsSuccess()
 
-        qstr = """
-        delete {{
-            ?s ?p <{entity_id}>.
-        }}
-        WHERE {{
-            ?s ?p <{entity_id}>.
-        }}
-        """.format(
-            entity_id=entity_id
-        )
-        futures.append(self.brick_db.query(qstr, is_update=True, is_delete=True))
-
-        await asyncio.gather(*futures)
-        return IsSuccess()
-
-    @entity_router.post(
-        "/{entity_id}",
-        status_code=200,
-        response_model=IsSuccess,
-        description="Add relationships of an entity",
-    )
-    async def update_entity(
-        self,
-        request: Request,
-        entity_id: str = Path(..., description=Descriptions.entity_id),
-        relationships: Relationships = Body(
-            ..., description=Descriptions.relationships
-        ),
-        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.write)),
-    ):
-        for [prop, obj] in relationships:
-            await self.brick_db.add_triple(URIRef(entity_id), prop, obj)
-        return "Success", 200
+    # @entity_router.post(
+    #     "/{entity_id}",
+    #     status_code=200,
+    #     response_model=IsSuccess,
+    #     description="Add relationships of an entity",
+    # )
+    # async def update_entity(
+    #     self,
+    #     request: Request,
+    #     entity_id: str = Path(..., description=Descriptions.entity_id),
+    #     relationships: Relationships = Body(
+    #         ..., description=Descriptions.relationships
+    #     ),
+    #     checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.write)),
+    # ):
+    #     for [prop, obj] in relationships:
+    #         await self.brick_db.add_triple(URIRef(entity_id), prop, obj)
+    #     return "Success", 200
 
 
 def get_brick_relation_base(brick_version):  # TODO: Implement this in brick-data.
@@ -266,16 +256,15 @@ def get_brick_topclass(brick_version):  # TODO: Implement this in brick-data.
         return "bf:TagSet"
 
 
-brick_predicates = [
-    "hasPoint",
-    "isPointOf",
-    "hasPart",
-    "isPartOf",
-    "hasLocation",
-    "isLocationOf",
-    "feeds",
-    "isFedBy",
-]
+class ListEntityParams(BaseModel):
+    hasPoint: List[str] = []
+    isPointOf: List[str] = []
+    hasPart: List[str] = []
+    isPartOf: List[str] = []
+    hasLocation: List[str] = []
+    isLocationOf: List[str] = []
+    feeds: List[str] = []
+    isFedBy: List[str] = []
 
 
 # TODO: In the auth model, this resource's target is a `graph`
@@ -285,84 +274,77 @@ class EntitiesResource:
     brick_db: BrickSparqlAsync = Depends(get_brick_db)
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
-    @entity_router.get(
-        "/list_all",
+    @entity_router.post(
+        "/list",
         status_code=200,
         response_model=EntityIds,
         description="List all entities with their types and relations.",
     )
-    # @authorized  # TODO: Think about the auth logic for access those.
-    async def get(
+    async def post(
         self,
         request: Request,
-        hasPoint: List[str] = Query([], description=Descriptions.relation_query),
-        isPointOf: List[str] = Query([], description=Descriptions.relation_query),
-        hasPart: List[str] = Query([], description=Descriptions.relation_query),
-        isPartOf: List[str] = Query([], description=Descriptions.relation_query),
-        hasLocation: List[str] = Query([], description=Descriptions.relation_query),
-        isLocationOf: List[str] = Query([], description=Descriptions.relation_query),
-        feeds: List[str] = Query([], description=Descriptions.relation_query),
-        isFedBy: List[str] = Query([], description=Descriptions.relation_query),
+        params: ListEntityParams = Body(
+            ListEntityParams(), description=Descriptions.relation_query
+        ),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
         checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ) -> EntityIds:
         # FIXME: rewrite
         topclass = get_brick_topclass(settings.brick_version)
+        logger.debug("topclass: {}", topclass)
         qstr = f"""
-        select ?entity where {{
+        select distinct ?entity where {{
         ?entity a/rdfs:subClassOf* {topclass}.
         """  # TODO The query should be generalized to Class
-        for predicate in brick_predicates:
-            objects = locals()[predicate]
-            for object in objects:
-                qstr += f"?entity brick:{predicate} <{object}>.\n"  # TODO: Parameterize property base between bf vs brick.
+        for predicate, objects in params.dict().items():
+            for obj in objects:
+                qstr += f"?entity brick:{predicate} {obj}.\n"  # TODO: Parameterize property base between bf vs brick.
         qstr += "}"
-        print(qstr)
         res = await graphdb.query(qstr)
         entity_ids = [row["entity"]["value"] for row in res["results"]["bindings"]]
         return EntityIds(entity_ids=entity_ids)
 
-    @entity_router.post(
-        "/",
-        status_code=200,
-        response_model=EntitiesCreateResponse,
-        description="Add entities with their triples.",
-    )
-    # @authorized
-    async def post(
-        self,
-        request: Request,
-        create_entities: CreateEntitiesRequest = Body(
-            ...,
-            description="A dictionary to describe entities to create. Keys are Brick Classes and values are the number of instances to create for the Class",
-        ),
-        graph: str = Query(settings.brick_base_graph, description=Descriptions.graph),
-        checker: Any = Depends(PermissionChecker(PermissionType.read)),
-    ) -> EntitiesCreateResponse:
-        resp = defaultdict(list)
-        for brick_type, entities_num in create_entities.items():
-            for _ in range(entities_num):
-                uri = UUID[str(gen_uuid())]
-                await self.brick_db.add_triple(uri, RDF.type, URIRef(brick_type))
-                # TODO: Check the brick_type based on the parameter in the future
-                resp[brick_type].append(str(uri))
-        return dict(resp)
+    # @entity_router.post(
+    #     "/",
+    #     status_code=200,
+    #     response_model=EntitiesCreateResponse,
+    #     description="Add entities with their triples.",
+    # )
+    # # @authorized
+    # async def post(
+    #     self,
+    #     request: Request,
+    #     create_entities: CreateEntitiesRequest = Body(
+    #         ...,
+    #         description="A dictionary to describe entities to create. Keys are Brick Classes and values are the number of instances to create for the Class",
+    #     ),
+    #     graph: str = Query(settings.brick_base_graph, description=Descriptions.graph),
+    #     checker: Any = Depends(PermissionChecker(PermissionType.read)),
+    # ) -> EntitiesCreateResponse:
+    #     resp = defaultdict(list)
+    #     for brick_type, entities_num in create_entities.items():
+    #         for _ in range(entities_num):
+    #             uri = UUID[str(gen_uuid())]
+    #             await self.brick_db.add_triple(uri, RDF.type, URIRef(brick_type))
+    #             # TODO: Check the brick_type based on the parameter in the future
+    #             resp[brick_type].append(str(uri))
+    #     return dict(resp)
 
-    async def add_entities_json_deprecated(self, entities):
-        # TODO: IMplement this:
-        raise HTTPException(status_code=501)
-        for entity in entities:
-            entity_type = entity["type"]
-            entity_id = entity.get("entity_id", None)
-            if not entity_id:
-                entity_id = str(gen_uuid())
-                entity["entity_id"] = entity_id
-            entity_id = URIRef(entity_id)
-            self.brick_db.add_brick_instance(entity_id, entity_type)
-            for prop, obj in entity["relationships"]:
-                obj = URIRef(obj)
-                self.brick_db.add_triple(entity_id, prop, obj)
-            name = entity.get("name", None)
-            if name:
-                self.brick_db.add_triple(entity_id, "bf:hasName", name)
-        return entities
+    # async def add_entities_json_deprecated(self, entities):
+    #     # TODO: IMplement this:
+    #     raise HTTPException(status_code=501)
+    #     for entity in entities:
+    #         entity_type = entity["type"]
+    #         entity_id = entity.get("entity_id", None)
+    #         if not entity_id:
+    #             entity_id = str(gen_uuid())
+    #             entity["entity_id"] = entity_id
+    #         entity_id = URIRef(entity_id)
+    #         self.brick_db.add_brick_instance(entity_id, entity_type)
+    #         for prop, obj in entity["relationships"]:
+    #             obj = URIRef(obj)
+    #             self.brick_db.add_triple(entity_id, prop, obj)
+    #         name = entity.get("name", None)
+    #         if name:
+    #             self.brick_db.add_triple(entity_id, "bf:hasName", name)
+    #     return entities

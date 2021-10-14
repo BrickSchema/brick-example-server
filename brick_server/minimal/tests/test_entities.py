@@ -11,6 +11,7 @@ async def test_load_ttl(client, admin_headers):
         }
         resp = await client.post(
             ENTITY_BASE + "/upload",
+            params={"named_graph": "http://ucsd.edu/building/ontology/ebu3b#"},
             headers=admin_headers,
             files=files,
             allow_redirects=False,
@@ -34,17 +35,6 @@ async def test_get_an_entity(client, admin_headers):
     # How to reuse the response schema?
 
 
-# def test_delete_an_entity():
-#     headers = authorize_headers()
-#     resp = requests.get(ENTITY_BASE + '/' + quote_plus(znt_id), headers=headers)
-#     assert resp.status_code == 200
-#     assert resp.json()['type'].split('#')[-1] == 'Zone_Air_Temperature_Sensor'
-#     resp = requests.delete(ENTITY_BASE + '/' + quote_plus(znt_id), headers=headers)
-#     assert resp.status_code == 200
-#     resp = requests.get(ENTITY_BASE + '/' + quote_plus(znt_id), headers=headers)
-#     assert resp.status_code == 404
-
-
 # def test_reload_ttl():
 #     headers = authorize_headers({
 #         'Content-Type': 'text/turtle',
@@ -57,27 +47,27 @@ async def test_get_an_entity(client, admin_headers):
 #                              )
 #         assert resp.status_code == 200
 
-# def test_create_entities():
-#     headers = authorize_headers()
-#     body = {
-#         str(BRICK.Zone_Temperature_Sensor): 2,
-#         str(BRICK.Thermal_Power_Sensor): 2,
-#     }
-#     resp = requests.post(ENTITY_BASE, json=body, headers=headers)
-#     assert resp.status_code == 200
-#     assert len(resp.json()[str(BRICK.Zone_Temperature_Sensor)]) == 2
 
-# def test_get_all_entities():
-#     headers = authorize_headers()
-#     resp = requests.get(ENTITY_BASE, headers=headers)
-#     assert resp.status_code == 200
-#     assert resp.json()['entity_ids']
+@pytest.mark.asyncio
+@pytest.mark.depends(on=["test_load_ttl"])
+async def test_get_all_entities(client, admin_headers):
+    resp = await client.post(
+        ENTITY_BASE + "/list",
+        headers=admin_headers,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["entity_ids"]
 
-# def test_get_entities_by_relation():
-#     headers = authorize_headers()
-#     params = {
-#         'feeds': ['bldg:VAV102', 'bldg:VAV101'],
-#     }
-#     resp = requests.get(ENTITY_BASE, params=params, headers=headers)
-#     assert resp.status_code == 200
-#     assert resp.json()
+
+@pytest.mark.asyncio
+@pytest.mark.depends(on=["test_load_ttl"])
+async def test_get_entities_by_relation(client, admin_headers):
+    resp = await client.post(
+        ENTITY_BASE + "/list",
+        headers=admin_headers,
+        json={"feeds": ["ebu3b:EBU3B_HVAC_Zone_Rm_3207"]},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["entity_ids"] == [
+        "http://ucsd.edu/building/ontology/ebu3b#EBU3B_VAV_Rm_3207"
+    ]
