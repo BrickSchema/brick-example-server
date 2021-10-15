@@ -4,6 +4,7 @@ from typing import Any, Callable
 from fastapi import Body, Depends, HTTPException, Path, Query
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
+from loguru import logger
 
 from brick_server.minimal.auth.authorization import (
     PermissionCheckerWithData,
@@ -123,6 +124,12 @@ class Timeseries:
                 [datum[uuid_idx], datum[timestamp_idx], datum[value_idx]]
                 for datum in raw_data
             ]
-            futures = self.ts_db.add_data(data, data_type=value_col)
+            futures = self.add_data(data, data_type=value_col)
         await asyncio.gather(futures)
         return IsSuccess()
+
+    async def add_data(self, data, data_type):
+        try:
+            await self.ts_db.add_data(data, data_type=data_type)
+        except Exception as e:
+            logger.info("data error: {}", data)
