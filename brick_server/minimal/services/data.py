@@ -120,10 +120,14 @@ class Timeseries:
             if value_col not in fields:
                 continue
             value_idx = fields.index(value_col)
-            data = [
-                [datum[uuid_idx], datum[timestamp_idx], datum[value_idx]]
-                for datum in raw_data
-            ]
+            data = []
+            for datum in raw_data:
+                try:
+                    data.append(
+                        [datum[uuid_idx], datum[timestamp_idx], float(datum[value_idx])]
+                    )
+                except Exception:
+                    logger.info("data error: {}", datum)
             futures = self.add_data(data, data_type=value_col)
         await asyncio.gather(futures)
         return IsSuccess()
@@ -132,4 +136,4 @@ class Timeseries:
         try:
             await self.ts_db.add_data(data, data_type=data_type)
         except Exception as e:
-            logger.info("data error: {}", data)
+            logger.exception(e)
