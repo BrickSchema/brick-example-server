@@ -1,18 +1,19 @@
 from typing import Callable
 
-from fastapi import Body, Depends, Path
+from fastapi import Body, Depends, Query
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from starlette.requests import Request
 from werkzeug import exceptions
 
-from brick_server.minimal.auth.authorization import authorized, jwt_security_scheme
+from brick_server.minimal.auth.authorization import jwt_security_scheme
 from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_actuation_iface,
     get_ts_db,
 )
+from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import BaseTimeseries, RealActuation
 from brick_server.minimal.schemas import ActuationRequest, IsSuccess
 
@@ -26,7 +27,7 @@ class ActuationEntity:
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @actuation_router.post(
-        "/{entity_id:path}",
+        "/",
         description="Actuate an entity to a value",
         response_model=IsSuccess,
         status_code=200,
@@ -34,7 +35,7 @@ class ActuationEntity:
     async def post(
         self,
         request: Request,
-        entity_id: str = Path(...),
+        entity_id: str = Query(..., description=Descriptions.entity_id),
         actuation_request: ActuationRequest = Body(...),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
     ) -> IsSuccess:

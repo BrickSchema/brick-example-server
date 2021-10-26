@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Callable
 
-from fastapi import Body, Depends, HTTPException, Path, Query
+from fastapi import Body, Depends, HTTPException, Query
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from loguru import logger
@@ -25,19 +25,19 @@ data_router = InferringRouter(tags=["Data"])
 
 
 @cbv(data_router)
-class TimeseriesById:
+class Timeseries:
     ts_db: AsyncpgTimeseries = Depends(get_ts_db)
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @data_router.get(
-        "/timeseries/{entity_id:path}",
+        "/timeseries",
         status_code=200,
         # description='Get data of an entity with in a time range.',
         response_model=TimeseriesData,
     )
     async def get(
         self,
-        entity_id: str = Path(
+        entity_id: str = Query(
             ...,
             description=Descriptions.entity_id,
         ),
@@ -55,14 +55,14 @@ class TimeseriesById:
         return TimeseriesData(data=data, columns=columns)
 
     @data_router.delete(
-        "/timeseries/{entity_id:path}",
+        "/timeseries",
         status_code=200,
         description="Delete data of an entity with in a time range or all the data if a time range is not given.",
         response_model=IsSuccess,
     )
     async def delete(
         self,
-        entity_id: str = Path(..., description=Descriptions.entity_id),
+        entity_id: str = Query(..., description=Descriptions.entity_id),
         start_time: float = Query(default=None, description=Descriptions.start_time),
         end_time: float = Query(None, description=Descriptions.end_time),
         checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.write)),
@@ -70,20 +70,6 @@ class TimeseriesById:
         # self.auth_logic(entity_id, "write")
         await self.ts_db.delete([entity_id], start_time, end_time)
         return IsSuccess()
-
-
-def _get_entity_ids_ts_post(*args, **kwargs):
-    rows = kwargs["data"].data
-    columns = kwargs["data"].columns
-    uuid_idx = columns.index("uuid")
-    uuids = {row[uuid_idx] for row in rows}
-    return uuids
-
-
-@cbv(data_router)
-class Timeseries:
-    ts_db: AsyncpgTimeseries = Depends(get_ts_db)
-    auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @data_router.post(
         "/timeseries",
@@ -137,3 +123,11 @@ class Timeseries:
             await self.ts_db.add_data(data, data_type=data_type)
         except Exception as e:
             logger.exception(e)
+
+
+def _get_entity_ids_ts_post(*args, **kwargs):
+    rows = kwargs["data"].data
+    columns = kwargs["data"].columns
+    uuid_idx = columns.index("uuid")
+    uuids = {row[uuid_idx] for row in rows}
+    return uuids
