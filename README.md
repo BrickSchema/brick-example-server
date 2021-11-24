@@ -38,7 +38,7 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
     1. Execute `docker-compose up`.
 
 4. Get an App Token.
-    1. Execute `docker exec -t brickserver /app/tools/get_jwt_token`.
+    1. Execute `docker exec -t brickserver /app/tools/get_jwt_token [EXPIRATION_TIME_IN_SECONDS]` (`EXPIRATION_TIME_IN_SECONDS` default value 1h).
     2. Keep and use it as a bearer token.
 
 
