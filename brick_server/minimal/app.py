@@ -55,7 +55,7 @@ app.include_router(entity_router, prefix="/brickapi/v1/entities")
 app.include_router(query_router, prefix="/brickapi/v1/rawqueries")
 app.include_router(actuation_router, prefix="/brickapi/v1/actuation")
 app.include_router(grafana_router, prefix="/brickapi/v1/grafana")
-app.include_router(auth_router, prefix="/auth")
+app.include_router(auth_router, prefix="/brickapi/v1/auth")
 # app.include_router(dummy_frontend_router, prefix='/dummy-frontend')
 
 app.secret_key = os.urandom(24)

@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, Callable
 
-from fastapi import Body, Depends, HTTPException, Query
+from fastapi import Body, Depends, HTTPException, Query, status
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from loguru import logger
@@ -86,6 +86,10 @@ class Timeseries:
         checker: Any = Depends(PermissionCheckerWithData(PermissionType.write)),
     ) -> IsSuccess:
         raw_data = data.data
+        if not raw_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Empty data posted"
+            )
         fields = data.columns
         unrecognized_fields = [
             field
@@ -94,7 +98,7 @@ class Timeseries:
         ]
         if unrecognized_fields:
             raise HTTPException(
-                status_code=400,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="There is an unrecognized field type: {}".format(
                     unrecognized_fields
                 ),
@@ -123,11 +127,3 @@ class Timeseries:
             await self.ts_db.add_data(data, data_type=data_type)
         except Exception as e:
             logger.exception(e)
-
-
-def _get_entity_ids_ts_post(*args, **kwargs):
-    rows = kwargs["data"].data
-    columns = kwargs["data"].columns
-    uuid_idx = columns.index("uuid")
-    uuids = {row[uuid_idx] for row in rows}
-    return uuids

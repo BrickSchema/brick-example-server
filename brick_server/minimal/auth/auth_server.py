@@ -23,8 +23,8 @@ from brick_server.minimal.exceptions import DoesNotExistError, NotAuthorizedErro
 from brick_server.minimal.models import AppToken, User, get_doc, get_docs
 from brick_server.minimal.schemas import IsSuccess, TokenResponse, TokensResponse
 
-auth_router = InferringRouter(prefix="/auth")
-auth_base_url = settings.hostname + "/auth"
+auth_router = InferringRouter()
+# auth_base_url = settings.hostname + "/auth"
 frontend_url = settings.frontend
 
 
@@ -42,9 +42,11 @@ frontend_url = settings.frontend
     tags=["Auth"],
 )
 async def get_login_via_google(request: Request):
-    redirect_uri = auth_base_url + "/is_registered"
-    res = await oauth.google.authorize_redirect(request, redirect_uri)
-    return res
+    redirect_uri = request.url_for("get_is_registered")
+    print(redirect_uri)
+    return {"redirect_uri": redirect_uri}
+    # res = await oauth.google.authorize_redirect(request, redirect_uri)
+    # return res
 
 
 @auth_router.get(
