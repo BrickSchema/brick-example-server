@@ -47,6 +47,7 @@ services:
   brick-server:
     container_name: brick-server
     image: brick_server:minimal
+    restart: always
     volumes:
       - ./brick_server:/root/brick_server
       - /var/run/docker.sock:/var/run/docker.sock

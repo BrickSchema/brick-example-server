@@ -30,7 +30,7 @@ class TimeseriesById:
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @data_router.get(
-        "/timeseries/{entity_id}",
+        "/timeseries/{entity_id:path}",
         status_code=200,
         # description='Get data of an entity with in a time range.',
         response_model=TimeseriesData,
@@ -55,7 +55,7 @@ class TimeseriesById:
         return TimeseriesData(data=data, columns=columns)
 
     @data_router.delete(
-        "/timeseries/{entity_id}",
+        "/timeseries/{entity_id:path}",
         status_code=200,
         description="Delete data of an entity with in a time range or all the data if a time range is not given.",
         response_model=IsSuccess,

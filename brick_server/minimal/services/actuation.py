@@ -31,7 +31,6 @@ class ActuationEntity:
         response_model=IsSuccess,
         status_code=200,
     )
-    @authorized
     async def post(
         self,
         request: Request,
