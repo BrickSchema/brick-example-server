@@ -8,7 +8,7 @@ services:
       - POSTGRES_PASSWORD=brick-demo
       - POSTGRES_DB=brick
     networks:
-      - brick-server-backend-network
+      - brick-server-network
     ports:
       - "35432:5432"
     volumes:
@@ -19,21 +19,21 @@ services:
 #    environment:
 #      - SPARQL_UPDATE=true
 #    networks:
-#      - brick-server-backend-network
+#      - brick-server-network
 #    ports:
 #      - "38890:8890"
   brick-server-graphdb:
     container_name: brick-server-graphdb
     image: w1zzard/graphdb-free:9.9.0
     networks:
-      - brick-server-backend-network
+      - brick-server-network
     ports:
       - "37200:7200"
   brick-server-mongo:
     container_name: brick-server-mongo
     image: mongo:4.2.3-bionic
     networks:
-      - brick-server-backend-network
+      - brick-server-network
     ports:
       - "37017:27017"
   brick-server-redis:
@@ -41,7 +41,7 @@ services:
     image: 'redis:5.0.8'
     command: redis-server --requirepass brick-demo
     networks:
-      - brick-server-backend-network
+      - brick-server-network
     ports:
       - "36379:6379"
   brick-server:
@@ -54,7 +54,7 @@ services:
     ports:
       - "9000:9000"
     networks:
-      - brick-server-backend-network
+      - brick-server-network
       - isolated_nw
     environment:
       - DEBUG=true
@@ -68,5 +68,5 @@ services:
 #    entrypoint: /app/docker/start-reload.sh
 
 networks:
-  brick-server-backend-network:
+  brick-server-network:
   isolated_nw:

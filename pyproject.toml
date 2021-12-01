@@ -8,7 +8,7 @@ requires = ["poetry-core>=1.0.0"]
 authors = ["Your Name <you@example.com>"]
 description = ""
 license = "MIT"
-name = "brick-server-backend"
+name = "brick-server-minimal"
 packages = [
     { include = "brick_server" },
 ]
