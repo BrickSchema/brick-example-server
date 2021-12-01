@@ -8,12 +8,8 @@ from fastapi_utils.inferring_router import InferringRouter
 from starlette.requests import Request
 
 from brick_server.minimal.auth.authorization import PermissionChecker, PermissionType
-from brick_server.minimal.dbs import BrickSparqlAsync, graphdb
-from brick_server.minimal.dependencies import (
-    dependency_supplier,
-    get_brick_db,
-    get_ts_db,
-)
+from brick_server.minimal.dbs import graphdb
+from brick_server.minimal.dependencies import dependency_supplier, get_ts_db
 from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import BaseTimeseries
 from brick_server.minimal.schemas import SparqlResult
@@ -59,7 +55,6 @@ def format_raw_query(res):
 
 @cbv(query_router)
 class SparqlQuery:
-    brick_db: BrickSparqlAsync = Depends(get_brick_db)
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @query_router.post(

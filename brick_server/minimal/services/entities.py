@@ -15,8 +15,8 @@ from brick_server.minimal.auth.authorization import (
     PermissionType,
     jwt_security_scheme,
 )
-from brick_server.minimal.dbs import BrickSparqlAsync, graphdb
-from brick_server.minimal.dependencies import dependency_supplier, get_brick_db
+from brick_server.minimal.dbs import graphdb
+from brick_server.minimal.dependencies import dependency_supplier
 from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.models import get_all_relationships
 from brick_server.minimal.schemas import Entity, EntityIds, IsSuccess
@@ -62,7 +62,6 @@ async def get_name(graphdb, entity_id):
 @cbv(entity_router)
 class EntitiesByFileResource:
 
-    brick_db: BrickSparqlAsync = Depends(get_brick_db)
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @entity_router.post(
@@ -143,7 +142,6 @@ class EntitiesByFileResource:
 @cbv(entity_router)
 class EntitiesByIdResource:
 
-    brick_db: BrickSparqlAsync = Depends(get_brick_db)
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @entity_router.get(
@@ -271,7 +269,6 @@ class ListEntityParams(BaseModel):
 @cbv(entity_router)
 class EntitiesResource:
 
-    brick_db: BrickSparqlAsync = Depends(get_brick_db)
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @entity_router.post(

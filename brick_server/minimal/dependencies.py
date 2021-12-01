@@ -8,9 +8,8 @@ from brick_server.minimal.auth.authorization import (
     jwt_security_scheme,
     parse_jwt_token,
 )
-from brick_server.minimal.dbs import (
+from brick_server.minimal.dbs import (  # brick_sparql,
     actuation_iface,
-    brick_sparql,
     grafana_endpoint,
     ts_db,
 )
@@ -32,10 +31,6 @@ dependency_supplier.auth_logic = default_auth_logic
 
 def update_dependency_supplier(func: Callable[[], auth_logic_func_type]):
     dependency_supplier.auth_logic = func
-
-
-def get_brick_db():
-    return brick_sparql
 
 
 def get_ts_db() -> AsyncpgTimeseries:

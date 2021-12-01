@@ -1,5 +1,3 @@
-# from brick_data.timeseries import BrickTimeseries
-from brick_data.sparql import BrickSparql, BrickSparqlAsync
 from fastapi_rest_framework.config import settings
 from mongoengine import connect as mongo_connect
 
@@ -24,19 +22,19 @@ brick_url = (
     f"http://{settings.brick_host}:{settings.brick_port}/{settings.brick_api_endpoint}"
 )
 
-brick_sparql = BrickSparqlAsync(
-    brick_url,
-    settings.brick_version,
-    graph=settings.brick_base_graph,
-    base_ns=settings.brick_base_ns,
-)
-
-brick_sparql_sync = BrickSparql(
-    brick_url,
-    settings.brick_version,
-    graph=settings.brick_base_graph,
-    base_ns=settings.brick_base_ns,
-)
+# brick_sparql = BrickSparqlAsync(
+#     brick_url,
+#     settings.brick_version,
+#     graph=settings.brick_base_graph,
+#     base_ns=settings.brick_base_ns,
+# )
+#
+# brick_sparql_sync = BrickSparql(
+#     brick_url,
+#     settings.brick_version,
+#     graph=settings.brick_base_graph,
+#     base_ns=settings.brick_base_ns,
+# )
 
 graphdb = GraphDB(
     host=settings.graphdb_host,
