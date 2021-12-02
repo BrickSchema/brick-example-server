@@ -5,13 +5,13 @@ requires = ["poetry-core>=1.0.0"]
 [tool]
 
 [tool.poetry]
-authors = ["Your Name <you@example.com>"]
-description = ""
-license = "MIT"
+description = "brick server minimal"
+license = "BSD-3"
 name = "brick-server-minimal"
 packages = [
     { include = "brick_server" },
 ]
+repository = "https://gitlab.com/mesl/brickserver/brick-server-minimal"
 version = "0.1.0"
 
 [tool.poetry.dependencies]

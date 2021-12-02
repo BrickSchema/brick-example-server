@@ -30,4 +30,4 @@ RUN --mount=type=cache,target=/root/.cache poetry install --no-dev
 
 EXPOSE $PORT
 
-CMD python3 -m brick_server.playground
+CMD python3 -m brick_server.minimal

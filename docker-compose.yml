@@ -13,15 +13,6 @@ services:
       - "35432:5432"
     volumes:
       - ./docker/init_postgis.sh:/docker-entrypoint-initdb.d/003_init_postgis.sh
-#  brick-server-virtuoso:
-#    container_name: brick-server-virtuoso
-#    image: tenforce/virtuoso:virtuoso7.2.5
-#    environment:
-#      - SPARQL_UPDATE=true
-#    networks:
-#      - brick-server-network
-#    ports:
-#      - "38890:8890"
   brick-server-graphdb:
     container_name: brick-server-graphdb
     image: w1zzard/graphdb-free:9.9.0
