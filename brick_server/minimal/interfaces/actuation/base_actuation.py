@@ -1,5 +1,6 @@
 from werkzeug import exceptions
 
+
 class BaseActuation(object):
     def __init__(self, *args, **kwargs):
         pass
@@ -19,4 +20,6 @@ class BaseActuation(object):
         Raises:
             TODO
         """
-        raise exceptions.NotImplemented('This should be overriden by an actual implementation.')
+        raise exceptions.NotImplemented(
+            "This should be overriden by an actual implementation."
+        )

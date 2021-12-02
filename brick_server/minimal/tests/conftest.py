@@ -4,13 +4,17 @@ from typing import Any, AsyncGenerator, Generator
 import pytest
 from asgi_lifespan import LifespanManager
 from fastapi import FastAPI
-from httpx import AsyncClient
 from fastapi_rest_framework.config import settings
+from httpx import AsyncClient
 
 from brick_server.minimal.app import app as fastapi_app
 from brick_server.minimal.auth.authorization import create_jwt_token
 from brick_server.minimal.models import User
-from brick_server.minimal.tests.utils import register_admin, create_postgres_db, drop_postgres_db
+from brick_server.minimal.tests.utils import (
+    create_postgres_db,
+    drop_postgres_db,
+    register_admin,
+)
 
 
 @pytest.yield_fixture(scope="session")

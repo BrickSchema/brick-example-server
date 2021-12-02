@@ -1,7 +1,4 @@
-
-
 class BaseTimeseries(object):
-
     def __init__(self, *args, **kwargs):
         pass
 
@@ -19,7 +16,9 @@ class BaseTimeseries(object):
         Raises:
             TODO
         """
-        raise exceptions.NotImplemented('This should be overriden by an actual implementation.')
+        raise NotImplementedError(
+            "This should be overriden by an actual implementation."
+        )
 
     def query(self, start_time, end_time, entity_ids):
         """Executes a basic query over the timeseries DB.
@@ -34,8 +33,9 @@ class BaseTimeseries(object):
         Returns:
 
         """
-        raise exceptions.NotImplemented('This should be overriden by an actual implementation.')
-
+        raise NotImplementedError(
+            "This should be overriden by an actual implementation."
+        )
 
     def raw_query(self, qstr):
         """Executes SQL query over the timeseries DB.
@@ -48,4 +48,6 @@ class BaseTimeseries(object):
         Returns:
             TODO
         """
-        raise exceptions.NotImplemented('This should be overriden by an actual implementation.')
+        raise NotImplementedError(
+            "This should be overriden by an actual implementation."
+        )

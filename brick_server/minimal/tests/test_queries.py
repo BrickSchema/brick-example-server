@@ -1,4 +1,5 @@
 import asyncio
+
 import pytest
 
 from .common import ENTITY_BASE, QUERY_BASE
@@ -19,6 +20,7 @@ async def test_load_ttl(client, admin_headers):
         )
         assert resp.status_code == 200
         await asyncio.sleep(1)
+
 
 @pytest.mark.asyncio
 @pytest.mark.depends(on=["test_load_ttl"])

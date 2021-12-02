@@ -22,7 +22,7 @@ class AlreadyExistsError(BrickServerError, HTTPException):
 
 class MultipleObjectsFoundError(BrickServerError, HTTPException):
     def __init__(self, klass, name, *args, **kwargs):
-        kwargs["detail"] = "There are multiple isntances of {0} of {1}".format(
+        kwargs["detail"] = "There are multiple isntances of {} of {}".format(
             name, klass
         )
         super(MultipleObjectsFoundError, self).__init__(
@@ -31,7 +31,7 @@ class MultipleObjectsFoundError(BrickServerError, HTTPException):
 
     def __str__(self):
         return repr(
-            "There are multiple isntances of {0} of {1}".format(self.name, self.klass)
+            "There are multiple isntances of {} of {}".format(self.name, self.klass)
         )
 
 

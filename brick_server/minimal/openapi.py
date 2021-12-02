@@ -2,11 +2,11 @@
 Generate the openapi schema
 """
 
+import json
 from pathlib import Path
 from typing import Optional
 
 import click
-import json
 
 from brick_server.minimal.app import app
 
