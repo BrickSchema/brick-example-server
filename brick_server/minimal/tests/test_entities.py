@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from .common import ENTITY_BASE
@@ -17,6 +19,7 @@ async def test_load_ttl(client, admin_headers):
             allow_redirects=False,
         )
         assert resp.status_code == 200
+        await asyncio.sleep(1)
 
 
 @pytest.mark.asyncio
