@@ -40,10 +40,13 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 No longer supported.
 
 
-## Run PyTest
+## Test and Play!
+After docker-compose is executed, you can run pytest to test the functionality:
+1. Install local environment: `poetry install`. Or if you prefer, you can use the docker container which hosts brick-server which already has been started by `docker exec -it brick-server /bin/bash`
+2. Either in your local env or docker, install the test environment: `poetry install -E test`
+3. Run `pytest` (first time running may have a couple of failures with regards to entities and sparql if your machine is relatively slow, run the test again should resolve the issue).
 
-1. API document is available at `<HOSTNAME>/docs` e.g. `http://localhost:9000/docs`
-2. Example codes can be referred to at `tests/*.py`
+The test code at `tests/*.py` could be referred to as example codes. You can also play with the APIs at `<HOSTNAME>/docs` e.g. `http://localhost:9000/docs`
 
 # Background Concepts
 ## Entities in Brick
@@ -63,7 +66,7 @@ No longer supported.
 - You need to run `docker-compose up` once to instantiate a Grafana container. In the container instance, you need to get an API token (possibly without expiration) that BrickServer can use for maintenance. The generated API token should be added to `configs/configs.json` as in the example file.
 
 ## Authorization
-- Currently, we only support a very primitive authorization. A user can manually generate a JWT token with the privkey used in Brick Server, which can be used as a bearer token. The token will authorize the usage of any APIs until it expires.
+- In this example server, we only support a very primitive authorization. A user can manually generate a JWT token with the privkey used in Brick Server, which can be used as a bearer token. The token will authorize the usage of any APIs until it expires.
     - You can get it through `tools/get_jwt_token $expiration_time_in_seconds`.
 - You can retrieve the public key at `/auth/jwt_pubkey`.
 
@@ -71,18 +74,14 @@ No longer supported.
 - `tools/gen_selfsigned_certificate`
 
 
-# Tests
-1. Add a JWT token into `pytest.ini`.
-2. Execute `pytest -c pytest.ini tests/remote`.
-
 # Tutorials
 ## BrickBACnet as a BACnet connector
 1. Prepare an app token.
 2. Check the instruction at TODO
 
 # TODO
-- Integration with Traefik
-- Implementation of full authorization.
+- Better README and code commenting
+- Incorporation of front end
 
 # References
 - Metadata Models and Methods for Smart Buildings (Dissertation, UCSD, 2020)
