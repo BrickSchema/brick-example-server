@@ -32,14 +32,15 @@ async def prepare_db(request: Any):
     await drop_postgres_db()
     await create_postgres_db()
 
-    def finalizer():
-        asyncio.get_event_loop().run_until_complete(drop_postgres_db())
-
-    request.addfinalizer(finalizer)
+    # it seems that session is not closed in app
+    # def finalizer():
+    #     asyncio.get_event_loop().run_until_complete(drop_postgres_db())
+    #
+    # request.addfinalizer(finalizer)
 
 
 @pytest.fixture(scope="session")
-async def app() -> AsyncGenerator[FastAPI, Any]:
+async def app(prepare_db) -> AsyncGenerator[FastAPI, Any]:
     async with LifespanManager(fastapi_app):
         yield fastapi_app
 
@@ -72,7 +73,7 @@ def admin_headers(admin_jwt: str):
 
 
 @pytest.fixture(scope="session")
-def graphdb(prepare_db) -> GraphDB:
+def graphdb(app: FastAPI) -> GraphDB:
     return GraphDB(
         host=settings.graphdb_host,
         port=settings.graphdb_port,

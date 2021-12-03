@@ -15,9 +15,9 @@ from brick_server.minimal.auth.authorization import (
     PermissionType,
     jwt_security_scheme,
 )
-from brick_server.minimal.dbs import graphdb
-from brick_server.minimal.dependencies import dependency_supplier
+from brick_server.minimal.dependencies import dependency_supplier, get_graphdb
 from brick_server.minimal.descriptions import Descriptions
+from brick_server.minimal.interfaces import GraphDB
 from brick_server.minimal.models import get_all_relationships
 from brick_server.minimal.schemas import Entity, EntityIds, IsSuccess
 
@@ -61,8 +61,8 @@ async def get_name(graphdb, entity_id):
 
 @cbv(entity_router)
 class EntitiesByFileResource:
-
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
+    graphdb: GraphDB = Depends(get_graphdb)
 
     @entity_router.post(
         "/upload",
@@ -77,7 +77,7 @@ class EntitiesByFileResource:
         named_graph: Optional[str] = Query(None, description=Descriptions.graph),
         checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ):
-        await graphdb.import_schema_from_file(file, named_graph)
+        await self.graphdb.import_schema_from_file(file, named_graph)
         return IsSuccess()
 
     # @entity_router.post(
@@ -143,6 +143,7 @@ class EntitiesByFileResource:
 class EntitiesByIdResource:
 
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
+    graphdb: GraphDB = Depends(get_graphdb)
 
     @entity_router.get(
         "/",
@@ -159,13 +160,13 @@ class EntitiesByIdResource:
         checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.read)),
     ) -> Entity:
         print(entity_id)
-        entity_type = await get_entity_type(graphdb, entity_id)
+        entity_type = await get_entity_type(self.graphdb, entity_id)
         if not entity_type:
             raise HTTPException(
                 status_code=404, detail="{} does not exist".format(entity_id)
             )
-        relationships = await get_all_relationships(graphdb, entity_id)
-        name = await get_name(graphdb, entity_id)
+        relationships = await get_all_relationships(self.graphdb, entity_id)
+        name = await get_name(self.graphdb, entity_id)
         entity = Entity(
             type=entity_type,
             relationships=relationships,
@@ -270,6 +271,7 @@ class ListEntityParams(BaseModel):
 class EntitiesResource:
 
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
+    graphdb: GraphDB = Depends(get_graphdb)
 
     @entity_router.post(
         "/list",
@@ -297,7 +299,7 @@ class EntitiesResource:
             for obj in objects:
                 qstr += f"?entity brick:{predicate} {obj}.\n"  # TODO: Parameterize property base between bf vs brick.
         qstr += "}"
-        res = await graphdb.query(qstr)
+        res = await self.graphdb.query(qstr)
         entity_ids = [row["entity"]["value"] for row in res["results"]["bindings"]]
         return EntityIds(entity_ids=entity_ids)
 

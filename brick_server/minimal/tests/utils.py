@@ -28,13 +28,13 @@ def register_admin(user_id: str) -> User:
     return user
 
 
-async def get_postgres_conn():
+async def get_postgres_conn(database: str = "template1"):
     conn = await asyncpg.connect(
         host=settings.timescale_host,
         port=settings.timescale_port,
         user=settings.timescale_username,
         password=settings.timescale_password,
-        database="template1",
+        database=database,
     )
     return conn
 
@@ -62,6 +62,9 @@ async def create_postgres_db():
     await conn.execute(
         f'CREATE DATABASE "{settings.timescale_dbname}" OWNER "{settings.timescale_username}"'
     )
+    await conn.close()
+    conn = await get_postgres_conn(database=settings.timescale_dbname)
+    await conn.execute("CREATE EXTENSION IF NOT EXISTS postgis CASCADE")
     await conn.close()
 
 

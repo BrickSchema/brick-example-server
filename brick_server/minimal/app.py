@@ -10,9 +10,6 @@ from brick_server.minimal.config import FastAPIConfig
 
 settings = config.init_settings(FastAPIConfig)
 
-
-# from .dummy_frontend import dummy_frontend_router
-
 API_V1_PREFIX = "/brickapi/v1"
 
 logging.init_logging()
