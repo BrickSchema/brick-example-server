@@ -19,7 +19,7 @@ async def test_load_ttl(client, admin_headers):
             allow_redirects=False,
         )
         assert resp.status_code == 200
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
 
 
 @pytest.mark.asyncio

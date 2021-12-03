@@ -12,7 +12,10 @@ services:
     ports:
       - "35432:5432"
     volumes:
-      - ./docker/init_postgis.sh:/docker-entrypoint-initdb.d/003_init_postgis.sh
+      - type: bind
+        source: ./docker/init_postgis.sh
+        target: /docker-entrypoint-initdb.d/003_init_postgis.sh
+        read_only: true
   brick-server-graphdb:
     container_name: brick-server-graphdb
     image: w1zzard/graphdb-free:9.9.0
@@ -58,6 +61,7 @@ services:
     depends_on:
       - brick-server-graphdb
     privileged: true
+    command: dockerize -wait http://brick-server-graphdb:7200/rest/repositories python3 -m brick_server.minimal
 #    entrypoint: /app/docker/start-reload.sh
 
 networks:
