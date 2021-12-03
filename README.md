@@ -1,10 +1,9 @@
-Reference Brick Server
-================================
+# Brick Example Server
 
-Brick Server is an implementation of Brick API on top of a timeseries database (TimescaleDB) and a Brick database (Virtuoso). Data in buildings are represented as streams of timestamped-values generated from [Point](http://brickschema.org/schema/1.0.3/Brick#Point)s which may record a physical property or actuate a device. Metadata helps to find the right data streams that an application needs. Data and metadata are in different formats, and thus we have to store them in different databases. Brick Server provides a single API endpoint to access those two different data sources.
+Brick Server is an example implementation of Brick API on top of a timeseries database (TimescaleDB) and a rdf database (Graphdb). Data in buildings are represented as streams of timestamped-values generated from [Point](http://brickschema.org/schema/1.2/Brick#Point)s which may record a physical property or actuate a device. Metadata helps to find the right data streams that an application needs. Data and metadata are in different formats, and thus we have to store them in different databases. Brick Server provides a single API endpoint to access those two different data sources.
 
-Brick Server is
-- a minimal but fully functional Bulding Operating System (BOS),
+Brick Example Server is
+- a minimal but fully functional "Building Operating System" (BOS),
 - an interface for Brick applications,
 - an emulator of a building for Brick applications development,
 - a demonstration of general methods to integrate your system with Brick, and
@@ -12,8 +11,10 @@ Brick Server is
 
 If you want to learn more about Brick, please visit [brickschema.org](https://brickschema.org) for materials.
 
+*Note: a recent update has drastically changed the entire codebase. The dependency management, the containerization, the rdf database and so on are all updated. Please make sure to check out the lastest version.*
 
-# Instructions
+
+# Getting Started
 
 ## System Requirements
 - OS: Linux (tested over Ubuntu 18.04 and Debian 9.)
@@ -23,49 +24,28 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 
 ### Docker Compose (Recommended)
 
-1. Configure `config.json`.
-    1. Change `configs/configs.json.template` to `configs/configs.json`
-    2. Modify the configuration in `configs/configs.json`.
-        - The preset parameters are working with the default docker-compose file.
-        - You can ignore `oauth_connections` and `frontend` as they currently under development.
-2. Configure `docker-compose.yml`
-    1. Change `docker-compose.yml.template` to `docker-compose.yml`.
-    2. Modify the configuration in `docker-compose.yml`.
-        - Choose if you want to run https inside the docker. You can enable HTTPS by uncommenting `ENABLE_SSL=true`. In that case, you should specify the location of cert files (`CERTFILE` and `KEYFILE`)as well as bind the files from the host machine (e.g., `/etc/letsencrypt`.).
-        - You can further configure `brickserver` module for more optimization. The current image uses `gunicorn` as a web server and `uvicorn` as an ASGI. Please refer to [the image's doc](https://github.com/tiangolo/uvicorn-gunicorn-fastapi-docker) for more information.
+1. Build the docker image
 
-3. Run docker-compose
-    1. Execute `docker-compose up`.
+    `DOCKER_BUILDKIT=1 docker build . -t brick_server:minimal`
+2. (Optional) Configure your `docker-compose.yml` accordingly if necessary. The recommended way is to create sub configuration files for different use case e.g. `docker-compose-deployment.yml` and run 
 
-4. Get an App Token.
-    1. Execute `docker exec -t brickserver /app/tools/get_jwt_token`.
-    2. Keep and use it as a bearer token.
-
-5. (for testing) Register dummy information
-    1. Execute `docker exec -t brickserver /app/tools/register_admin`.
+    `docker-compose -f docker-compose.yml -f docker-compose-deploy.yml up -d`
+3. Run docker-compose 
+    
+    `docker-compose -f docker-compose.yml up -d`
 
 
-### Manual Installation (Outdated, but will be updated.)
 
-1. Install and run Virtuoso (Note: Please use only released versions in Virtuoso repository. [link](https://github.com/openlink/virtuoso-opensource/releases))
-2. Install and run TimescaleDB/PostGIS/PostgreSQL. [link](https://docs.timescale.com/getting-started/installation)
-5. Install pip packages by ``pip install -r requirements.txt``
-6. Configure the databases and configure ``configs/configs.json``
-    1. Create a database with a proper name in the db.
-    2. Create a role/user of the database.
-    3. Add them inside ``configs/configs.json``
-7. Run ``python entry.py`` to run the server.
-8. Run ``python examples/test_api.py`` in another console.
-9. API Documentation would be available at https://localhost/api/v1/doc
-10. Install and run the fronted based on its instruction: https://gitlab.com/jbkoh/brick-server-frontend
+### Manual Installation 
+No longer supported.
 
 
-# Getting Started
-1. API document is available at `YOUR_HOSTNAME/docs`
-2. Example codes are available at `tests/remote/*.py`
-3. Jupyter Notebooks will be available.
+## Run PyTest
 
-# Core Concepts
+1. API document is available at `<HOSTNAME>/docs` e.g. `http://localhost:9000/docs`
+2. Example codes can be referred to at `tests/*.py`
+
+# Background Concepts
 ## Entities in Brick
 - An entity (sensor, room, VAV, etc.) is represented by its UUID under the [UUID namespace](https://tools.ietf.org/html/rfc4122).
     - E.g.,
@@ -78,7 +58,7 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 - Each row is a timestamped value.
 - The `uuids` in the timeseries database are the same uuids in Brick.
 
-### Grafana
+## Grafana (This part is outdated)
 - If you use `docker-compose.yaml.template` to run Brick Server, a Grafana will be automatically instantiated on your localhost as well. The default username/password is `bricker/brick-demo` as specified in `config/grafana/grafana.ini`.
 - You need to run `docker-compose up` once to instantiate a Grafana container. In the container instance, you need to get an API token (possibly without expiration) that BrickServer can use for maintenance. The generated API token should be added to `configs/configs.json` as in the example file.
 

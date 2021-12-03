@@ -38,7 +38,7 @@ services:
   brick-server:
     container_name: brick-server
     image: brick_server:minimal
-    restart: always
+    restart: on-failure
     volumes:
       - ./brick_server:/root/brick_server
       - /var/run/docker.sock:/var/run/docker.sock
@@ -55,6 +55,8 @@ services:
       - BRICK_HOST=brick-server-virtuoso
       - GRAPHDB_HOST=brick-server-graphdb
 #      - GRAFANA_HOST=brick-server-grafana
+    depends_on:
+      - brick-server-graphdb
     privileged: true
 #    entrypoint: /app/docker/start-reload.sh
 

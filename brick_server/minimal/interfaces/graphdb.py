@@ -58,7 +58,7 @@ class GraphDB:
             named_graph = url
         data = self.generate_import_settings(url, named_graph)
         resp = await self.client.post(
-            f"/rest/data/import/upload/{self.repository}/url", json=data
+            f"/rest/data/import/upload/{self.repository}/url", json=data, timeout=30
         )
         logger.debug(resp.content)
 

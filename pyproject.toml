@@ -5,6 +5,7 @@ requires = ["poetry-core>=1.0.0"]
 [tool]
 
 [tool.poetry]
+authors = ["Brick Dev Team <x5fu@ucsd.edu>"]
 description = "brick server minimal"
 license = "BSD-3-Clause"
 name = "brick-server-minimal"
