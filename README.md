@@ -27,16 +27,16 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 1. Build the docker image
 
     `DOCKER_BUILDKIT=1 docker build . -t brick_server:minimal`
-2. (Optional) Configure your `docker-compose.yml` accordingly if necessary. The recommended way is to create sub configuration files for different use case e.g. `docker-compose-deployment.yml` and run 
+2. (Optional) Configure your `docker-compose.yml` accordingly if necessary. The recommended way is to create sub configuration files for different use case e.g. `docker-compose-deployment.yml` and run
 
     `docker-compose -f docker-compose.yml -f docker-compose-deploy.yml up -d`
-3. Run docker-compose 
-    
+3. Run docker-compose
+
     `docker-compose -f docker-compose.yml up -d`
 
 
 
-### Manual Installation 
+### Manual Installation
 No longer supported.
 
 
@@ -67,8 +67,7 @@ The test code at `tests/*.py` could be referred to as example codes. You can als
 
 ## Authorization
 - In this example server, we only support a very primitive authorization. A user can manually generate a JWT token with the privkey used in Brick Server, which can be used as a bearer token. The token will authorize the usage of any APIs until it expires.
-    - You can get it through `tools/get_jwt_token $expiration_time_in_seconds`.
-- You can retrieve the public key at `/auth/jwt_pubkey`.
+- You can get it through `python -m brick_server.minimal generate-jwt --user-id=admin` (you can use any `user_id` here).
 
 ## Create Self-Signed SSL Certificate
 - `tools/gen_selfsigned_certificate`

@@ -1,12 +1,11 @@
-import asyncio
-
 import pytest
 
 from .common import ENTITY_BASE, QUERY_BASE
+from .utils import ensure_graphdb_upload
 
 
 @pytest.mark.asyncio
-async def test_load_ttl(client, admin_headers):
+async def test_load_ttl(graphdb, client, admin_headers):
     with open("examples/data/bldg.ttl", "rb") as fp:
         # admin_headers.update({"Content-Type": "text/turtle"})
         files = {
@@ -19,7 +18,7 @@ async def test_load_ttl(client, admin_headers):
             allow_redirects=False,
         )
         assert resp.status_code == 200
-        await asyncio.sleep(2)
+        await ensure_graphdb_upload(graphdb, "bldg.ttl")
 
 
 @pytest.mark.asyncio
@@ -40,7 +39,7 @@ select ?s where {
 @pytest.mark.depends(on=["test_load_ttl"])
 async def test_simple_sql(client, admin_headers):
     qstr = """
-select * from brick_data;
+select * from brick_data LIMIT 10;
 """
     admin_headers.update({"Content-Type": "application/sql"})
     resp = await client.post(

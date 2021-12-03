@@ -9,6 +9,7 @@ from httpx import AsyncClient
 
 from brick_server.minimal.app import app as fastapi_app
 from brick_server.minimal.auth.authorization import create_jwt_token
+from brick_server.minimal.interfaces.graphdb import GraphDB
 from brick_server.minimal.models import User
 from brick_server.minimal.tests.utils import (
     create_postgres_db,
@@ -68,3 +69,12 @@ def admin_jwt(admin_user: User) -> str:
 def admin_headers(admin_jwt: str):
     headers = {"Authorization": "Bearer " + admin_jwt}
     return headers
+
+
+@pytest.fixture(scope="session")
+def graphdb(prepare_db) -> GraphDB:
+    return GraphDB(
+        host=settings.graphdb_host,
+        port=settings.graphdb_port,
+        repository=settings.graphdb_repository,
+    )

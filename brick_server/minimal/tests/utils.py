@@ -1,7 +1,10 @@
+import asyncio
+
 import arrow
 import asyncpg
 from fastapi_rest_framework.config import settings
 
+from brick_server.minimal.interfaces.graphdb import GraphDB
 from brick_server.minimal.models import User
 
 
@@ -60,3 +63,16 @@ async def create_postgres_db():
         f'CREATE DATABASE "{settings.timescale_dbname}" OWNER "{settings.timescale_username}"'
     )
     await conn.close()
+
+
+async def ensure_graphdb_upload(graphdb: GraphDB, name: str) -> None:
+    for i in range(5):
+        try:
+            result = await graphdb.check_schema(name)
+            if result:
+                return
+        except Exception as e:
+            print(e)
+        await asyncio.sleep(2 ** i)
+
+    assert False

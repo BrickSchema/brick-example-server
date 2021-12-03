@@ -1,12 +1,11 @@
-import asyncio
-
 import pytest
 
 from .common import ENTITY_BASE
+from .utils import ensure_graphdb_upload
 
 
 @pytest.mark.asyncio
-async def test_load_ttl(client, admin_headers):
+async def test_load_ttl(graphdb, client, admin_headers):
     with open("examples/data/ebu3b_brick.ttl", "rb") as fp:
         files = {
             "file": ("ebu3b.ttl", fp, "application/octet-stream"),
@@ -19,7 +18,7 @@ async def test_load_ttl(client, admin_headers):
             allow_redirects=False,
         )
         assert resp.status_code == 200
-        await asyncio.sleep(2)
+        await ensure_graphdb_upload(graphdb, "ebu3b.ttl")
 
 
 @pytest.mark.asyncio

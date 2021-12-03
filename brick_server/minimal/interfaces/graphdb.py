@@ -52,6 +52,18 @@ class GraphDB:
             "requestIdHeadersToForward": None,
         }
 
+    async def check_schema(self, name: str) -> bool:
+        resp = await self.client.get(
+            f"/rest/data/import/upload/{self.repository}", timeout=30
+        )
+        data = resp.json()
+        for row in data:
+            if row.get("name", None) == name:
+                if row.get("status", None) == "DONE":
+                    return True
+                return False
+        return False
+
     async def import_schema_from_url(self, url: str, named_graph: Optional[str] = None):
         logger.info("GraphDB import Brick Schema from url {}", url)
         if not named_graph:

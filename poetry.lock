@@ -357,7 +357,7 @@ sqlmodel = "^0.0.4"
 type = "git"
 url = "https://github.com/joint-online-judge/fastapi-rest-framework"
 reference = "master"
-resolved_reference = "b0e93f0c0085597fcea4bb79606b653422f16700"
+resolved_reference = "e3631a56ca3845545de1554302bded42677f8bdc"
 
 [[package]]
 name = "fastapi-utils"
