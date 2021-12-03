@@ -1,11 +1,11 @@
 from typing import Callable
 
-from fastapi import Body, Depends, Query
+from fastapi import Body, Depends, Query, status
+from fastapi.exceptions import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from starlette.requests import Request
-from werkzeug import exceptions
 
 from brick_server.minimal.auth.authorization import jwt_security_scheme
 from brick_server.minimal.dependencies import (
@@ -46,12 +46,12 @@ class ActuationEntity:
         actuation_value = actuation_request.value
 
         try:
-            status, detail = self.actuation_iface.actuate(entity_id, actuation_value)
-            return IsSuccess(is_success=status, reason=detail)
+            result, detail = self.actuation_iface.actuate(entity_id, actuation_value)
+            return IsSuccess(is_success=result, reason=detail)
         except Exception as e:
             return IsSuccess(is_success=False, reason=f"{e}")
 
-        raise exceptions.InternalServerError("This should not be reached.")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "This should not be reached.")
 
     def relinquish(self, entity_id):
         pass
