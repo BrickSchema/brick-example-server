@@ -39,8 +39,6 @@ class AuthConfig(config.Base):
 class DatabaseConfig(config.Base):
     """
     Database configuration
-
-    The configuration of PostgreSQL and Redis
     """
 
     mongo_host: str = "localhost"
