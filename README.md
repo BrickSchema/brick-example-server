@@ -20,14 +20,14 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 - OS: Linux (tested over Ubuntu 18.04 and Debian 9.)
 - Python 3.6>= is required.
 
-## Installation
+## Installation and Deployment
 
 ### Docker Compose (Recommended)
 
 1. Build the docker image
 
     `DOCKER_BUILDKIT=1 docker build . -t brick_server:minimal`
-2. (Optional) Configure your `docker-compose.yml` accordingly if necessary. The recommended way is to create sub configuration files for different use case e.g. `docker-compose-deployment.yml` and run
+2. (Optional) Configure your `docker-compose.yml` accordingly if necessary. The recommended way is to create sub configuration files for different use cases e.g. `docker-compose-deployment.yml` and run
 
     `docker-compose -f docker-compose.yml -f docker-compose-deploy.yml up -d`
 3. Run docker-compose
@@ -40,15 +40,19 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 No longer supported.
 
 
-## Test and Play!
+## Test
 After docker-compose is executed, you can run pytest to test the functionality:
 1. Install local environment: `poetry install`. Or if you prefer, you can use the docker container which hosts brick-server which already has been started by `docker exec -it brick-server /bin/bash`
-2. Either in your local env or docker, install the test environment: `poetry install -E test`
-3. Run `pytest` (first time running may have a couple of failures with regards to entities and sparql if your machine is relatively slow, run the test again should resolve the issue).
+2. Either in your local env or in the docker container (through `docker exec -it brick-server /bin/bash`, install the test environment: `poetry install -E test`
+3. Run `pytest` (first time running may have a couple of failures with regards to entities and sparql if your machine is relatively old, run the test again should resolve the issue).
 
 The test code at `tests/*.py` could be referred to as example codes. You can also play with the APIs at `<HOSTNAME>/docs` e.g. `http://localhost:9000/docs`
 
-# Background Concepts
+## Play
+
+The above `pytest` procedure uses ephermeral test dbs, but you would definitely want to play with your own data. To do this, look at the test code and see how to update your own `.ttl` file first. And then use the timeseries api to upload timeseries data for the entities inside the brick graph. Note you will need a JWT token for these API accesses, which can be obtained by `python -m brick_server.minimal generate-jwt --user-id=admin` (you can use any `user_id` here). We provide an example actuation function based on `grpc` which works with one real world deployed connector. You can get a sense on how actuation works from there, but feel free to customize your own actuation functions.
+
+# Misc
 ## Entities in Brick
 - An entity (sensor, room, VAV, etc.) is represented by its UUID under the [UUID namespace](https://tools.ietf.org/html/rfc4122).
     - E.g.,
@@ -69,17 +73,12 @@ The test code at `tests/*.py` could be referred to as example codes. You can als
 - In this example server, we only support a very primitive authorization. A user can manually generate a JWT token with the privkey used in Brick Server, which can be used as a bearer token. The token will authorize the usage of any APIs until it expires.
 - You can get it through `python -m brick_server.minimal generate-jwt --user-id=admin` (you can use any `user_id` here).
 
-## Create Self-Signed SSL Certificate
-- `tools/gen_selfsigned_certificate`
-
-
-# Tutorials
-## BrickBACnet as a BACnet connector
-1. Prepare an app token.
-2. Check the instruction at TODO
+## SSL
+- As recommended by `uvicorn`, you'd better configure the SSL setup with nginx or traefix... See [here](https://www.uvicorn.org/deployment/#running-behind-nginx)
 
 # TODO
-- Better README and code commenting
+- More comprehensive README
+- formalize code commenting
 - Incorporation of front end
 
 # References
