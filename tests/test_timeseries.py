@@ -1,7 +1,7 @@
 import pytest
 
-from brick_server.minimal.tests.common import DATA_BASE
-from brick_server.minimal.tests.data import (
+from tests.common import DATA_BASE
+from tests.data import (
     znt_data,
     znt_id,
     znt_t0,

@@ -1,12 +1,12 @@
 import pytest
 
-from .common import ENTITY_BASE, QUERY_BASE
+from .common import ENTITY_BASE, EXAMPLES_DATA_FOLDER, QUERY_BASE
 from .utils import ensure_graphdb_upload
 
 
 @pytest.mark.asyncio
 async def test_load_ttl(graphdb, client, admin_headers):
-    with open("examples/data/bldg.ttl", "rb") as fp:
+    with open(EXAMPLES_DATA_FOLDER / "bldg.ttl", "rb") as fp:
         # admin_headers.update({"Content-Type": "text/turtle"})
         files = {
             "file": ("bldg.ttl", fp, "application/octet-stream"),

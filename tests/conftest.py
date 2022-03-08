@@ -11,11 +11,7 @@ from brick_server.minimal.app import app as fastapi_app
 from brick_server.minimal.auth.authorization import create_jwt_token
 from brick_server.minimal.interfaces.graphdb import GraphDB
 from brick_server.minimal.models import User
-from brick_server.minimal.tests.utils import (
-    create_postgres_db,
-    drop_postgres_db,
-    register_admin,
-)
+from tests.utils import create_postgres_db, drop_postgres_db, register_admin
 
 
 @pytest.yield_fixture(scope="session")

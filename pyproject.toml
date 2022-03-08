@@ -19,13 +19,13 @@ version = "0.1.0"
 aiofiles = "^0.7.0"
 aiosparql = "^0.12.0"
 arrow = "^1.1.1"
-asgi-lifespan = { version = "^1.0.1", optional = true }
 asyncpg = "^0.24.0"
 Authlib = "^0.15.4"
 brick-data = {git = "https://github.com/jbkoh/brick_data.git", rev = "master"}
 fastapi = "^0.68.1"
 fastapi-rest-framework = {git = "https://github.com/joint-online-judge/fastapi-rest-framework", rev = "master"}
 fastapi-utils = "^0.2.1"
+grpcio = "^1.42.0"
 httpx = "0.12.0"
 itsdangerous = "^2.0.1"
 mongoengine = "^0.23.1"
@@ -34,11 +34,6 @@ psycopg2-binary = "^2.9.1"
 pydantic = "^1.8.2"
 PyJWT = "^2.1.0"
 pyparsing = "2.3.1"
-pytest = { version = "^6.2.5", optional = true }
-pytest-asyncio = { version = "^0.15.1", optional = true }
-pytest-depends = { version = "^1.0.1", optional = true }
-pytest-env = { version = "^0.6.2", optional = true }
-pytest-ordering = { version = "^0.6", optional = true }
 python = ">=3.7,<3.11"
 python-multipart = "^0.0.5"
 PyYAML = "^5.4.1"
@@ -46,20 +41,15 @@ rdflib = "^4.2.2"
 requests = "^2.26.0"
 timeout-decorator = "^0.5.0"
 uvicorn = "^0.15.0"
-grpcio = "^1.42.0"
 
 [tool.poetry.dev-dependencies]
+asgi-lifespan = "^1.0.1"
 pre-commit = "^2.15.0"
-
-[tool.poetry.extras]
-test = [
-    "asgi-lifespan",
-    "pytest",
-    "pytest-asyncio",
-    "pytest-depends",
-    "pytest-env",
-    "pytest-ordering",
-]
+pytest = "^6.2.5"
+pytest-asyncio = "^0.15.1"
+pytest-depends = "^1.0.1"
+pytest-env = "^0.6.2"
+pytest-ordering = "^0.6"
 
 [tool.pycln]
 all = true

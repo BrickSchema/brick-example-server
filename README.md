@@ -26,7 +26,10 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 
 1. Build the docker image
 
-    `DOCKER_BUILDKIT=1 docker build . -t brick_server:minimal`
+`DOCKER_BUILDKIT=1 docker build . -t brick_server:minimal`
+
+(use `set DOCKER_BUILDKIT=1` to set environment variable on Windows)
+
 2. (Optional) Configure your `docker-compose.yml` accordingly if necessary. The recommended way is to create sub configuration files for different use cases e.g. `docker-compose-deployment.yml` and run
 
     `docker-compose -f docker-compose.yml -f docker-compose-deploy.yml up -d`
@@ -43,14 +46,18 @@ No longer supported.
 ## Test
 After docker-compose is executed, you can run pytest to test the functionality:
 1. Install local environment: `poetry install`. Or if you prefer, you can use the docker container which hosts brick-server which already has been started by `docker exec -it brick-server /bin/bash`
-2. Either in your local env or in the docker container (through `docker exec -it brick-server /bin/bash`, install the test environment: `poetry install -E test`
-3. Run `pytest` (first time running may have a couple of failures with regards to entities and sparql if your machine is relatively old, run the test again should resolve the issue).
+2. Either in your local env or in the docker container (through `docker exec -it brick-server /bin/bash`, install the test environment: `poetry install`
+3. Run `pytest` (first time running may have a couple of failures in regard to entities and sparql if your machine is relatively old, run the test again should resolve the issue).
 
 The test code at `tests/*.py` could be referred to as example codes. You can also play with the APIs at `<HOSTNAME>/docs` e.g. `http://localhost:9000/docs`
 
 ## Play
 
 The above `pytest` procedure uses ephermeral test dbs, but you would definitely want to play with your own data. To do this, look at the test code and see how to update your own `.ttl` file first. And then use the timeseries api to upload timeseries data for the entities inside the brick graph. Note you will need a JWT token for these API accesses, which can be obtained by `python -m brick_server.minimal generate-jwt --user-id=admin` (you can use any `user_id` here). We provide an example actuation function based on `grpc` which works with one real world deployed connector. You can get a sense on how actuation works from there, but feel free to customize your own actuation functions.
+
+## Development
+
+If you wish to contribute to this project, please pass all pre commit hooks before any of your commit. Run the command `pre-commit install` to initialize it.
 
 # Misc
 ## Entities in Brick
