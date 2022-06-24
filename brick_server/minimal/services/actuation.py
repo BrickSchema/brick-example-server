@@ -1,4 +1,5 @@
-from typing import Callable
+from typing import Callable, Dict, Optional, Tuple, Union
+from pydantic import conlist
 
 from fastapi import Body, Depends, Query, status
 from fastapi.exceptions import HTTPException
@@ -15,7 +16,7 @@ from brick_server.minimal.dependencies import (
 )
 from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import BaseTimeseries, RealActuation
-from brick_server.minimal.schemas import ActuationRequest, IsSuccess
+from brick_server.minimal.schemas import IsSuccess
 
 actuation_router = InferringRouter(tags=["Actuation"])
 
@@ -28,28 +29,31 @@ class ActuationEntity:
 
     @actuation_router.post(
         "/",
-        description="Actuate an entity to a value",
+        description="Actuate an entity to a value. Body format {{entity_id: [actuation_value, optional playceholder}, ...}",
         response_model=IsSuccess,
         status_code=200,
     )
     async def post(
         self,
         request: Request,
-        entity_id: str = Query(..., description=Descriptions.entity_id),
-        actuation_request: ActuationRequest = Body(...),
+        # entity_id: str = Query(..., description=Descriptions.entity_id),
+        actuation_request: Dict[str, Union[Tuple[str], Tuple[str,str]]] = Body(...,),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
     ) -> IsSuccess:
         # if scheduled_time:
         #    # TODO: Implement this
         #    raise exceptions.NotImplemented('Currently only immediate actuation is supported.')
 
-        actuation_value = actuation_request.value
-
-        try:
-            result, detail = self.actuation_iface.actuate(entity_id, actuation_value)
-            return IsSuccess(is_success=result, reason=detail)
-        except Exception as e:
-            return IsSuccess(is_success=False, reason=f"{e}")
+        # actuation_key = actuation_request.key
+        # actuation_value = actuation_request.key
+        for entity_id, actuation in actuation_request.items():
+            try:
+                if len(actuation) == 2:
+                    print(actuation[1])
+                result, detail = self.actuation_iface.actuate(entity_id, actuation[0])
+                return IsSuccess(is_success=result, reason=detail)
+            except Exception as e:
+                return IsSuccess(is_success=False, reason=f"{e}")
 
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "This should not be reached.")
 

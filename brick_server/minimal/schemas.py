@@ -67,9 +67,10 @@ class IsSuccess(BaseModel):
     reason: str = ""
 
 
-class ActuationRequest(BaseModel):
-    value: float = Field(..., description=Descriptions.actuation_value)
-    # scheduled_time: float = Field(None)
+# class ActuationRequest(BaseModel):
+#     entity_id: str = Field(..., description=Descriptions.entity_id)
+#     value: str = Field(..., description=Descriptions.actuation_value)
+#     # scheduled_time: float = Field(None)
 
 
 class CreateEntityRequest(BaseModel):
