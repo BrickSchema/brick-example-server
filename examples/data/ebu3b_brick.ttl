@@ -1,10 +1,22 @@
-@prefix brick: <https://brickschema.org/schema/1.1/Brick#> .
+@prefix brick: <https://brickschema.org/schema/Brick#> .
 @prefix ebu3b: <http://ucsd.edu/building/ontology/ebu3b#>.
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix bacnet: <http://data.ashrae.org/bacnet/2020#> .
+
+
+ebu3b:EBU3B_Rm_4262_CORSIBOX a brick:Filter .
+
+ebu3b:BERT_PLUG_80c95519c754 a brick:PlugStrip ;
+    brick:hasLocation ebu3b:EBU3B_Rm_4262 ;
+    brick:feeds ebu3b:EBU3B_Rm_4262_CORSIBOX .
+
+ebu3b:BERT_PLUG_80c95519c754_BV1 a brick:On_Off_Command ;
+    brick:isPointOf ebu3b:BERT_PLUG_80c95519c754 ;
+    brick:hasTimeseriesId "640852_binaryValue_1" .
 
 ebu3b:BSBM_BATT a brick:Battery_Voltage_Sensor ;
     brick:isPointOf ebu3b:BSB_Solar_Panel_Battery .
