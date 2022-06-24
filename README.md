@@ -32,7 +32,7 @@ If you want to learn more about Brick, please visit [brickschema.org](https://br
 
 2. (Optional) Configure your `docker-compose.yml` accordingly if necessary. The recommended way is to create sub configuration files for different use cases e.g. `docker-compose-deployment.yml` and run
 
-    `docker-compose -f docker-compose.yml -f docker-compose-deploy.yml up -d`
+    `docker-compose -f docker-compose.yml -f docker-compose-deployment.yml up -d`
 3. Run docker-compose
 
     `docker-compose -f docker-compose.yml up -d`
