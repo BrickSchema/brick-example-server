@@ -24,6 +24,7 @@ def serve() -> None:
         reload=settings.debug,
         log_level="debug",
         reload_dirs=["brick_server/minimal"],
+        workers=4
     )
 
 
