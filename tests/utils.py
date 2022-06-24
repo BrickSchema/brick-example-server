@@ -69,7 +69,7 @@ async def create_postgres_db():
 
 
 async def ensure_graphdb_upload(graphdb: GraphDB, name: str) -> None:
-    for i in range(5):
+    for i in range(7):
         try:
             result = await graphdb.check_schema(name)
             if result:

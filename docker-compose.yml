@@ -44,6 +44,7 @@ services:
     restart: on-failure
     volumes:
       - ./brick_server:/root/brick_server
+      - ./tests:/root/tests
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "9000:9000"
