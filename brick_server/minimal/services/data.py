@@ -116,8 +116,8 @@ class Timeseries:
                     data.append(
                         [datum[uuid_idx], datum[timestamp_idx], float(datum[value_idx])]
                     )
-                except Exception:
-                    logger.info("data error: {}", datum)
+                except Exception as e:
+                    logger.info(f"data {datum} with error {e}")
             futures = self.add_data(data, data_type=value_col)
         await asyncio.gather(futures)
         return IsSuccess()

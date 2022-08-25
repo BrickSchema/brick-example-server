@@ -46,7 +46,7 @@ No longer supported.
 ## Test
 After docker-compose is executed, you can run pytest to test the functionality:
 1. Install local environment: `poetry install`. Or if you prefer, you can use the docker container which hosts brick-server which already has been started by `docker exec -it brick-server /bin/bash`
-2. Either in your local env or in the docker container (through `docker exec -it brick-server /bin/bash`, install the test environment: `poetry install`
+2. Either in your local env or in the docker container (through `docker exec -it brick-server /bin/bash`), install the test environment: `poetry install`
 3. Run `pytest` (first time running may have a couple of failures in regard to entities and sparql if your machine is relatively old, run the test again should resolve the issue).
 
 The test code at `tests/*.py` could be referred to as example codes. You can also play with the APIs at `<HOSTNAME>/docs` e.g. `http://localhost:9000/docs`
