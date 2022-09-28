@@ -85,7 +85,11 @@ class GraphDB:
         )
         files = {
             "file": (file.filename, file.file, "application/octet-stream"),
-            "importSettings": ("blob", json.dumps(data), "application/json"),
+            "importSettings": (
+                "blob",
+                json.dumps(data).encode("utf-8"),
+                "application/json",
+            ),
         }
         resp = await self.client.post(
             f"/rest/data/import/upload/{self.repository}/file", files=files

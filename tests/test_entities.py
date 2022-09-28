@@ -15,7 +15,7 @@ async def test_load_ttl(graphdb, client, admin_headers):
             params={"named_graph": "http://ucsd.edu/building/ontology/ebu3b#"},
             headers=admin_headers,
             files=files,
-            allow_redirects=False,
+            follow_redirects=False,
         )
         assert resp.status_code == 200
         await ensure_graphdb_upload(graphdb, "ebu3b.ttl")
@@ -31,6 +31,7 @@ async def test_get_an_entity(client, admin_headers):
         params={
             "entity_id": "http://ucsd.edu/building/ontology/ebu3b#EBU3B_HVAC_Zone_Rm_3207"
         },
+        follow_redirects=True,
     )
     assert resp.status_code == 200
     assert "Zone" in resp.json()["type"].split("#")
@@ -45,7 +46,7 @@ async def test_get_an_entity(client, admin_headers):
 #         resp = requests.post(ENTITY_BASE + '/upload',
 #                              headers=headers,
 #                              data=fp,
-#                              allow_redirects=False,
+#                              follow_redirects=False,
 #                              )
 #         assert resp.status_code == 200
 

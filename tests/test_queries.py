@@ -15,7 +15,7 @@ async def test_load_ttl(graphdb, client, admin_headers):
             ENTITY_BASE + "/upload",
             headers=admin_headers,
             files=files,
-            allow_redirects=False,
+            follow_redirects=False,
         )
         assert resp.status_code == 200
         await ensure_graphdb_upload(graphdb, "bldg.ttl")
