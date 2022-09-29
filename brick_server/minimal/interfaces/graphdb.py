@@ -19,7 +19,18 @@ class GraphDB:
 
     async def init_repository(self):
         logger.info("GraphDB init repository")
-        data = {"id": self.repository, "type": "free", "title": "", "params": {}}
+        data = {
+            "id": self.repository,
+            "type": "free",
+            "title": "",
+            "params": {
+                "ruleset": {
+                    "label": "Ruleset",
+                    "name": "ruleset",
+                    "value": "owl2-rl-optimized",
+                }
+            },
+        }
         resp = await self.client.post("/rest/repositories", json=data)
         if resp.status_code != 201:
             logger.debug(resp.content)
