@@ -41,6 +41,7 @@ rdflib = "^4.2.2"
 requests = "^2.26.0"
 timeout-decorator = "^0.5.0"
 uvicorn = "^0.15.0"
+click-default-group = "^1.2.2"
 
 [tool.poetry.dev-dependencies]
 asgi-lifespan = "^1.0.1"

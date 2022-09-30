@@ -34,7 +34,7 @@ async def initialization() -> None:
     from brick_server.minimal.dbs import graphdb, ts_db
 
     await graphdb.init_repository()
-    await graphdb.import_schema_from_url("https://brickschema.org/schema/Brick")
+    # await graphdb.import_schema_from_url("https://brickschema.org/schema/Brick")
 
     # logger.info("Brick SPARQL load schema")
     # await brick_sparql.load_schema()

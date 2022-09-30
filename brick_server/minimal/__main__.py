@@ -1,16 +1,15 @@
 import click
+from click_default_group import DefaultGroup
 import uvicorn
 from fastapi_rest_framework import cli, config
 
 from brick_server.minimal.config import FastAPIConfig
 
 
-@click.group(invoke_without_command=True)
+@click.group(cls=DefaultGroup, default='serve', default_if_no_args=True)
 @click.help_option("--help", "-h")
-@click.pass_context
-def cli_group(ctx):
-    if ctx.invoked_subcommand is None:
-        ctx.invoke(serve)
+def cli_group():
+    pass
 
 
 @cli.command()
@@ -24,7 +23,7 @@ def serve() -> None:
         reload=settings.debug,
         log_level="debug",
         reload_dirs=["brick_server/minimal"],
-        workers=4
+        workers=settings.workers,
     )
 
 

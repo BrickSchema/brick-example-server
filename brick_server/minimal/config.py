@@ -14,6 +14,7 @@ class BaseConfig(config.Base):
     debug: bool = False
     host: str = "localhost"
     port: int = 9000
+    workers: int = 4
 
     hostname: str = "http://localhost:9000"
     frontend: str = "DUMMY-NOT-WORK"
