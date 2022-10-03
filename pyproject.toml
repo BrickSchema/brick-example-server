@@ -22,6 +22,7 @@ arrow = "^1.1.1"
 asyncpg = "^0.24.0"
 Authlib = "^0.15.4"
 brick-data = {git = "https://github.com/jbkoh/brick_data.git", rev = "master"}
+click-default-group = "^1.2.2"
 fastapi = "^0.78.0"
 fastapi-rest-framework = {git = "https://github.com/joint-online-judge/fastapi-rest-framework", rev = "master"}
 fastapi-utils = "^0.2.1"
@@ -39,9 +40,9 @@ python-multipart = "^0.0.5"
 PyYAML = "^5.4.1"
 rdflib = "^4.2.2"
 requests = "^2.26.0"
+tenacity = "^8.1.0"
 timeout-decorator = "^0.5.0"
 uvicorn = "^0.15.0"
-click-default-group = "^1.2.2"
 
 [tool.poetry.dev-dependencies]
 asgi-lifespan = "^1.0.1"

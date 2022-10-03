@@ -63,7 +63,7 @@ class GraphDB:
             "requestIdHeadersToForward": None,
         }
 
-    async def check_schema(self, name: str) -> bool:
+    async def check_import_schema(self, name: str) -> bool:
         resp = await self.client.get(
             f"/rest/data/import/upload/{self.repository}", timeout=30
         )
@@ -75,10 +75,51 @@ class GraphDB:
                 return False
         return False
 
-    async def import_schema_from_url(self, url: str, named_graph: Optional[str] = None):
-        logger.info("GraphDB import Brick Schema from url {}", url)
+    async def list_graphs(self):
+        resp = await self.client.get(
+            f"/repositories/{self.repository}/contexts",
+            headers={"Accept": "application/json"},
+        )
+        try:
+            data = resp.json()
+            logger.info(data)
+            result = data["results"]["bindings"]
+            graphs = list(map(lambda x: x["contextID"]["value"], result))
+            logger.info(graphs)
+            return graphs
+        except Exception as e:
+            logger.exception(e)
+            return []
+
+    async def clear_import_file(self, file_name: str):
+        logger.info("GraphDB clear import {}", file_name)
+        resp = await self.client.request(
+            "DELETE",
+            f"/rest/data/import/upload/{self.repository}/status",
+            params={"remove": "true"},
+            json=[file_name],
+        )
+        logger.debug(resp.request)
+        logger.debug(resp.content)
+
+    async def delete_schema(self, named_graph: str):
+        logger.info("GraphDB delete schema {}", named_graph)
+        resp = await self.client.post(
+            f"/repositories/{self.repository}/statements",
+            headers={"Accept": "application/json"},
+            data={"update": f"CLEAR GRAPH <{named_graph}>"},
+            timeout=300,
+        )
+        logger.debug(resp.content)
+
+    async def import_schema_from_url(
+        self, url: str, named_graph: Optional[str] = None, delete: bool = False
+    ):
+        logger.info("GraphDB import schema from url {}", url)
         if not named_graph:
             named_graph = url
+        if delete:
+            await self.delete_schema(named_graph)
         data = self.generate_import_settings(url, named_graph)
         resp = await self.client.post(
             f"/rest/data/import/upload/{self.repository}/url", json=data, timeout=30
@@ -86,10 +127,12 @@ class GraphDB:
         logger.debug(resp.content)
 
     async def import_schema_from_file(
-        self, file: UploadFile, named_graph: Optional[str] = None
+        self, file: UploadFile, named_graph: Optional[str] = None, delete: bool = False
     ):
         if not named_graph:
             named_graph = Path(file.filename).stem + ":"
+        if delete:
+            await self.delete_schema(named_graph)
         data = self.generate_import_settings(file.filename, named_graph)
         logger.info(
             "GraphDB import Brick Schema from file {} as {}", file.filename, named_graph

@@ -1,6 +1,14 @@
 from typing import Any, Callable, List, Optional
 
-from fastapi import Body, Depends, File, HTTPException, Query, UploadFile
+from fastapi import (
+    BackgroundTasks,
+    Body,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    UploadFile,
+)
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi_rest_framework.config import settings
 from fastapi_utils.cbv import cbv
@@ -34,6 +42,7 @@ async def get_entity_type(db, entity_id):
     )
     res = await db.query(qstr)
     entity_types = [row["o"]["value"] for row in res["results"]["bindings"]]
+    logger.debug(entity_types)
     if entity_types:
         # assert len(entity_types) == 1 # TODO: This should be changed
         return entity_types[0]
@@ -73,11 +82,16 @@ class EntitiesByFileResource:
     )
     async def upload(
         self,
+        background_tasks: BackgroundTasks,
         file: UploadFile = File(...),
         named_graph: Optional[str] = Query(None, description=Descriptions.graph),
         checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ):
-        await self.graphdb.import_schema_from_file(file, named_graph)
+        await self.graphdb.clear_import_file(file.filename)
+        background_tasks.add_task(
+            self.graphdb.import_schema_from_file, file, named_graph, delete=False
+        )
+        # await self.graphdb.import_schema_from_file(file, named_graph, delete=True)
         return IsSuccess()
 
     # @entity_router.post(

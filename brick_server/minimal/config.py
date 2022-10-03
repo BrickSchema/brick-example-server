@@ -16,6 +16,8 @@ class BaseConfig(config.Base):
     port: int = 9000
     workers: int = 4
 
+    default_brick_url: str = "https://brickschema.org/schema/Brick"
+
     hostname: str = "http://localhost:9000"
     frontend: str = "DUMMY-NOT-WORK"
 

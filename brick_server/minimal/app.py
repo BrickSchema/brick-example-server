@@ -2,11 +2,10 @@ import os
 
 import asyncpg
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_rest_framework import config, logging
 from loguru import logger
 from starlette.middleware.sessions import SessionMiddleware
-from fastapi.middleware.cors import CORSMiddleware
-
 
 from brick_server.minimal.config import FastAPIConfig
 
@@ -18,7 +17,7 @@ logging.init_logging()
 logging.intercept_all_loggers()
 app = FastAPI(title="Brick Server", openapi_url="/docs/openapi.json")
 
-origins = ['*']
+origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -34,7 +33,12 @@ async def initialization() -> None:
     from brick_server.minimal.dbs import graphdb, ts_db
 
     await graphdb.init_repository()
-    # await graphdb.import_schema_from_url("https://brickschema.org/schema/Brick")
+    graphs = await graphdb.list_graphs()
+    if settings.default_brick_url in graphs:
+        logger.info("GraphDB Brick Schema found.")
+    else:
+        logger.info("GraphDB Brick Schema not found.")
+        await graphdb.import_schema_from_url(settings.default_brick_url)
 
     # logger.info("Brick SPARQL load schema")
     # await brick_sparql.load_schema()
