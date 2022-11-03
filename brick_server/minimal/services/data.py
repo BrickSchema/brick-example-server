@@ -11,10 +11,15 @@ from brick_server.minimal.auth.authorization import (
     PermissionCheckerWithEntityId,
     PermissionType,
 )
-from brick_server.minimal.dependencies import dependency_supplier, get_ts_db
+from brick_server.minimal.dependencies import (
+    dependency_supplier,
+    get_ts_db,
+    query_domain,
+)
 from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import AsyncpgTimeseries
 from brick_server.minimal.schemas import (
+    Domain,
     IsSuccess,
     TimeseriesData,
     ValueType,
@@ -37,6 +42,7 @@ class Timeseries:
     )
     async def get(
         self,
+        domain: Domain = Depends(query_domain),
         entity_id: str = Query(
             ...,
             description=Descriptions.entity_id,
@@ -50,7 +56,9 @@ class Timeseries:
         checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.read)),
     ) -> TimeseriesData:
         value_types = [row.value for row in value_types]
-        data = await self.ts_db.query([entity_id], start_time, end_time, value_types)
+        data = await self.ts_db.query(
+            domain.name, [entity_id], start_time, end_time, value_types
+        )
         columns = ["uuid", "timestamp"] + value_types
         return TimeseriesData(data=data, columns=columns)
 
@@ -62,13 +70,14 @@ class Timeseries:
     )
     async def delete(
         self,
+        domain: Domain = Depends(query_domain),
         entity_id: str = Query(..., description=Descriptions.entity_id),
         start_time: float = Query(default=None, description=Descriptions.start_time),
         end_time: float = Query(None, description=Descriptions.end_time),
         checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.write)),
     ) -> IsSuccess:
         # self.auth_logic(entity_id, "write")
-        await self.ts_db.delete([entity_id], start_time, end_time)
+        await self.ts_db.delete(domain.name, [entity_id], start_time, end_time)
         return IsSuccess()
 
     @data_router.post(
@@ -79,6 +88,7 @@ class Timeseries:
     )
     async def post(
         self,
+        domain: Domain = Depends(query_domain),
         data: TimeseriesData = Body(
             ...,
             description=Descriptions.timeseries_data,
@@ -118,12 +128,12 @@ class Timeseries:
                     )
                 except Exception as e:
                     logger.info(f"data {datum} with error {e}")
-            futures = self.add_data(data, data_type=value_col)
+            futures = self.add_data(domain.name, data, data_type=value_col)
         await asyncio.gather(futures)
         return IsSuccess()
 
-    async def add_data(self, data, data_type):
+    async def add_data(self, domain_name, data, data_type):
         try:
-            await self.ts_db.add_data(data, data_type=data_type)
+            await self.ts_db.add_data(domain_name, data, data_type=data_type)
         except Exception as e:
             logger.exception(e)

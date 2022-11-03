@@ -1,8 +1,8 @@
 class BaseTimeseries(object):
-    def __init__(self, *args, **kwargs):
-        pass
+    # def __init__(self, *args, **kwargs):
+    #     pass
 
-    def add_data(self, data):
+    def add_data(self, domain_name, data):
         """Adds timeseries data
 
         This function adds data into the designated timeseries database.
@@ -20,7 +20,7 @@ class BaseTimeseries(object):
             "This should be overriden by an actual implementation."
         )
 
-    def query(self, start_time, end_time, entity_ids):
+    def query(self, domain_name, start_time, end_time, entity_ids):
         """Executes a basic query over the timeseries DB.
 
         Processes a basic range-based query over the timeseries DB.
@@ -37,7 +37,7 @@ class BaseTimeseries(object):
             "This should be overriden by an actual implementation."
         )
 
-    def raw_query(self, qstr):
+    def raw_query(self, domain_name, qstr):
         """Executes SQL query over the timeseries DB.
 
         Executes SQL query over timeseries data.

@@ -30,16 +30,15 @@ app.logger = logger
 
 
 async def initialization() -> None:
-    from brick_server.minimal.dbs import graphdb, ts_db
+    from brick_server.minimal.dbs import ts_db
 
-    await graphdb.init_repository()
-    graphs = await graphdb.list_graphs()
-    if settings.default_brick_url in graphs:
-        logger.info("GraphDB Brick Schema found.")
-    else:
-        logger.info("GraphDB Brick Schema not found.")
-        await graphdb.import_schema_from_url(settings.default_brick_url)
-
+    # await graphdb.init_repository()
+    # graphs = await graphdb.list_graphs()
+    # if settings.default_brick_url in graphs:
+    #     logger.info("GraphDB Brick Schema found.")
+    # else:
+    #     logger.info("GraphDB Brick Schema not found.")
+    #     await graphdb.import_schema_from_url(settings.default_brick_url)
     # logger.info("Brick SPARQL load schema")
     # await brick_sparql.load_schema()
 
@@ -58,11 +57,13 @@ async def startup_event() -> None:
 from .auth.auth_server import auth_router
 from .services.actuation import actuation_router
 from .services.data import data_router
+from .services.domain import domain_router
 from .services.entities import entity_router
 from .services.grafana import grafana_router
 from .services.queries import query_router
 
 app.include_router(data_router, prefix="/brickapi/v1/data")
+app.include_router(domain_router, prefix="/brickapi/v1/domains")
 app.include_router(entity_router, prefix="/brickapi/v1/entities")
 app.include_router(query_router, prefix="/brickapi/v1/rawqueries")
 app.include_router(actuation_router, prefix="/brickapi/v1/actuation")

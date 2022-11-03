@@ -14,13 +14,13 @@ class GraphDB:
         self.host = host
         self.port = port
         self.base_url = f"http://{self.host}:{self.port}/"
-        self.repository = repository
+        # self.repository = repository
         self.client = httpx.AsyncClient(base_url=self.base_url)
 
-    async def init_repository(self):
+    async def init_repository(self, repository):
         logger.info("GraphDB init repository")
         data = {
-            "id": self.repository,
+            "id": repository,
             "type": "free",
             "title": "",
             "params": {
@@ -63,9 +63,9 @@ class GraphDB:
             "requestIdHeadersToForward": None,
         }
 
-    async def check_import_schema(self, name: str) -> bool:
+    async def check_import_schema(self, repository: str, name: str) -> bool:
         resp = await self.client.get(
-            f"/rest/data/import/upload/{self.repository}", timeout=30
+            f"/rest/data/import/upload/{repository}", timeout=30
         )
         data = resp.json()
         for row in data:
@@ -75,9 +75,9 @@ class GraphDB:
                 return False
         return False
 
-    async def list_graphs(self):
+    async def list_graphs(self, repository):
         resp = await self.client.get(
-            f"/repositories/{self.repository}/contexts",
+            f"/repositories/{repository}/contexts",
             headers={"Accept": "application/json"},
         )
         try:
@@ -91,21 +91,21 @@ class GraphDB:
             logger.exception(e)
             return []
 
-    async def clear_import_file(self, file_name: str):
+    async def clear_import_file(self, repository: str, file_name: str):
         logger.info("GraphDB clear import {}", file_name)
         resp = await self.client.request(
             "DELETE",
-            f"/rest/data/import/upload/{self.repository}/status",
+            f"/rest/data/import/upload/{repository}/status",
             params={"remove": "true"},
             json=[file_name],
         )
         logger.debug(resp.request)
         logger.debug(resp.content)
 
-    async def delete_schema(self, named_graph: str):
+    async def delete_schema(self, repository: str, named_graph: str):
         logger.info("GraphDB delete schema {}", named_graph)
         resp = await self.client.post(
-            f"/repositories/{self.repository}/statements",
+            f"/repositories/{repository}/statements",
             headers={"Accept": "application/json"},
             data={"update": f"CLEAR GRAPH <{named_graph}>"},
             timeout=300,
@@ -113,26 +113,34 @@ class GraphDB:
         logger.debug(resp.content)
 
     async def import_schema_from_url(
-        self, url: str, named_graph: Optional[str] = None, delete: bool = False
+        self,
+        repository: str,
+        url: str,
+        named_graph: Optional[str] = None,
+        delete: bool = False,
     ):
         logger.info("GraphDB import schema from url {}", url)
         if not named_graph:
             named_graph = url
         if delete:
-            await self.delete_schema(named_graph)
+            await self.delete_schema(repository, named_graph)
         data = self.generate_import_settings(url, named_graph)
         resp = await self.client.post(
-            f"/rest/data/import/upload/{self.repository}/url", json=data, timeout=30
+            f"/rest/data/import/upload/{repository}/url", json=data, timeout=30
         )
         logger.debug(resp.content)
 
     async def import_schema_from_file(
-        self, file: UploadFile, named_graph: Optional[str] = None, delete: bool = False
+        self,
+        repository: str,
+        file: UploadFile,
+        named_graph: Optional[str] = None,
+        delete: bool = False,
     ):
         if not named_graph:
             named_graph = Path(file.filename).stem + ":"
         if delete:
-            await self.delete_schema(named_graph)
+            await self.delete_schema(repository, named_graph)
         data = self.generate_import_settings(file.filename, named_graph)
         logger.info(
             "GraphDB import Brick Schema from file {} as {}", file.filename, named_graph
@@ -146,18 +154,23 @@ class GraphDB:
             ),
         }
         resp = await self.client.post(
-            f"/rest/data/import/upload/{self.repository}/file", files=files
+            f"/rest/data/import/upload/{repository}/file", files=files
         )
         logger.debug(resp.content)
 
     async def query(
-        self, query_str: str, is_update=False, limit: int = 1000, offset: int = 0
+        self,
+        repository: str,
+        query_str: str,
+        is_update=False,
+        limit: int = 1000,
+        offset: int = 0,
     ):
         resp = await self.client.post(
             "/rest/sparql/addKnownPrefixes",
             data=query_str,
             headers={
-                "X-GraphDB-Repository": self.repository,
+                "X-GraphDB-Repository": repository,
             },
         )
         query_str = resp.content.decode("utf-8")
@@ -175,11 +188,11 @@ class GraphDB:
         }
         if is_update:
             resp = await self.client.get(
-                f"/repositories/{self.repository}", params=data, headers=headers
+                f"/repositories/{repository}", params=data, headers=headers
             )
         else:
             resp = await self.client.post(
-                f"/repositories/{self.repository}", data=data, headers=headers
+                f"/repositories/{repository}", data=data, headers=headers
             )
         result = resp.json()
         logger.debug(result)

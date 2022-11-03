@@ -33,11 +33,18 @@ class Relationships(BaseModel):
     relationships: List[Relationship]
 
 
+class Domain(BaseModel):
+    class Config:
+        orm_mode = True
+
+    name: str = Field(..., description="Name of the domain")
+
+
 class Entity(BaseModel):
     relationships: List[Relationship] = Field(
         [], description=Descriptions.relationships
     )
-    type: str = Field(..., description=Descriptions.type)
+    types: List[str] = Field(..., description=Descriptions.type)
     entity_id: str = Field(..., description=Descriptions.entity_id)
     name: str = Field(None, description=Descriptions.name)
 

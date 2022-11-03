@@ -12,10 +12,11 @@ from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_graphdb,
     get_ts_db,
+    query_domain,
 )
 from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import BaseTimeseries, GraphDB
-from brick_server.minimal.schemas import SparqlResult
+from brick_server.minimal.schemas import Domain, SparqlResult
 
 query_router = InferringRouter(tags=["Raw Queries"])
 
@@ -33,6 +34,7 @@ class TimeseriesQuery:
     async def post(
         self,
         request: Request,
+        domain: Domain = Depends(query_domain),
         query: str = Body(
             ...,
             media_type="application/sql",
@@ -40,7 +42,7 @@ class TimeseriesQuery:
         ),
         checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ):
-        res = await self.ts_db.raw_query(query)
+        res = await self.ts_db.raw_query(domain.name, query)
         formatted = format_raw_query(res)
         return formatted
 
@@ -68,10 +70,11 @@ class SparqlQuery:
     async def post(
         self,
         # request: Request,
+        domain: Domain = Depends(query_domain),
         query: str = Body(
             ..., media_type="application/sparql-query", description=Descriptions.sparql
         ),
         checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ) -> SparqlResult:
-        raw_res = await self.graphdb.query(query)
+        raw_res = await self.graphdb.query(domain.name, query)
         return raw_res

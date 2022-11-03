@@ -18,30 +18,6 @@ from brick_server.minimal.exceptions import DoesNotExistError, MultipleObjectsFo
 # )  # 100 day in secounds TODO: This is only for dev.
 
 
-async def get_all_relationships(sparql_db, entity_id):
-    # TODO: Implement owl:inverseOf inside Vrituoso
-    print("warning: ``inverseOf`` is not implemented yet inside Virtuoso")
-    qstr = """
-    select ?p ?o where {{
-    {{
-    <{0}> ?p ?o.
-    FILTER NOT EXISTS {{ <{0}> a ?o .}}
-    }}
-    UNION
-    {{
-    ?inverse_p owl:inverseOf ?p .
-    ?o ?inverse_p <{0}>.
-    }}
-    }}
-    """.format(
-        entity_id
-    )
-    res = await sparql_db.query(qstr)
-    return [
-        (row["p"]["value"], row["o"]["value"]) for row in res["results"]["bindings"]
-    ]
-
-
 class User(DynamicDocument):
     name = StringField(required=True)
     user_id = StringField(required=True, unique=True)
@@ -79,6 +55,10 @@ class GrafanaDashboard(Document):
     uid = StringField(required=True)
     grafana_id = StringField(required=True)
     url = StringField(required=True)
+
+
+class Domain(Document):
+    name = StringField(required=True, unique=True)
 
 
 def get_doc(doc_type, **query):

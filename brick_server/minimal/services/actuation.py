@@ -1,7 +1,6 @@
-from typing import Callable, Dict, Optional, Tuple, Union
-from pydantic import conlist
+from typing import Callable, Dict, Tuple, Union
 
-from fastapi import Body, Depends, Query, status
+from fastapi import Body, Depends, status
 from fastapi.exceptions import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi_utils.cbv import cbv
@@ -13,10 +12,10 @@ from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_actuation_iface,
     get_ts_db,
+    query_domain,
 )
-from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import BaseTimeseries, RealActuation
-from brick_server.minimal.schemas import IsSuccess
+from brick_server.minimal.schemas import Domain, IsSuccess
 
 actuation_router = InferringRouter(tags=["Actuation"])
 
@@ -36,8 +35,11 @@ class ActuationEntity:
     async def post(
         self,
         request: Request,
+        domain: Domain = Depends(query_domain),
         # entity_id: str = Query(..., description=Descriptions.entity_id),
-        actuation_request: Dict[str, Union[Tuple[str], Tuple[str,str]]] = Body(...,),
+        actuation_request: Dict[str, Union[Tuple[str], Tuple[str, str]]] = Body(
+            ...,
+        ),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
     ) -> IsSuccess:
         # if scheduled_time:

@@ -1,14 +1,6 @@
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List
 
-from fastapi import (
-    BackgroundTasks,
-    Body,
-    Depends,
-    File,
-    HTTPException,
-    Query,
-    UploadFile,
-)
+from fastapi import Body, Depends, HTTPException, Query
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi_rest_framework.config import settings
 from fastapi_utils.cbv import cbv
@@ -23,16 +15,20 @@ from brick_server.minimal.auth.authorization import (
     PermissionType,
     jwt_security_scheme,
 )
-from brick_server.minimal.dependencies import dependency_supplier, get_graphdb
+from brick_server.minimal.dependencies import (
+    dependency_supplier,
+    get_graphdb,
+    query_domain,
+)
 from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import GraphDB
-from brick_server.minimal.models import get_all_relationships
-from brick_server.minimal.schemas import Entity, EntityIds, IsSuccess
+from brick_server.minimal.models import Domain
+from brick_server.minimal.schemas import Entity, EntityIds
 
 entity_router = InferringRouter(tags=["Entities"])
 
 
-async def get_entity_type(db, entity_id):
+async def get_entity_types(db: GraphDB, domain: Domain, entity_id) -> List[str]:
     qstr = """
     select ?o where {{
     <{0}> a ?o.
@@ -40,18 +36,43 @@ async def get_entity_type(db, entity_id):
     """.format(
         entity_id
     )
-    res = await db.query(qstr)
+    res = await db.query(domain.name, qstr)
     entity_types = [row["o"]["value"] for row in res["results"]["bindings"]]
     logger.debug(entity_types)
-    if entity_types:
-        # assert len(entity_types) == 1 # TODO: This should be changed
-        return entity_types[0]
-    else:
-        # Type not found for the entity_id
-        return None
+    return entity_types
+    # if entity_types:
+    #     # assert len(entity_types) == 1 # TODO: This should be changed
+    #     return entity_types[0]
+    # else:
+    #     # Type not found for the entity_id
+    #     return None
 
 
-async def get_name(graphdb, entity_id):
+async def get_all_relationships(db: GraphDB, domain: Domain, entity_id: str):
+    # TODO: Implement owl:inverseOf inside Vrituoso
+    print("warning: ``inverseOf`` is not implemented yet inside Virtuoso")
+    qstr = """
+    select ?p ?o where {{
+    {{
+    <{0}> ?p ?o.
+    FILTER NOT EXISTS {{ <{0}> a ?o .}}
+    }}
+    UNION
+    {{
+    ?inverse_p owl:inverseOf ?p .
+    ?o ?inverse_p <{0}>.
+    }}
+    }}
+    """.format(
+        entity_id
+    )
+    res = await db.query(domain.name, qstr)
+    return [
+        (row["p"]["value"], row["o"]["value"]) for row in res["results"]["bindings"]
+    ]
+
+
+async def get_name(graphdb, domain: Domain, entity_id: str):
     qstr = """
     select ?name where {{
         <{0}> brick:hasName ?name.
@@ -59,7 +80,7 @@ async def get_name(graphdb, entity_id):
     """.format(
         entity_id
     )
-    res = await graphdb.query(qstr)
+    res = await graphdb.query(domain.name, qstr)
     bindings = res["results"]["bindings"]
     if bindings:
         name = bindings[0]["name"]["value"]
@@ -68,89 +89,90 @@ async def get_name(graphdb, entity_id):
     return name
 
 
-@cbv(entity_router)
-class EntitiesByFileResource:
-    auth_logic: Callable = Depends(dependency_supplier.auth_logic)
-    graphdb: GraphDB = Depends(get_graphdb)
+# moved to domain.py
+# @cbv(entity_router)
+# class EntitiesByFileResource:
+#     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
+#     graphdb: GraphDB = Depends(get_graphdb)
+#
+#     @entity_router.post(
+#         "/upload",
+#         status_code=200,
+#         response_model=IsSuccess,
+#         description="Upload a Turtle file. An example file: https://gitlab.com/jbkoh/brick-server-dev/blob/dev/examples/data/bldg.ttl",
+#         summary="Uplaod a Turtle file",
+#     )
+#     async def upload(
+#         self,
+#         background_tasks: BackgroundTasks,
+#         file: UploadFile = File(...),
+#         named_graph: Optional[str] = Query(None, description=Descriptions.graph),
+#         checker: Any = Depends(PermissionChecker(PermissionType.write)),
+#     ):
+#         await self.graphdb.clear_import_file(file.filename)
+#         background_tasks.add_task(
+#             self.graphdb.import_schema_from_file, file, named_graph, delete=False
+#         )
+#         # await self.graphdb.import_schema_from_file(file, named_graph, delete=True)
+#         return IsSuccess()
 
-    @entity_router.post(
-        "/upload",
-        status_code=200,
-        response_model=IsSuccess,
-        description="Upload a Turtle file. An example file: https://gitlab.com/jbkoh/brick-server-dev/blob/dev/examples/data/bldg.ttl",
-        summary="Uplaod a Turtle file",
-    )
-    async def upload(
-        self,
-        background_tasks: BackgroundTasks,
-        file: UploadFile = File(...),
-        named_graph: Optional[str] = Query(None, description=Descriptions.graph),
-        checker: Any = Depends(PermissionChecker(PermissionType.write)),
-    ):
-        await self.graphdb.clear_import_file(file.filename)
-        background_tasks.add_task(
-            self.graphdb.import_schema_from_file, file, named_graph, delete=False
-        )
-        # await self.graphdb.import_schema_from_file(file, named_graph, delete=True)
-        return IsSuccess()
-
-    # @entity_router.post(
-    #     "/upload",
-    #     status_code=200,
-    #     response_model=IsSuccess,
-    #     description="Upload a Turtle file. An example file: https://gitlab.com/jbkoh/brick-server-dev/blob/dev/examples/data/bldg.ttl",
-    #     summary="Uplaod a Turtle file",
-    # )
-    # async def upload(
-    #     self,
-    #     request: Request,
-    #     turtle: str = Body(
-    #         ..., media_type="text/turtle", description="The text of a Turtle file."
-    #     ),
-    #     add_owner: bool = Query(
-    #         True,
-    #         description="If true, add the current user as an owner of all the entities in the graph.",
-    #     ),
-    #     graph: str = Query(
-    #         settings.brick_base_graph,
-    #         description=Descriptions.graph,
-    #     ),
-    #     content_type: str = Header("text/turtle"),
-    #     token: HTTPAuthorizationCredentials = jwt_security_scheme,
-    #     checker: Any = Depends(PermissionChecker(PermissionType.write)),
-    # ) -> IsSuccess:
-    #     jwt_payload = parse_jwt_token(token.credentials)
-    #     user_id = jwt_payload["user_id"]
-    #
-    #     if content_type == "text/turtle":
-    #         ttl_io = StringIO(turtle)
-    #         ttl_backup = deepcopy(ttl_io)
-    #         await self.brick_db.load_rdffile(ttl_io, graph=graph)
-    #         if add_owner:
-    #             g = rdflib.Graph()
-    #             g.parse(ttl_backup, format="turtle")
-    #             res = g.query(
-    #                 """
-    #             select ?s where {
-    #                 ?s a ?o.
-    #             }
-    #             """
-    #             )
-    #             user_entity = URIRef(user_id)
-    #             res = list(res)
-    #             for rows in striding_windows(res, 500):
-    #                 new_triples = []
-    #                 for row in rows:
-    #                     entity = row[0]
-    #                     new_triples.append(
-    #                         (URIRef(entity), self.brick_db.BRICK.hasOwner, user_entity)
-    #                     )
-    #                 await self.brick_db.add_triples(new_triples)
-    #     else:
-    #         raise HTTPException(
-    #             status_code=405, detail="{} is not supported".format(content_type)
-    #         )
-    #     return IsSuccess()
+# @entity_router.post(
+#     "/upload",
+#     status_code=200,
+#     response_model=IsSuccess,
+#     description="Upload a Turtle file. An example file: https://gitlab.com/jbkoh/brick-server-dev/blob/dev/examples/data/bldg.ttl",
+#     summary="Uplaod a Turtle file",
+# )
+# async def upload(
+#     self,
+#     request: Request,
+#     turtle: str = Body(
+#         ..., media_type="text/turtle", description="The text of a Turtle file."
+#     ),
+#     add_owner: bool = Query(
+#         True,
+#         description="If true, add the current user as an owner of all the entities in the graph.",
+#     ),
+#     graph: str = Query(
+#         settings.brick_base_graph,
+#         description=Descriptions.graph,
+#     ),
+#     content_type: str = Header("text/turtle"),
+#     token: HTTPAuthorizationCredentials = jwt_security_scheme,
+#     checker: Any = Depends(PermissionChecker(PermissionType.write)),
+# ) -> IsSuccess:
+#     jwt_payload = parse_jwt_token(token.credentials)
+#     user_id = jwt_payload["user_id"]
+#
+#     if content_type == "text/turtle":
+#         ttl_io = StringIO(turtle)
+#         ttl_backup = deepcopy(ttl_io)
+#         await self.brick_db.load_rdffile(ttl_io, graph=graph)
+#         if add_owner:
+#             g = rdflib.Graph()
+#             g.parse(ttl_backup, format="turtle")
+#             res = g.query(
+#                 """
+#             select ?s where {
+#                 ?s a ?o.
+#             }
+#             """
+#             )
+#             user_entity = URIRef(user_id)
+#             res = list(res)
+#             for rows in striding_windows(res, 500):
+#                 new_triples = []
+#                 for row in rows:
+#                     entity = row[0]
+#                     new_triples.append(
+#                         (URIRef(entity), self.brick_db.BRICK.hasOwner, user_entity)
+#                     )
+#                 await self.brick_db.add_triples(new_triples)
+#     else:
+#         raise HTTPException(
+#             status_code=405, detail="{} is not supported".format(content_type)
+#         )
+#     return IsSuccess()
 
 
 @cbv(entity_router)
@@ -171,18 +193,20 @@ class EntitiesByIdResource:
         self,
         request: Request,
         entity_id: str = Query(..., description=Descriptions.entity_id),
+        domain: Domain = Depends(query_domain),
         checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.read)),
     ) -> Entity:
         print(entity_id)
-        entity_type = await get_entity_type(self.graphdb, entity_id)
-        if not entity_type:
+        entity_types = await get_entity_types(self.graphdb, domain, entity_id)
+        if not entity_types:
             raise HTTPException(
                 status_code=404, detail="{} does not exist".format(entity_id)
             )
-        relationships = await get_all_relationships(self.graphdb, entity_id)
-        name = await get_name(self.graphdb, entity_id)
+        relationships = await get_all_relationships(self.graphdb, domain, entity_id)
+        name = await get_name(self.graphdb, domain, entity_id)
+        # TODO: add domain in output?
         entity = Entity(
-            type=entity_type,
+            types=entity_types,
             relationships=relationships,
             name=name,
             entity_id=entity_id,
@@ -299,6 +323,7 @@ class EntitiesResource:
         params: ListEntityParams = Body(
             ListEntityParams(), description=Descriptions.relation_query
         ),
+        domain: Domain = Depends(query_domain),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
         checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ) -> EntityIds:
@@ -313,7 +338,7 @@ class EntitiesResource:
             for obj in objects:
                 qstr += f"?entity brick:{predicate} {obj}.\n"  # TODO: Parameterize property base between bf vs brick.
         qstr += "}"
-        res = await self.graphdb.query(qstr)
+        res = await self.graphdb.query(domain.name, qstr)
         entity_ids = [row["entity"]["value"] for row in res["results"]["bindings"]]
         return EntityIds(entity_ids=entity_ids)
 
