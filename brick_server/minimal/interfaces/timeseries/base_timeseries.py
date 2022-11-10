@@ -37,7 +37,7 @@ class BaseTimeseries(object):
             "This should be overriden by an actual implementation."
         )
 
-    def raw_query(self, domain_name, qstr):
+    def raw_query(self, qstr):
         """Executes SQL query over the timeseries DB.
 
         Executes SQL query over timeseries data.

@@ -7,6 +7,7 @@ BRICK = Namespace(f"https://brickschema.org/schema/{BRICK_VERSION}/Brick#")
 
 API_BASE = "/brickapi/v1"
 ENTITY_BASE = API_BASE + "/entities"
+DOMAIN_BASE = API_BASE + "/domains"
 QUERY_BASE = API_BASE + "/rawqueries"
 DATA_BASE = API_BASE + "/data"
 ACTUATION_BASE = API_BASE + "/actuation"
@@ -17,6 +18,7 @@ PROJECT_FOLDER = Path(__file__).parent.parent.absolute()
 EXAMPLES_DATA_FOLDER = PROJECT_FOLDER / "examples" / "data"
 assert EXAMPLES_DATA_FOLDER.is_dir()
 
+TEST_DOMAIN_NAME = "bldg"
 
 # default_headers = {
 #     "Authorization": "Bearer " + os.environ['JWT_TOKEN']

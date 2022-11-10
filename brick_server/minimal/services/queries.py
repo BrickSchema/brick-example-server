@@ -34,7 +34,7 @@ class TimeseriesQuery:
     async def post(
         self,
         request: Request,
-        domain: Domain = Depends(query_domain),
+        # domain: Domain = Depends(query_domain),
         query: str = Body(
             ...,
             media_type="application/sql",
@@ -42,7 +42,7 @@ class TimeseriesQuery:
         ),
         checker: Any = Depends(PermissionChecker(PermissionType.write)),
     ):
-        res = await self.ts_db.raw_query(domain.name, query)
+        res = await self.ts_db.raw_query(query)
         formatted = format_raw_query(res)
         return formatted
 

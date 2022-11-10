@@ -11,7 +11,15 @@ from brick_server.minimal.app import app as fastapi_app
 from brick_server.minimal.auth.authorization import create_jwt_token
 from brick_server.minimal.interfaces.graphdb import GraphDB
 from brick_server.minimal.models import User
-from tests.utils import create_postgres_db, drop_postgres_db, register_admin
+from brick_server.minimal.schemas import Domain
+from tests.common import DOMAIN_BASE, TEST_DOMAIN_NAME
+from tests.utils import (
+    create_postgres_db,
+    drop_mongodb,
+    drop_postgres_db,
+    ensure_graphdb_brick_schema,
+    register_admin,
+)
 
 
 @pytest.yield_fixture(scope="session")
@@ -27,6 +35,7 @@ async def prepare_db(request: Any):
     settings.mongo_dbname += "-test"
     await drop_postgres_db()
     await create_postgres_db()
+    await drop_mongodb()
 
     # it seems that session is not closed in app
     # def finalizer():
@@ -75,3 +84,16 @@ def graphdb(app: FastAPI) -> GraphDB:
         port=settings.graphdb_port,
         repository=settings.graphdb_repository,
     )
+
+
+@pytest.fixture(scope="session")
+async def domain(graphdb, client, admin_jwt) -> Domain:
+    admin_headers = {"Authorization": "Bearer " + admin_jwt}
+    resp = await client.post(
+        f"{DOMAIN_BASE}/{TEST_DOMAIN_NAME}",
+        headers=admin_headers,
+    )
+    assert resp.status_code == 200
+    await ensure_graphdb_brick_schema(graphdb, TEST_DOMAIN_NAME)
+    data = resp.json()
+    yield Domain(**data)

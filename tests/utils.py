@@ -1,6 +1,7 @@
 import arrow
 import asyncpg
 from fastapi_rest_framework.config import settings
+from mongoengine import connect as mongo_connect
 from tenacity import retry, stop_after_delay, wait_exponential
 
 from brick_server.minimal.interfaces.graphdb import GraphDB
@@ -67,7 +68,31 @@ async def create_postgres_db():
     await conn.close()
 
 
+async def drop_mongodb():
+    print(
+        "drop test mongodb",
+        settings.mongo_host,
+        settings.mongo_port,
+        settings.mongo_dbname,
+    )
+    db = mongo_connect(
+        host=settings.mongo_host,
+        port=settings.mongo_port,
+        username=settings.mongo_username,
+        password=settings.mongo_password,
+        db=settings.mongo_dbname,
+        connect=False,
+    )
+    db.drop_database(settings.mongo_dbname)
+
+
 @retry(stop=stop_after_delay(600), wait=wait_exponential(multiplier=1, max=32))
-async def ensure_graphdb_upload(graphdb: GraphDB, name: str) -> None:
-    result = await graphdb.check_import_schema(name)
+async def ensure_graphdb_upload(graphdb: GraphDB, repository: str, name: str) -> None:
+    result = await graphdb.check_import_schema(repository, name)
     assert result
+
+
+@retry(stop=stop_after_delay(600), wait=wait_exponential(multiplier=1, max=32))
+async def ensure_graphdb_brick_schema(graphdb: GraphDB, repository: str) -> None:
+    graphs = await graphdb.list_graphs(repository)
+    assert settings.default_brick_url in graphs

@@ -71,7 +71,7 @@ class DomainRoute:
         domain: models.Domain = Depends(path_domain),
         checker: Any = Depends(PermissionChecker(PermissionType.read)),
     ) -> schemas.Domain:
-        # for dev purpose
+        # for debug purpose
         background_tasks.add_task(self.create_domain_background, domain)
         return schemas.Domain.from_orm(domain)
 

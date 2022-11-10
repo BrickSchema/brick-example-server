@@ -16,6 +16,3 @@ from brick_server.minimal.interfaces.timeseries.asyncpg_timeseries import (
 from brick_server.minimal.interfaces.timeseries.base_timeseries import (
     BaseTimeseries as BaseTimeseries,
 )
-from brick_server.minimal.interfaces.timeseries.brick_timeseries import (
-    BrickTimeseries as BrickTimeseries,
-)
