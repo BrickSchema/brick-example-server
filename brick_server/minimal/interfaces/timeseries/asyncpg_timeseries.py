@@ -97,7 +97,7 @@ class AsyncpgTimeseries(BaseTimeseries):
                 table_name=table_name
             ),
             """
-            CREATE INDEX IF NOT EXISTS brick_data_time_index ON {table_name} (uuid);
+            CREATE INDEX IF NOT EXISTS brick_data_uuid_index ON {table_name} (uuid);
             """.format(
                 table_name=table_name
             ),

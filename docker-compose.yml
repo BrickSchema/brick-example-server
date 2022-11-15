@@ -7,6 +7,7 @@ services:
       - POSTGRES_USER=bricker
       - POSTGRES_PASSWORD=brick-demo
       - POSTGRES_DB=brick
+      - PGDATA=/var/lib/postgresql/data/pgdata
     networks:
       - brick-server-network
     ports:
@@ -16,6 +17,7 @@ services:
         source: ./docker/init_postgis.sh
         target: /docker-entrypoint-initdb.d/003_init_postgis.sh
         read_only: true
+      - ../psqlData:/var/lib/postgresql/data # change the path to yours accordingly
   brick-server-graphdb:
     container_name: brick-server-graphdb
     image: w1zzard/graphdb-free:9.9.0
