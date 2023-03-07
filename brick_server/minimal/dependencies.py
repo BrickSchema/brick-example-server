@@ -11,6 +11,7 @@ from brick_server.minimal.auth.authorization import (
 )
 from brick_server.minimal.interfaces import AsyncpgTimeseries, GraphDB
 from brick_server.minimal.models import Domain, get_doc
+from brick_server.minimal.schemas import NoneNegativeInt, Pagination, PaginationLimit
 
 auth_logic_func_type = Callable[[Set[str], PermissionType], bool]
 
@@ -66,3 +67,9 @@ def query_domain(domain: str = Query(...)) -> Domain:
 
 def path_domain(domain: str = Path(...)) -> Domain:
     return get_doc(Domain, name=domain)
+
+
+def query_pagination(
+    offset: NoneNegativeInt = Query(0), limit: PaginationLimit = Query(100)
+) -> Pagination:
+    return Pagination(offset=offset, limit=limit)

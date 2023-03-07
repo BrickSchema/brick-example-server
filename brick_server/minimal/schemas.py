@@ -2,7 +2,7 @@ from copy import deepcopy
 from enum import Enum
 from typing import Any, Dict, List
 
-from pydantic import BaseModel, Field, conlist
+from pydantic import BaseModel, ConstrainedInt, Field, conlist
 
 from brick_server.minimal.descriptions import Descriptions
 
@@ -117,3 +117,16 @@ class TokenResponse(BaseModel):
 
 
 TokensResponse = List[TokenResponse]
+
+
+class NoneNegativeInt(ConstrainedInt):
+    ge = 0
+
+
+class PaginationLimit(NoneNegativeInt):
+    le = 500
+
+
+class Pagination(BaseModel):
+    offset: NoneNegativeInt
+    limit: PaginationLimit
