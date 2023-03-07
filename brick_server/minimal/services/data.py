@@ -15,12 +15,14 @@ from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_ts_db,
     query_domain,
+    query_pagination,
 )
 from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import AsyncpgTimeseries
 from brick_server.minimal.schemas import (
     Domain,
     IsSuccess,
+    Pagination,
     TimeseriesData,
     ValueType,
     ValueTypes,
@@ -53,11 +55,18 @@ class Timeseries:
             default=[ValueType.number],
             description=Descriptions.value_type,
         ),
+        pagination: Pagination = Depends(query_pagination),
         checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.read)),
     ) -> TimeseriesData:
         value_types = [row.value for row in value_types]
         data = await self.ts_db.query(
-            domain.name, [entity_id], start_time, end_time, value_types
+            domain.name,
+            [entity_id],
+            start_time,
+            end_time,
+            value_types,
+            pagination.offset,
+            pagination.limit,
         )
         columns = ["uuid", "timestamp"] + value_types
         return TimeseriesData(data=data, columns=columns)

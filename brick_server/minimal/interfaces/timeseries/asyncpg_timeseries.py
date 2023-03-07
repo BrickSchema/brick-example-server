@@ -231,6 +231,8 @@ class AsyncpgTimeseries(BaseTimeseries):
         start_time=None,
         end_time=None,
         value_types=["number"],
+        offset=0,
+        limit=-1,
     ):
         # qstr = """
         # SELECT uuid, time, number, text, ST_AsGeoJson(loc) FROM {0}
@@ -253,6 +255,9 @@ class AsyncpgTimeseries(BaseTimeseries):
             if uuids:
                 qstr += "uuid IN ({})\n AND ".format("'" + "', '".join(uuids) + "'")
         qstr = qstr[:-4]
+        qstr += "OFFSET {}\n".format(offset)
+        if limit >= 0:
+            qstr += "LIMIT {}\n".format(limit)
         return await self._fetch(qstr)
 
     # TODO: Unify encode & add_data over different data types.
