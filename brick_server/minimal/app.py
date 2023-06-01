@@ -1,6 +1,5 @@
 import os
 
-import asyncpg
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_rest_framework import config, logging
@@ -10,6 +9,12 @@ from starlette.middleware.sessions import SessionMiddleware
 from brick_server.minimal.config import FastAPIConfig
 
 settings = config.init_settings(FastAPIConfig)
+
+from brick_server.minimal.auth.authorization import default_auth_logic
+from brick_server.minimal.dependencies import update_dependency_supplier
+
+update_dependency_supplier(default_auth_logic)
+from brick_server.minimal.init import initialization
 
 API_V1_PREFIX = "/brickapi/v1"
 
@@ -27,26 +32,6 @@ app.add_middleware(
 )
 
 app.logger = logger
-
-
-async def initialization() -> None:
-    from brick_server.minimal.dbs import ts_db
-
-    # await graphdb.init_repository()
-    # graphs = await graphdb.list_graphs()
-    # if settings.default_brick_url in graphs:
-    #     logger.info("GraphDB Brick Schema found.")
-    # else:
-    #     logger.info("GraphDB Brick Schema not found.")
-    #     await graphdb.import_schema_from_url(settings.default_brick_url)
-    # logger.info("Brick SPARQL load schema")
-    # await brick_sparql.load_schema()
-
-    try:
-        logger.info("Init timescale tables")
-        await ts_db.init()
-    except asyncpg.exceptions.DuplicateTableError:
-        logger.info("Timescale tables have been already created.")
 
 
 @app.on_event("startup")

@@ -2,7 +2,6 @@ from mongoengine import (
     BooleanField,
     DateTimeField,
     Document,
-    DynamicDocument,
     ListField,
     ReferenceField,
     StringField,
@@ -18,16 +17,13 @@ from brick_server.minimal.exceptions import DoesNotExistError, MultipleObjectsFo
 # )  # 100 day in secounds TODO: This is only for dev.
 
 
-class User(DynamicDocument):
+class User(Document):
     name = StringField(required=True)
     user_id = StringField(required=True, unique=True)
     email = StringField(required=True)
     is_admin = BooleanField(default=False)
     is_approved = BooleanField(default=False)
     registration_time = DateTimeField(required=True)
-    meta = {
-        "allow_inheritance": True,
-    }
     app_tokens = ListField(StringField(), default=[])
 
 

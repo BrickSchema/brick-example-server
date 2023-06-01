@@ -1,16 +1,15 @@
 import abc
 import asyncio
-import time
 from enum import Enum
 from functools import wraps
 from typing import Callable, Set
 
 import arrow
 import jwt
-from fastapi import Body, Depends, HTTPException, Query, Security
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from fastapi_rest_framework.config import settings
+from fastapi import Body, Depends, HTTPException, Query
+from fastapi.security import HTTPAuthorizationCredentials
 
+from brick_server.minimal.auth.jwt import jwt_security_scheme, parse_jwt_token
 from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.models import User, get_doc
 
@@ -26,8 +25,6 @@ A = "A"  # actuatable
 W = "W"  # writable
 R = "R"  # readable
 O = "O"  # owning
-
-auth_scheme = HTTPBearer(bearerFormat="JWT")
 
 
 class PermissionType(str, Enum):
@@ -84,47 +81,6 @@ def authorized_dep(permission_required, get_entity_ids=None):
         return decorated_function
 
     return auth_enabled_decorator
-
-
-def create_jwt_token(
-    user_id: str = "admin",
-    app_name: str = None,
-    token_lifetime: int = settings.jwt_expire_seconds,
-):
-    payload = {
-        "user_id": user_id,
-        "exp": time.time() + token_lifetime,  # TODO: Think about the timezone
-        "app_id": app_name,
-    }
-    jwt_token = jwt.encode(
-        payload, settings.jwt_secret, algorithm=settings.jwt_algorithm
-    )
-    return jwt_token
-
-
-def parse_jwt_token(jwt_token):
-    try:
-        payload = jwt.decode(
-            jwt_token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
-        )
-    except jwt.exceptions.InvalidSignatureError as e:
-        raise NotAuthorizedError(detail="The token's signature is invalid.")
-    except jwt.exceptions.ExpiredSignatureError as e:
-        raise NotAuthorizedError(detail="The token has been expired")
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="The token is invalid")
-    return payload
-
-
-# A list of auth_logics
-
-
-# def auth_logic_template(action_type, target_ids, *args, **kwargs):
-#     raise Exception(
-#         "Not Implemented and this is not meant to be used but just for reference."
-#     )
-
-jwt_security_scheme = Security(auth_scheme)
 
 
 def validate_token(token: "jwt_security_scheme"):
