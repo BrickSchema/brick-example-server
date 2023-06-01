@@ -14,9 +14,11 @@ from starlette.responses import RedirectResponse
 from brick_server.minimal.auth.authorization import (
     FRONTEND_APP,
     authorized_frontend,
+    oauth,
+)
+from brick_server.minimal.auth.jwt import (
     create_jwt_token,
     jwt_security_scheme,
-    oauth,
     parse_jwt_token,
 )
 from brick_server.minimal.exceptions import DoesNotExistError, NotAuthorizedError
@@ -91,7 +93,7 @@ async def get_authorize(request: Request):
 
 
 @cbv(auth_router)
-class AppTokenRouter(object):
+class AppTokenRouter:
     @auth_router.delete(
         "/app_tokens/{app_token}",
         status_code=200,
@@ -114,7 +116,7 @@ class AppTokenRouter(object):
 
 
 @cbv(auth_router)
-class AppTokensRouter(object):
+class AppTokensRouter:
     @auth_router.post(
         "/app_tokens",
         status_code=200,
