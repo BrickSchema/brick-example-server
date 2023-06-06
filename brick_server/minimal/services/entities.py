@@ -9,12 +9,12 @@ from loguru import logger
 from pydantic import BaseModel
 from starlette.requests import Request
 
-from brick_server.minimal.auth.authorization import (
+from brick_server.minimal.auth.checker import (
     PermissionChecker,
     PermissionCheckerWithEntityId,
     PermissionType,
-    jwt_security_scheme,
 )
+from brick_server.minimal.auth.jwt import jwt_security_scheme
 from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_graphdb,
@@ -107,7 +107,7 @@ async def get_name(graphdb, domain: Domain, entity_id: str):
 #         background_tasks: BackgroundTasks,
 #         file: UploadFile = File(...),
 #         named_graph: Optional[str] = Query(None, description=Descriptions.graph),
-#         checker: Any = Depends(PermissionChecker(PermissionType.write)),
+#         checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
 #     ):
 #         await self.graphdb.clear_import_file(file.filename)
 #         background_tasks.add_task(
@@ -139,7 +139,7 @@ async def get_name(graphdb, domain: Domain, entity_id: str):
 #     ),
 #     content_type: str = Header("text/turtle"),
 #     token: HTTPAuthorizationCredentials = jwt_security_scheme,
-#     checker: Any = Depends(PermissionChecker(PermissionType.write)),
+#     checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
 # ) -> IsSuccess:
 #     jwt_payload = parse_jwt_token(token.credentials)
 #     user_id = jwt_payload["user_id"]
@@ -177,7 +177,6 @@ async def get_name(graphdb, domain: Domain, entity_id: str):
 
 @cbv(entity_router)
 class EntitiesByIdResource:
-
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
     graphdb: GraphDB = Depends(get_graphdb)
 
@@ -194,7 +193,7 @@ class EntitiesByIdResource:
         request: Request,
         entity_id: str = Query(..., description=Descriptions.entity_id),
         domain: Domain = Depends(query_domain),
-        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.read)),
+        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.READ)),
     ) -> Entity:
         print(entity_id)
         entity_types = await get_entity_types(self.graphdb, domain, entity_id)
@@ -223,7 +222,7 @@ class EntitiesByIdResource:
     #     self,
     #     request: Request,
     #     entity_id: str = Path(..., description=Descriptions.entity_id),
-    #     checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.write)),
+    #     checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.WRITE)),
     # ) -> IsSuccess:
     #     futures = []
     #     qstr = """
@@ -266,7 +265,7 @@ class EntitiesByIdResource:
     #     relationships: Relationships = Body(
     #         ..., description=Descriptions.relationships
     #     ),
-    #     checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.write)),
+    #     checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.WRITE)),
     # ):
     #     for [prop, obj] in relationships:
     #         await self.brick_db.add_triple(URIRef(entity_id), prop, obj)
@@ -307,7 +306,6 @@ class ListEntityParams(BaseModel):
 # TODO: In the auth model, this resource's target is a `graph`
 @cbv(entity_router)
 class EntitiesResource:
-
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
     graphdb: GraphDB = Depends(get_graphdb)
 
@@ -325,7 +323,7 @@ class EntitiesResource:
         ),
         domain: Domain = Depends(query_domain),
         token: HTTPAuthorizationCredentials = jwt_security_scheme,
-        checker: Any = Depends(PermissionChecker(PermissionType.write)),
+        checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ) -> EntityIds:
         # FIXME: rewrite
         topclass = get_brick_topclass(settings.brick_version)
@@ -357,7 +355,7 @@ class EntitiesResource:
     #         description="A dictionary to describe entities to create. Keys are Brick Classes and values are the number of instances to create for the Class",
     #     ),
     #     graph: str = Query(settings.brick_base_graph, description=Descriptions.graph),
-    #     checker: Any = Depends(PermissionChecker(PermissionType.read)),
+    #     checker: Any = Depends(PermissionChecker(PermissionType.READ)),
     # ) -> EntitiesCreateResponse:
     #     resp = defaultdict(list)
     #     for brick_type, entities_num in create_entities.items():

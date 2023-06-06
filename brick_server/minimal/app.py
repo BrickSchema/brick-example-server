@@ -14,7 +14,6 @@ from brick_server.minimal.auth.authorization import default_auth_logic
 from brick_server.minimal.dependencies import update_dependency_supplier
 
 update_dependency_supplier(default_auth_logic)
-from brick_server.minimal.init import initialization
 
 API_V1_PREFIX = "/brickapi/v1"
 
@@ -36,6 +35,8 @@ app.logger = logger
 
 @app.on_event("startup")
 async def startup_event() -> None:
+    from brick_server.minimal.init import initialization
+
     await initialization()
 
 

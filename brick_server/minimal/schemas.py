@@ -130,3 +130,15 @@ class PaginationLimit(NoneNegativeInt):
 class Pagination(BaseModel):
     offset: NoneNegativeInt
     limit: PaginationLimit
+
+
+class StrEnumMixin(str, Enum):
+    def __str__(self) -> str:
+        return self.value
+
+
+class PermissionType(StrEnumMixin, Enum):
+    READ = "read"
+    WRITE = "write"
+    ADMIN_DOMAIN = "admin_domain"
+    ADMIN_SITE = "admin_site"

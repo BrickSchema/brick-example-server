@@ -7,7 +7,7 @@ from fastapi_utils.inferring_router import InferringRouter
 from loguru import logger
 
 from brick_server.minimal import models, schemas
-from brick_server.minimal.auth.authorization import PermissionChecker, PermissionType
+from brick_server.minimal.auth.checker import PermissionChecker, PermissionType
 from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_graphdb,
@@ -44,7 +44,7 @@ class DomainRoute:
         self,
         background_tasks: BackgroundTasks,
         domain: str = Path(...),
-        checker: Any = Depends(PermissionChecker(PermissionType.write)),
+        checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ) -> schemas.Domain:
         created_domain = models.Domain(name=domain)
         try:
@@ -58,7 +58,7 @@ class DomainRoute:
     async def delete_domain(
         self,
         domain: models.Domain = Depends(path_domain),
-        checker: Any = Depends(PermissionChecker(PermissionType.write)),
+        checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ):
         # TODO: delete repository, add lock
         domain.delete()
@@ -69,7 +69,7 @@ class DomainRoute:
         self,
         background_tasks: BackgroundTasks,
         domain: models.Domain = Depends(path_domain),
-        checker: Any = Depends(PermissionChecker(PermissionType.read)),
+        checker: Any = Depends(PermissionChecker(PermissionType.READ)),
     ) -> schemas.Domain:
         # for debug purpose
         background_tasks.add_task(self.create_domain_background, domain)
@@ -93,7 +93,7 @@ class DomainUploadRoute:
         background_tasks: BackgroundTasks,
         domain: models.Domain = Depends(path_domain),
         file: UploadFile = File(...),
-        checker: Any = Depends(PermissionChecker(PermissionType.write)),
+        checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ):
         await self.graphdb.clear_import_file(domain.name, file.filename)
         background_tasks.add_task(

@@ -1,4 +1,4 @@
-class BaseTimeseries(object):
+class BaseTimeseries:
     # def __init__(self, *args, **kwargs):
     #     pass
 

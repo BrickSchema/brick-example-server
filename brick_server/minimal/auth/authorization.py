@@ -1,23 +1,19 @@
-import abc
-import asyncio
-from enum import Enum
 from functools import wraps
 from typing import Callable, Set
 
 import arrow
 import jwt
-from fastapi import Body, Depends, HTTPException, Query
+from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
 from brick_server.minimal.auth.jwt import jwt_security_scheme, parse_jwt_token
-from brick_server.minimal.descriptions import Descriptions
-from brick_server.minimal.models import User, get_doc
-
-from ..exceptions import (
+from brick_server.minimal.exceptions import (
     NotAuthorizedError,
     TokenSignatureExpired,
     TokenSignatureInvalid,
 )
+from brick_server.minimal.models import User, get_doc
+from brick_server.minimal.schemas import PermissionType
 
 FRONTEND_APP = "brickserver_frontend"
 
@@ -25,12 +21,6 @@ A = "A"  # actuatable
 W = "W"  # writable
 R = "R"  # readable
 O = "O"  # owning
-
-
-class PermissionType(str, Enum):
-    read = "read"
-    write = "write"
-    unknown = "unknown"
 
 
 # if False:
@@ -57,6 +47,7 @@ class PermissionType(str, Enum):
 #     )
 # else:
 oauth = None
+
 
 # privkey_path = configs["auth"]["jwt"].get("privkey_path", "configs/jwtRS256.key")
 # pubkey_path = configs["auth"]["jwt"].get("pubkey_path", "configs/jwtRS256.key.pub")
@@ -161,70 +152,6 @@ def authorized_arg(permission_type, get_target_ids=default_get_target_ids):
         return decorated
 
     return auth_wrapper
-
-
-class PermissionCheckerBase(abc.ABC):
-    def __init__(self, permission_type: PermissionType = PermissionType.unknown):
-        self.permission_type = permission_type
-
-    @staticmethod
-    async def call_auth_logic(
-        auth_logic, entity_ids: Set[str], permission: PermissionType
-    ):
-        if asyncio.iscoroutinefunction(auth_logic):
-            return await auth_logic(entity_ids, permission)
-        return auth_logic(entity_ids, permission)
-
-
-class PermissionChecker(PermissionCheckerBase):
-    from brick_server.minimal.dependencies import dependency_supplier
-
-    async def __call__(
-        self,
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
-        auth_logic: Callable[[Set[str], PermissionType], bool] = Depends(
-            dependency_supplier.auth_logic
-        ),
-    ):
-        await self.call_auth_logic(auth_logic, set(), self.permission_type)
-
-
-class PermissionCheckerWithEntityId(PermissionCheckerBase):
-    from brick_server.minimal.dependencies import dependency_supplier
-
-    async def __call__(
-        self,
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
-        auth_logic: Callable[[Set[str], PermissionType], bool] = Depends(
-            dependency_supplier.auth_logic
-        ),
-        entity_id: str = Query(..., description=""),
-    ):
-        await self.call_auth_logic(auth_logic, {entity_id}, self.permission_type)
-
-
-class PermissionCheckerWithData(PermissionCheckerBase):
-    from brick_server.minimal.dependencies import dependency_supplier
-    from brick_server.minimal.schemas import TimeseriesData
-
-    @staticmethod
-    def get_entity_ids(data: TimeseriesData) -> Set[str]:
-        rows = data.data
-        columns = data.columns
-        uuid_idx = columns.index("uuid")
-        uuids = {row[uuid_idx] for row in rows}
-        return uuids
-
-    async def __call__(
-        self,
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
-        auth_logic: Callable[[Set[str], PermissionType], bool] = Depends(
-            dependency_supplier.auth_logic
-        ),
-        data: TimeseriesData = Body(..., description=Descriptions.timeseries_data),
-    ):
-        entity_ids = self.get_entity_ids(data)
-        await self.call_auth_logic(auth_logic, entity_ids, self.permission_type)
 
 
 def authorized(f):
