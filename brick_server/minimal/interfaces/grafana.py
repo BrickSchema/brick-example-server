@@ -1,7 +1,7 @@
 import requests
 
 
-class GrafanaEndpoint(object):
+class GrafanaEndpoint:
     def __init__(self, baseurl, apikey):
         self.baseurl = baseurl
         self.apikey = apikey

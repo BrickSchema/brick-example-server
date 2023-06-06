@@ -8,6 +8,8 @@ import httpx
 from fastapi import UploadFile
 from loguru import logger
 
+from brick_server.minimal.exceptions import GraphDBError
+
 
 class GraphDB:
     def __init__(self, host: str, port: int, repository: str) -> None:
@@ -193,6 +195,10 @@ class GraphDB:
         else:
             resp = await self.client.post(
                 f"/repositories/{repository}", data=data, headers=headers
+            )
+        if resp.status_code != 200:
+            raise GraphDBError(
+                detail=resp.content.decode("utf-8"), status_code=resp.status_code
             )
         result = resp.json()
         logger.debug(result)

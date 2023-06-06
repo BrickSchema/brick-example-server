@@ -8,7 +8,7 @@ from fastapi_rest_framework.config import settings
 from httpx import AsyncClient
 
 from brick_server.minimal.app import app as fastapi_app
-from brick_server.minimal.auth.authorization import create_jwt_token
+from brick_server.minimal.auth.jwt import create_jwt_token
 from brick_server.minimal.interfaces.graphdb import GraphDB
 from brick_server.minimal.models import User
 from brick_server.minimal.schemas import Domain

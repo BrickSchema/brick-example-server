@@ -7,7 +7,7 @@ from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from starlette.requests import Request
 
-from brick_server.minimal.auth.authorization import PermissionChecker, PermissionType
+from brick_server.minimal.auth.checker import PermissionChecker, PermissionType
 from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_graphdb,
@@ -40,7 +40,7 @@ class TimeseriesQuery:
             media_type="application/sql",
             description=Descriptions.sql,
         ),
-        checker: Any = Depends(PermissionChecker(PermissionType.write)),
+        checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ):
         res = await self.ts_db.raw_query(query)
         formatted = format_raw_query(res)
@@ -74,7 +74,7 @@ class SparqlQuery:
         query: str = Body(
             ..., media_type="application/sparql-query", description=Descriptions.sparql
         ),
-        checker: Any = Depends(PermissionChecker(PermissionType.write)),
+        checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ) -> SparqlResult:
         raw_res = await self.graphdb.query(domain.name, query)
         return raw_res

@@ -1,4 +1,4 @@
-class BaseActuation(object):
+class BaseActuation:
     def __init__(self, *args, **kwargs):
         pass
 

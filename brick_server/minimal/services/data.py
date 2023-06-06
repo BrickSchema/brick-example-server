@@ -6,7 +6,7 @@ from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from loguru import logger
 
-from brick_server.minimal.auth.authorization import (
+from brick_server.minimal.auth.checker import (
     PermissionCheckerWithData,
     PermissionCheckerWithEntityId,
     PermissionType,
@@ -56,7 +56,7 @@ class Timeseries:
             description=Descriptions.value_type,
         ),
         pagination: Pagination = Depends(query_pagination),
-        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.read)),
+        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.READ)),
     ) -> TimeseriesData:
         value_types = [row.value for row in value_types]
         data = await self.ts_db.query(
@@ -83,7 +83,7 @@ class Timeseries:
         entity_id: str = Query(..., description=Descriptions.entity_id),
         start_time: float = Query(default=None, description=Descriptions.start_time),
         end_time: float = Query(None, description=Descriptions.end_time),
-        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.write)),
+        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.WRITE)),
     ) -> IsSuccess:
         # self.auth_logic(entity_id, "write")
         await self.ts_db.delete(domain.name, [entity_id], start_time, end_time)
@@ -102,7 +102,7 @@ class Timeseries:
             ...,
             description=Descriptions.timeseries_data,
         ),
-        checker: Any = Depends(PermissionCheckerWithData(PermissionType.write)),
+        checker: Any = Depends(PermissionCheckerWithData(PermissionType.WRITE)),
     ) -> IsSuccess:
         raw_data = data.data
         if not raw_data:

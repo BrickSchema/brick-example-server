@@ -17,8 +17,8 @@ def create_jwt_token(
 ):
     payload = {
         "user_id": user_id,
-        "exp": time.time() + token_lifetime,  # TODO: Think about the timezone
-        "app_id": app_name,
+        "exp": time.time() + token_lifetime,
+        "app_name": app_name,
     }
     jwt_token = jwt.encode(
         payload, settings.jwt_secret, algorithm=settings.jwt_algorithm

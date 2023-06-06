@@ -2,6 +2,7 @@ from mongoengine import (
     BooleanField,
     DateTimeField,
     Document,
+    DynamicDocument,
     ListField,
     ReferenceField,
     StringField,
@@ -17,7 +18,7 @@ from brick_server.minimal.exceptions import DoesNotExistError, MultipleObjectsFo
 # )  # 100 day in secounds TODO: This is only for dev.
 
 
-class User(Document):
+class User(DynamicDocument):
     name = StringField(required=True)
     user_id = StringField(required=True, unique=True)
     email = StringField(required=True)
@@ -66,6 +67,13 @@ def get_doc(doc_type, **query):
     except doc_type.MultipleObjectsReturned:
         raise MultipleObjectsFoundError(doc_type, str(query))
     return doc
+
+
+def get_doc_or_none(doc_type, **query):
+    try:
+        return get_doc(doc_type, **query)
+    except DoesNotExistError:
+        return None
 
 
 def get_docs(doc_type, **query):

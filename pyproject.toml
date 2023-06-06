@@ -10,7 +10,7 @@ description = "brick server minimal"
 license = "BSD-3-Clause"
 name = "brick-server-minimal"
 packages = [
-    { include = "brick_server" },
+  {include = "brick_server"}
 ]
 repository = "https://gitlab.com/mesl/brickserver/brick-server-minimal"
 version = "0.1.0"
