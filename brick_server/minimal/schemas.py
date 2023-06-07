@@ -1,4 +1,5 @@
 from copy import deepcopy
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List
 
@@ -31,6 +32,18 @@ Relationship = deepcopy(TupleModel)
 
 class Relationships(BaseModel):
     relationships: List[Relationship]
+
+
+class User(BaseModel):
+    class Config:
+        orm_mode = True
+
+    name: str = Field(...)
+    user_id: str = Field(...)
+    email: str = Field(...)
+    is_admin: bool = Field(False)
+    is_approved: bool = Field(False)
+    registration_time: datetime = Field(...)
 
 
 class Domain(BaseModel):
