@@ -45,9 +45,10 @@ class NotAuthorizedError(BrickServerError, HTTPException):
 
 class InternalServerError(BrickServerError, HTTPException):
     def __init__(self, **kwargs):
-        super().__init__(
-            status_code=500, detail="Internal server error, please contact site admin."
-        )
+        detail = "Internal server error, please contact site admin."
+        if "hint" in kwargs:
+            detail += f" ({kwargs['hint']})"
+        super().__init__(status_code=500, detail=detail)
 
 
 class TokenSignatureInvalid(NotAuthorizedError):

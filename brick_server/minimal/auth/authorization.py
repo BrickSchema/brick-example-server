@@ -13,7 +13,7 @@ from brick_server.minimal.exceptions import (
     TokenSignatureInvalid,
 )
 from brick_server.minimal.models import User, get_doc
-from brick_server.minimal.schemas import PermissionType
+from brick_server.minimal.schemas import PermissionScope, PermissionType
 
 FRONTEND_APP = "brickserver_frontend"
 
@@ -84,8 +84,12 @@ def validate_token(token: "jwt_security_scheme"):
 
 def default_auth_logic(
     token: HTTPAuthorizationCredentials = jwt_security_scheme,
-) -> Callable[[Set[str], PermissionType], bool]:
-    def _auth_logic(entity_ids: Set[str], permission: PermissionType):
+) -> Callable[[Set[str], PermissionType, PermissionScope], bool]:
+    def _auth_logic(
+        entity_ids: Set[str],
+        permission_type: PermissionType,
+        permission_scope: PermissionScope,
+    ):
         return validate_token(token)
 
     return _auth_logic

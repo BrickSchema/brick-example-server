@@ -13,12 +13,14 @@ auth_scheme = HTTPBearer(bearerFormat="JWT")
 def create_jwt_token(
     user_id: str = "admin",
     app_name: str = None,
+    domain: str = None,
     token_lifetime: int = settings.jwt_expire_seconds,
 ):
     payload = {
         "user_id": user_id,
         "exp": time.time() + token_lifetime,
         "app_name": app_name,
+        "domain": domain,
     }
     jwt_token = jwt.encode(
         payload, settings.jwt_secret, algorithm=settings.jwt_algorithm

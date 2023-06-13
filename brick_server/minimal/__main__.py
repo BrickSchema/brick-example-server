@@ -30,8 +30,9 @@ def serve() -> None:
 @cli.command()
 @click.option("--user-id", type=str, default="admin")
 @click.option("--app-name", type=str, default="")
+@click.option("--domain", type=str, default="")
 @click.option("--token-lifetime", type=int, default=0, help="use ")
-def generate_jwt(user_id: str, app_name: str, token_lifetime: int) -> None:
+def generate_jwt(user_id: str, app_name: str, domain: str, token_lifetime: int) -> None:
     settings = config.init_settings(FastAPIConfig)
 
     from brick_server.minimal.auth.jwt import create_jwt_token
@@ -40,7 +41,7 @@ def generate_jwt(user_id: str, app_name: str, token_lifetime: int) -> None:
         token_lifetime = settings.jwt_expire_seconds
 
     jwt = create_jwt_token(
-        user_id=user_id, app_name=app_name, token_lifetime=token_lifetime
+        user_id=user_id, app_name=app_name, domain=domain, token_lifetime=token_lifetime
     )
     print(jwt)
 
