@@ -153,5 +153,15 @@ class StrEnumMixin(str, Enum):
 class PermissionType(StrEnumMixin, Enum):
     READ = "read"
     WRITE = "write"
-    ADMIN_DOMAIN = "admin_domain"
-    ADMIN_SITE = "admin_site"
+    NA = "na"
+
+
+class PermissionScope(StrEnumMixin, Enum):
+    SITE = "site"
+    DOMAIN = "domain"
+    ENTITY = "entity"
+    USER = "user"
+    APP = "app"
+    # ADMIN_DOMAIN = "admin_domain"
+    # ADMIN_SITE = "admin_site"
+    # ADMIN_USER = "admin_user"
