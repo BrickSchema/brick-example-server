@@ -33,20 +33,21 @@ def serve() -> None:
 @click.option("--domain", type=str, default="")
 @click.option("--token-lifetime", type=int, default=0)
 @click.option("--create-user", is_flag=True)
-def generate_jwt(user_id: str, app_name: str, domain: str, token_lifetime: int, create_user: bool) -> None:
+def generate_jwt(
+    user_id: str, app_name: str, domain: str, token_lifetime: int, create_user: bool
+) -> None:
     settings = config.init_settings(FastAPIConfig)
     print(settings)
 
-    from brick_server.minimal.auth.jwt import create_jwt_token
     from brick_server.minimal.auth.authorization import create_user
+    from brick_server.minimal.auth.jwt import create_jwt_token
     from brick_server.minimal.models import User, get_doc_or_none
-    from brick_server.minimal.dbs import mongo_connection
 
     if token_lifetime == 0:
         token_lifetime = settings.jwt_expire_seconds
 
     user = get_doc_or_none(User, user_id=user_id)
-    if user is None and create_user:
+    if create_user and user is None:
         user = create_user(name=user_id, user_id=user_id, email=f"{user_id}@gmail.com")
     jwt = create_jwt_token(
         user_id=user_id, app_name=app_name, domain=domain, token_lifetime=token_lifetime
