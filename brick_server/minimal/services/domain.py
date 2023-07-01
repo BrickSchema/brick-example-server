@@ -27,9 +27,10 @@ class DomainRoute:
     graphdb: GraphDB = Depends(get_graphdb)
     ts_db: AsyncpgTimeseries = Depends(get_ts_db)
 
-    async def create_domain_background(self, domain: models.Domain):
+    async def initialize_domain_background(self, domain: models.Domain):
         await self.graphdb.init_repository(domain.name)
         await self.ts_db.init_table(domain.name)
+        await self.ts_db.init_history_table(domain.name)
         graphs = await self.graphdb.list_graphs(domain.name)
         if settings.default_brick_url in graphs:
             logger.info("GraphDB Brick Schema found.")
@@ -38,6 +39,8 @@ class DomainRoute:
             await self.graphdb.import_schema_from_url(
                 domain.name, settings.default_brick_url
             )
+        domain.initialized = True
+        domain.save()
 
     @domain_router.post("/{domain}")
     async def create_domain(
@@ -51,7 +54,7 @@ class DomainRoute:
             created_domain.save()
         except Exception:
             raise AlreadyExistsError("domain", "name")
-        background_tasks.add_task(self.create_domain_background, created_domain)
+        background_tasks.add_task(self.initialize_domain_background, created_domain)
         return schemas.Domain.from_orm(created_domain)
 
     @domain_router.delete("/{domain}")
@@ -74,6 +77,14 @@ class DomainRoute:
         # for debug purpose
         background_tasks.add_task(self.create_domain_background, domain)
         return schemas.Domain.from_orm(domain)
+
+    @domain_router.get("/{domain}/init")
+    async def init_domain(
+        self,
+        domain: models.Domain = Depends(path_domain),
+        checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
+    ):
+        await self.initialize_domain_background(domain)
 
 
 @cbv(domain_router)

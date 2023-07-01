@@ -56,6 +56,7 @@ class GrafanaDashboard(Document):
 
 class Domain(Document):
     name = StringField(required=True, unique=True)
+    initialized = BooleanField(required=True, default=False)
 
 
 def get_doc(doc_type, **query):

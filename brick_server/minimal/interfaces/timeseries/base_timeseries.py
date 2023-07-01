@@ -51,3 +51,8 @@ class BaseTimeseries:
         raise NotImplementedError(
             "This should be overriden by an actual implementation."
         )
+
+    async def add_history_data(self, domain_name, entity_id, user_id, app_name, time):
+        raise NotImplementedError(
+            "This should be overriden by an actual implementation."
+        )
