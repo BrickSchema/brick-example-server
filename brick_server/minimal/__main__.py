@@ -41,8 +41,10 @@ def generate_jwt(
 
     from brick_server.minimal.auth.authorization import create_user
     from brick_server.minimal.auth.jwt import create_jwt_token
+    from brick_server.minimal.dbs import mongo_connection
     from brick_server.minimal.models import User, get_doc_or_none
 
+    _ = mongo_connection
     if token_lifetime == 0:
         token_lifetime = settings.jwt_expire_seconds
 
