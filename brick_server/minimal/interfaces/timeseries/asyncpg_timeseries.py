@@ -43,6 +43,7 @@ class AsyncpgTimeseries(BaseTimeseries):
     ):
         self.DB_NAME = dbname
         self.TABLE_NAME_PREFIX = "brick_data"
+        self.HISTORY_TABLE_NAME_PREFIX = "brick_history"
         self.conn_str = f"postgres://{user}:{pw}@{host}:{port}/{dbname}"
         self.value_cols = ["number", "text", "loc"]
         self.pagination_size = 500
@@ -60,6 +61,9 @@ class AsyncpgTimeseries(BaseTimeseries):
 
     def get_table_name(self, domain_name):
         return f"{self.TABLE_NAME_PREFIX}_{domain_name}"
+
+    def get_history_table_name(self, domain_name):
+        return f"{self.HISTORY_TABLE_NAME_PREFIX}_{domain_name}"
 
     async def init_table(self, domain_name):
         self.column_type_map = {
@@ -93,6 +97,50 @@ class AsyncpgTimeseries(BaseTimeseries):
             ),
             """
             CREATE INDEX IF NOT EXISTS brick_data_time_index ON {table_name} (time DESC);
+            """.format(
+                table_name=table_name
+            ),
+            """
+            CREATE INDEX IF NOT EXISTS brick_data_uuid_index ON {table_name} (uuid);
+            """.format(
+                table_name=table_name
+            ),
+        ]
+        async with self.pool.acquire() as conn:
+            for qstr in qstrs:
+                try:
+                    res = await conn.execute(qstr)
+                except Exception as e:
+                    if "already a hypertable" in str(e):
+                        pass
+                    else:
+                        raise e
+        logger.info("Init table {}", table_name)
+
+    async def init_history_table(self, domain_name):
+        table_name = self.get_history_table_name(domain_name)
+        qstrs = [
+            """
+            CREATE TABLE IF NOT EXISTS {table_name} (
+                uuid TEXT NOT NULL,
+                user_id TEXT NOT NULL,
+                app_name TEXT NOT NULL,
+                time TIMESTAMP NOT NULL,
+                PRIMARY KEY (uuid, time)
+            );
+            """.format(
+                table_name=table_name
+            ),
+            """
+                CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+            """,
+            """
+            SELECT create_hypertable('{table_name}', 'time');
+            """.format(
+                table_name=table_name
+            ),
+            """
+            CREATE INDEX IF NOT EXISTS brick_history_time_index ON {table_name} (time DESC);
             """.format(
                 table_name=table_name
             ),
@@ -339,6 +387,24 @@ DROP TABLE {temp_table};
             await self._add_loc_data(domain_name, data)
         elif data_type == "text":
             await self._add_text_data(domain_name, data)
+
+    async def add_history_data(self, domain_name, entity_id, user_id, app_name, time):
+        table_name = self.get_history_table_name(domain_name)
+        async with self.pool.acquire() as conn:
+            res = await conn.execute(
+                f"""INSERT INTO {table_name} (uuid, user_id, app_name, time)
+                VALUES ('{entity_id}', '{user_id}', '{app_name}', '{time}');"""
+            )
+
+    async def get_history_data(self, domain_name, entity_ids):
+        table_name = self.get_history_table_name(domain_name)
+        entity_ids_string = ",".join(map(lambda x: f"'{x}'", entity_ids))
+        query = f"""SELECT (uuid, user_id, app_name, time) FROM {table_name} WHERE uuid IN ({entity_ids_string});"""
+        logger.info(query)
+        async with self.pool.acquire() as conn:
+            res = [record["row"] for record in await conn.fetch(query)]
+            logger.info(res)
+            return res
 
 
 def main():
