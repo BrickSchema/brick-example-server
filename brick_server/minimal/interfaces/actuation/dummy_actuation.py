@@ -5,5 +5,5 @@ class DummyActuation(BaseActuation):
     def __init__(self, *args, **kwargs):
         pass
 
-    def actuate(self, entity_id, value):
+    async def actuate(self, entity_id, value):
         return True

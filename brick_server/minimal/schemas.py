@@ -165,3 +165,8 @@ class PermissionScope(StrEnumMixin, Enum):
     # ADMIN_DOMAIN = "admin_domain"
     # ADMIN_SITE = "admin_site"
     # ADMIN_USER = "admin_user"
+
+
+class ActuationResult(BaseModel):
+    success: bool = Field(...)
+    detail: str = Field("")

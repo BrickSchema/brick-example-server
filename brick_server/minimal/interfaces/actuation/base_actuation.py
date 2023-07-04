@@ -1,8 +1,12 @@
-class BaseActuation:
-    def __init__(self, *args, **kwargs):
-        pass
+from abc import ABC, abstractmethod
 
-    def actuate(self, entity_id, value):
+
+class BaseActuation(ABC):
+    # def __init__(self, *args, **kwargs):
+    #     pass
+
+    @abstractmethod
+    async def actuate(self, entity_id, value):
         """Actuates an entity with a given value.
 
         This function sets the current value of the entity with `entity_id` as `value` in "the actual system" such as BACnet devices. The value may have a physical impact in the real world.
