@@ -1,5 +1,8 @@
 # nopycln: file
 
+from brick_server.minimal.interfaces.actuation.actuation_interface import (
+    ActuationInterface as ActuationInterface,
+)
 from brick_server.minimal.interfaces.actuation.base_actuation import (
     BaseActuation as BaseActuation,
 )

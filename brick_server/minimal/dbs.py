@@ -1,7 +1,7 @@
 from fastapi_rest_framework.config import settings
 from mongoengine import connect as mongo_connect
 
-from brick_server.minimal.interfaces import AsyncpgTimeseries, RealActuation
+from brick_server.minimal.interfaces import ActuationInterface, AsyncpgTimeseries
 from brick_server.minimal.interfaces.grafana import GrafanaEndpoint
 from brick_server.minimal.interfaces.graphdb import GraphDB
 
@@ -15,7 +15,7 @@ mongo_connection = mongo_connect(
 )
 
 
-actuation_iface = RealActuation()
+actuation_iface = ActuationInterface()
 
 # brick_configs = configs["brick"]
 brick_url = (
