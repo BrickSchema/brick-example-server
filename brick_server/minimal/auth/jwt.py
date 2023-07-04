@@ -5,9 +5,16 @@ from fastapi import HTTPException, Security
 from fastapi.security import HTTPBearer
 from fastapi_rest_framework.config import settings
 
-from ..exceptions import NotAuthorizedError
+from brick_server.minimal.exceptions import NotAuthorizedError
 
 auth_scheme = HTTPBearer(bearerFormat="JWT")
+
+
+def sign_jwt_token(payload, token_lifetime: int = settings.jwt_expire_seconds):
+    jwt_token = jwt.encode(
+        payload, settings.jwt_secret, algorithm=settings.jwt_algorithm
+    )
+    return jwt_token
 
 
 def create_jwt_token(
@@ -22,10 +29,7 @@ def create_jwt_token(
         "app_name": app_name,
         "domain": domain,
     }
-    jwt_token = jwt.encode(
-        payload, settings.jwt_secret, algorithm=settings.jwt_algorithm
-    )
-    return jwt_token
+    return sign_jwt_token(payload, token_lifetime)
 
 
 def parse_jwt_token(jwt_token):

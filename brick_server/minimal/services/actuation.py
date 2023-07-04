@@ -15,14 +15,14 @@ from brick_server.minimal.dependencies import (
     get_ts_db,
     path_domain,
 )
-from brick_server.minimal.interfaces import BaseTimeseries, RealActuation
+from brick_server.minimal.interfaces import ActuationInterface, BaseTimeseries
 
 actuation_router = InferringRouter(tags=["Actuation"])
 
 
 @cbv(actuation_router)
 class ActuationEntity:
-    actuation_iface: RealActuation = Depends(get_actuation_iface)
+    actuation_iface: ActuationInterface = Depends(get_actuation_iface)
     ts_db: BaseTimeseries = Depends(get_ts_db)
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
@@ -55,10 +55,12 @@ class ActuationEntity:
                 entity_id,
                 jwt_payload["user_id"],
                 jwt_payload["app_name"],
+                jwt_payload.get("domain_user_app", ""),
                 arrow.now(),
+                actuation[0],
             )
 
-        return schemas.IsSuccess()
+        # return schemas.IsSuccess()
 
         for entity_id, actuation in actuation_request.items():
             try:

@@ -125,7 +125,9 @@ class AsyncpgTimeseries(BaseTimeseries):
                 uuid TEXT NOT NULL,
                 user_id TEXT NOT NULL,
                 app_name TEXT NOT NULL,
+                domain_user_app TEXT NOT NULL,
                 time TIMESTAMP NOT NULL,
+                value TEXT NOT NULL DEFAULT '',
                 PRIMARY KEY (uuid, time)
             );
             """.format(
@@ -388,18 +390,20 @@ DROP TABLE {temp_table};
         elif data_type == "text":
             await self._add_text_data(domain_name, data)
 
-    async def add_history_data(self, domain_name, entity_id, user_id, app_name, time):
+    async def add_history_data(
+        self, domain_name, entity_id, user_id, app_name, domain_user_app, time, value
+    ):
         table_name = self.get_history_table_name(domain_name)
         async with self.pool.acquire() as conn:
             res = await conn.execute(
-                f"""INSERT INTO {table_name} (uuid, user_id, app_name, time)
-                VALUES ('{entity_id}', '{user_id}', '{app_name}', '{time}');"""
+                f"""INSERT INTO {table_name} (uuid, user_id, app_name, domain_user_app, time, value)
+                VALUES ('{entity_id}', '{user_id}', '{app_name}', '{domain_user_app}', '{time}', '{value}');"""
             )
 
     async def get_history_data(self, domain_name, entity_ids):
         table_name = self.get_history_table_name(domain_name)
         entity_ids_string = ",".join(map(lambda x: f"'{x}'", entity_ids))
-        query = f"""SELECT (uuid, user_id, app_name, time) FROM {table_name} WHERE uuid IN ({entity_ids_string});"""
+        query = f"""SELECT (uuid, user_id, app_name, domain_user_app, time, value) FROM {table_name} WHERE uuid IN ({entity_ids_string});"""
         logger.info(query)
         async with self.pool.acquire() as conn:
             res = [record["row"] for record in await conn.fetch(query)]
