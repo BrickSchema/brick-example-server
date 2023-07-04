@@ -11,11 +11,11 @@ class RealActuation(BaseActuation):
     def __init__(self, *args, **kwargs):
         pass
 
-    def actuate(self, entity_id, value):
-        with grpc.insecure_channel("137.110.160.254:50051") as channel:
+    async def actuate(self, entity_id, value):
+        async with grpc.aio.insecure_channel("137.110.160.254:50051") as channel:
             stub = actuation_server_pb2_grpc.ActuationServerStub(channel)
             data = actuation_server_pb2.SensorValue(sensor_id=entity_id, value=value)
-            res = stub.ActuateSingleSensor(data)
+            res = await stub.ActuateSingleSensor(data)
             if not res.result:
                 print(res.detail)
             return res.result, res.detail

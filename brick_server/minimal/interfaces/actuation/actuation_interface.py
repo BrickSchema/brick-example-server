@@ -20,6 +20,6 @@ class ActuationInterface:
         else:
             raise DoesNotExistError("actuation_driver", actuation_name)
 
-    def actuate(self, entity_id, value):
+    async def actuate(self, entity_id, value):
         driver = self.get_actuation_driver(entity_id)
-        driver.actuate(entity_id, value)
+        await driver.actuate(entity_id, value)
