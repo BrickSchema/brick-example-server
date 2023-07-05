@@ -14,7 +14,7 @@ from brick_server.minimal.auth.checker import (
 from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_ts_db,
-    query_domain,
+    path_domain,
     query_pagination,
 )
 from brick_server.minimal.descriptions import Descriptions
@@ -37,14 +37,14 @@ class Timeseries:
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @data_router.get(
-        "/timeseries",
+        "/timeseries/domains/{domain}",
         status_code=200,
         # description='Get data of an entity with in a time range.',
         response_model=TimeseriesData,
     )
     async def get(
         self,
-        domain: Domain = Depends(query_domain),
+        domain: Domain = Depends(path_domain),
         entity_id: str = Query(
             ...,
             description=Descriptions.entity_id,
@@ -72,14 +72,14 @@ class Timeseries:
         return TimeseriesData(data=data, columns=columns)
 
     @data_router.delete(
-        "/timeseries",
+        "/timeseries/domains/{domain}",
         status_code=200,
         description="Delete data of an entity with in a time range or all the data if a time range is not given.",
         response_model=IsSuccess,
     )
     async def delete(
         self,
-        domain: Domain = Depends(query_domain),
+        domain: Domain = Depends(path_domain),
         entity_id: str = Query(..., description=Descriptions.entity_id),
         start_time: float = Query(default=None, description=Descriptions.start_time),
         end_time: float = Query(None, description=Descriptions.end_time),
@@ -90,14 +90,14 @@ class Timeseries:
         return IsSuccess()
 
     @data_router.post(
-        "/timeseries",
+        "/timeseries/domains/{domain}",
         status_code=200,
         description="Post data. If fields are not given, default values are assumed.",
         response_model=IsSuccess,
     )
     async def post(
         self,
-        domain: Domain = Depends(query_domain),
+        domain: Domain = Depends(path_domain),
         data: TimeseriesData = Body(
             ...,
             description=Descriptions.timeseries_data,

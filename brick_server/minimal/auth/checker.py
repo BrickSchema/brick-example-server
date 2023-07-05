@@ -1,6 +1,6 @@
 import abc
 import asyncio
-from typing import Callable, Set
+from typing import Callable, Dict, Set, Tuple, Union
 
 from fastapi import Body, Depends, Query
 from fastapi.security import HTTPAuthorizationCredentials
@@ -90,6 +90,21 @@ class PermissionCheckerWithData(PermissionCheckerBase):
         data: TimeseriesData = Body(..., description=Descriptions.timeseries_data),
     ):
         entity_ids = self.get_entity_ids(data)
+        return await self.call_auth_logic(
+            auth_logic, entity_ids, self.permission_type, self.permission_scope
+        )
+
+
+class PermissionCheckerActuation(PermissionCheckerBase):
+    async def __call__(
+        self,
+        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        auth_logic: Callable[
+            [Set[str], PermissionType, PermissionScope], bool
+        ] = Depends(dependency_supplier.auth_logic),
+        actuation_request: Dict[str, Union[Tuple[str], Tuple[str, str]]] = Body(...),
+    ):
+        entity_ids = set(actuation_request.keys())
         return await self.call_auth_logic(
             auth_logic, entity_ids, self.permission_type, self.permission_scope
         )
