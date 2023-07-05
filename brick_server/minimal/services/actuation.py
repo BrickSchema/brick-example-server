@@ -8,6 +8,7 @@ from fastapi_utils.inferring_router import InferringRouter
 from starlette.requests import Request
 
 from brick_server.minimal import models, schemas
+from brick_server.minimal.auth.checker import PermissionCheckerActuation
 from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_actuation_iface,
@@ -17,6 +18,7 @@ from brick_server.minimal.dependencies import (
     path_domain,
 )
 from brick_server.minimal.interfaces import ActuationInterface, BaseTimeseries, GraphDB
+from brick_server.minimal.schemas import PermissionType
 
 actuation_router = InferringRouter(tags=["Actuation"])
 
@@ -64,10 +66,9 @@ class ActuationEntity:
         request: Request,
         domain: models.Domain = Depends(path_domain),
         # entity_id: str = Query(..., description=Descriptions.entity_id),
-        actuation_request: Dict[str, Union[Tuple[str], Tuple[str, str]]] = Body(
-            ...,
-        ),
+        actuation_request: Dict[str, Union[Tuple[str], Tuple[str, str]]] = Body(...),
         jwt_payload: Dict[str, Any] = Depends(get_jwt_payload),
+        checker: Any = Depends(PermissionCheckerActuation(PermissionType.WRITE)),
     ) -> List[schemas.ActuationResult]:
         # if scheduled_time:
         #    # TODO: Implement this

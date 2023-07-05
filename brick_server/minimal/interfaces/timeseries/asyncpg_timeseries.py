@@ -54,6 +54,13 @@ class AsyncpgTimeseries(BaseTimeseries):
         if not write_blob:
             self.write_blob = self.write_blob_fs
 
+        self.column_type_map = {
+            "time": "TIMESTAMP",
+            "number": "DOUBLE PRECISION",
+            "text": "TEXT",
+            "loc": "geometry(Point,4326)",
+        }
+
     async def init(self, **pool_config):
         self.pool = await asyncpg.create_pool(dsn=self.conn_str, **pool_config)
         # await self._init_table()
@@ -66,12 +73,6 @@ class AsyncpgTimeseries(BaseTimeseries):
         return f"{self.HISTORY_TABLE_NAME_PREFIX}_{domain_name}"
 
     async def init_table(self, domain_name):
-        self.column_type_map = {
-            "time": "TIMESTAMP",
-            "number": "DOUBLE PRECISION",
-            "text": "TEXT",
-            "loc": "geometry(Point,4326)",
-        }
         table_name = self.get_table_name(domain_name)
         qstrs = [
             """

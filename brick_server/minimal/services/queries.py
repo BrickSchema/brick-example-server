@@ -12,7 +12,7 @@ from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_graphdb,
     get_ts_db,
-    query_domain,
+    path_domain,
 )
 from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import BaseTimeseries, GraphDB
@@ -64,13 +64,13 @@ class SparqlQuery:
     graphdb: GraphDB = Depends(get_graphdb)
 
     @query_router.post(
-        "/sparql",
+        "/domains/{domain}/sparql",
         description="Raw SPARQL for Brick metadata. (May not be exposed in the production deployment.",
     )
     async def post(
         self,
         # request: Request,
-        domain: Domain = Depends(query_domain),
+        domain: Domain = Depends(path_domain),
         query: str = Body(
             ..., media_type="application/sparql-query", description=Descriptions.sparql
         ),
