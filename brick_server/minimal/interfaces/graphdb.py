@@ -33,7 +33,7 @@ class GraphDB:
                 }
             },
         }
-        resp = await self.client.post("/rest/repositories", json=data)
+        resp = await self.client.post("/rest/repositories", json=data, timeout=10)
         if resp.status_code != 201:
             logger.debug(resp.content)
         # resp = await self.client.get(f"/rest/repositories/{self.repository}/size")

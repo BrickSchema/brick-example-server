@@ -60,6 +60,7 @@ class AsyncpgTimeseries(BaseTimeseries):
             "text": "TEXT",
             "loc": "geometry(Point,4326)",
         }
+        self.pool = None
 
     async def init(self, **pool_config):
         self.pool = await asyncpg.create_pool(dsn=self.conn_str, **pool_config)
