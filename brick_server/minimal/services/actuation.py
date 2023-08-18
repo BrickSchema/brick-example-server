@@ -1,14 +1,14 @@
 import asyncio
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, Tuple, Union
 
 import arrow
 from fastapi import Body, Depends
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
+from fastapi_utils.timing import TIMER_ATTRIBUTE, _TimingStats
 from starlette.requests import Request
 
 from brick_server.minimal import models, schemas
-from brick_server.minimal.auth.checker import PermissionCheckerActuation
 from brick_server.minimal.dependencies import (
     dependency_supplier,
     get_actuation_iface,
@@ -18,7 +18,6 @@ from brick_server.minimal.dependencies import (
     path_domain,
 )
 from brick_server.minimal.interfaces import ActuationInterface, BaseTimeseries, GraphDB
-from brick_server.minimal.schemas import PermissionType
 
 actuation_router = InferringRouter(tags=["Actuation"])
 
@@ -40,7 +39,7 @@ class ActuationEntity:
             if len(actuation_payload) == 2:
                 print(actuation_payload[1])
             success, detail = await self.actuation_iface.actuate(
-                entity_id, actuation_payload[0]
+                domain, entity_id, actuation_payload[0]
             )
             await self.ts_db.add_history_data(
                 domain.name,
@@ -68,8 +67,8 @@ class ActuationEntity:
         # entity_id: str = Query(..., description=Descriptions.entity_id),
         actuation_request: Dict[str, Union[Tuple[str], Tuple[str, str]]] = Body(...),
         jwt_payload: Dict[str, Any] = Depends(get_jwt_payload),
-        checker: Any = Depends(PermissionCheckerActuation(PermissionType.WRITE)),
-    ) -> List[schemas.ActuationResult]:
+        # checker: Any = Depends(PermissionCheckerActuation(PermissionType.WRITE)),
+    ) -> schemas.ActuationResults:
         # if scheduled_time:
         #    # TODO: Implement this
         #    raise exceptions.NotImplemented('Currently only immediate actuation is supported.')
@@ -86,7 +85,12 @@ class ActuationEntity:
             schemas.ActuationResult(success=success, detail=detail)
             for success, detail in results
         ]
-        return results
+        timer: _TimingStats = getattr(request.state, TIMER_ATTRIBUTE)
+        timer.take_split()
+
+        return schemas.ActuationResults(
+            results=results, response_time=1000 * timer.time
+        )
 
         # for entity_id, actuation in actuation_request.items():
         #     if not await self.guard_before_actuation(domain, entity_id):

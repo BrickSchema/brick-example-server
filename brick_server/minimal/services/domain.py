@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, Callable
 
 from fastapi import BackgroundTasks, Depends, File, Path, UploadFile
@@ -28,9 +29,12 @@ class DomainRoute:
     ts_db: AsyncpgTimeseries = Depends(get_ts_db)
 
     async def initialize_domain_background(self, domain: models.Domain):
-        await self.graphdb.init_repository(domain.name)
-        await self.ts_db.init_table(domain.name)
-        await self.ts_db.init_history_table(domain.name)
+        tasks = [
+            self.graphdb.init_repository(domain.name),
+            self.ts_db.init_table(domain.name),
+            self.ts_db.init_history_table(domain.name),
+        ]
+        await asyncio.gather(*tasks)
         graphs = await self.graphdb.list_graphs(domain.name)
         if settings.default_brick_url in graphs:
             logger.info("GraphDB Brick Schema found.")
@@ -75,7 +79,6 @@ class DomainRoute:
         checker: Any = Depends(PermissionChecker(PermissionType.READ)),
     ) -> schemas.Domain:
         # for debug purpose
-        background_tasks.add_task(self.create_domain_background, domain)
         return schemas.Domain.from_orm(domain)
 
     @domain_router.get("/{domain}/init")
@@ -84,6 +87,7 @@ class DomainRoute:
         domain: models.Domain = Depends(path_domain),
         checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ):
+        # for debug purpose
         await self.initialize_domain_background(domain)
 
 

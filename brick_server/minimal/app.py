@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_rest_framework import config, logging
+from fastapi_utils.timing import add_timing_middleware
 from loguru import logger
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -29,7 +30,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+add_timing_middleware(app, record=logger.info)
 app.logger = logger
 
 

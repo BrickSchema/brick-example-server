@@ -170,3 +170,8 @@ class PermissionScope(StrEnumMixin, Enum):
 class ActuationResult(BaseModel):
     success: bool = Field(...)
     detail: str = Field("")
+
+
+class ActuationResults(BaseModel):
+    results: List[ActuationResult] = Field([])
+    response_time: float = Field(0)
