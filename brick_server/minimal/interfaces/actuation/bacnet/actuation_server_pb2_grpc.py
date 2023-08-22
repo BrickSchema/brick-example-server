@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from brick_server.minimal.interfaces.actuation import (
+from brick_server.minimal.interfaces.actuation.bacnet import (
     actuation_server_pb2 as actuation__server__pb2,
 )
 

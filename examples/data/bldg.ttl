@@ -49,15 +49,19 @@
 :BLDG_RM102_ONOFF a brick:On_Off_Command.
 :BLDG_RM102_MTR a brick:Thermal_Power_Sensor ;
     brick:hasUnit unit:MilliW ;
-    ref:hasExternalReference [
-        a ref:BACnetReference ;
-        bacnet:object-identifier "181160_analogInput_3" ;
-        bacnet:object-name "AI3 BERT Power Measurement" ;
-        bacnet:objectOf :plug1_BACnetDevice ; ] ;
+#    ref:hasExternalReference [
+#        a ref:BACnetReference ;
+#        bacnet:object-identifier "181160_analogInput_3" ;
+#        bacnet:object-name "AI3 BERT Power Measurement" ;
+#        bacnet:objectOf :plug1_BACnetDevice ; ] ;
     ref:hasTimeseriesReference [
         a ref:TimeseriesReference ;
         ref:hasTimeseriesId "0000000-0000-000-0000-000000000000" ;
-        ref:storedAt "postgres://1.2.3.4:5432/db1" ; ] .
+        ref:storedAt "postgres://1.2.3.4:5432/db1" ; ] ;
+    ref:hasExternalReference [
+        a ref:MetasysReference ;
+        ref:metasysID "54f03333-afcb-5210-be0b-9b6996e2e76e";
+        ref:hostedAt "172.21.59.228" ] .
 
 :RM102 brick:isLocationOf :BLDG_RM102_ZN_T.
 :RM102 brick:hasPoint :BLDG_RM102_ZN_T.

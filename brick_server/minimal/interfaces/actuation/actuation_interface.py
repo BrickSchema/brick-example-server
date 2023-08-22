@@ -1,9 +1,9 @@
 from multidict import MultiDict
 
 from brick_server.minimal.exceptions import DoesNotExistError
-from brick_server.minimal.interfaces.actuation.bacnet_actuation import BacnetActuation
+from brick_server.minimal.interfaces.actuation.bacnet import BacnetActuation
 from brick_server.minimal.interfaces.actuation.base_actuation import BaseActuation
-from brick_server.minimal.interfaces.actuation.dummy_actuation import DummyActuation
+from brick_server.minimal.interfaces.actuation.metasys import MetasysActuation
 from brick_server.minimal.utils import parse_graphdb_result
 
 
@@ -11,7 +11,7 @@ class ActuationInterface:
     def __init__(self):
         self.actuation_dict = {
             "https://brickschema.org/schema/Brick/ref#BACnetReference": BacnetActuation(),
-            "dummy": DummyActuation(),
+            "https://brickschema.org/schema/Brick/ref#MetasysReference": MetasysActuation(),
         }
 
     async def get_external_references(self, domain, entity_id):
