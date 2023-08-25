@@ -6,6 +6,7 @@
 @prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix bacnet: <http://data.ashrae.org/bacnet/2020#> .
+@prefix unit: <http://qudt.org/vocab/unit/> .
 
 
 ebu3b:EBU3B_Rm_4262_CORSIBOX a brick:Filter .
@@ -6068,7 +6069,22 @@ ebu3b:EBU3B_RM_2150_CLGPID_O a brick:Cooling_Command ;
     brick:isPointOf ebu3b:EBU3B_VAV_Rm_2150 .
 
 ebu3b:EBU3B_RM_2150_COMMONSP a brick:Zone_Temperature_Setpoint ;
-    brick:isPointOf ebu3b:EBU3B_VAV_Rm_2150 .
+    brick:hasUnit   unit:DEG_F;
+    brick:isPointOf ebu3b:EBU3B_VAV_Rm_2150 ;
+    ref:hasExternalReference [
+        a ref:BACnetReference ;
+        bacnet:object-identifier "506_analogOutput_3000493" ;
+        bacnet:object-name "NAE-06/N2-1.VMA149.COMMONSP" ;
+        bacnet:objectOf ebu3b:NAE506 ;
+    ] ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId "506_analogOutput_3000493" ;
+    ] ;
+
+ebu3b:NAE506 a bacnet:BACnetDevice ;
+    bacnet:device-instance 506 ;
+    bacnet:hasConnectorAt "137.110.160.254:50051" .
 
 ebu3b:EBU3B_RM_2150_DMPR_POS a brick:Damper_Position_Sensor ;
     brick:isPointOf ebu3b:EBU3B_VAV_Rm_2150,
