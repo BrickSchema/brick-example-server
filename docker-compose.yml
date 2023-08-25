@@ -47,6 +47,7 @@ services:
     volumes:
       - ./brick_server:/root/brick_server
       - ./tests:/root/tests
+      - ./examples:/root/examples
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "9000:9000"

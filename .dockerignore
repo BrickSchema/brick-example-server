@@ -5,6 +5,7 @@ poetry.toml
 .vscode
 venv
 .git
+psqlData
 
 # Created by https://www.toptal.com/developers/gitignore/api/vscode,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=vscode,python
