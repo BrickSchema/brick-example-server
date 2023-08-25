@@ -1,7 +1,7 @@
 import grpc
 from loguru import logger
 
-from brick_server.minimal.interfaces.actuation import (
+from brick_server.minimal.interfaces.actuation.bacnet import (
     actuation_server_pb2,
     actuation_server_pb2_grpc,
 )

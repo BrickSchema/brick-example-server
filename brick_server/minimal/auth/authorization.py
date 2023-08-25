@@ -197,6 +197,7 @@ def create_user(name, user_id, email, is_admin=False):
         registration_time=arrow.get().datetime,
     )
     created_user.save()
+    return created_user
 
 
 async def _get_id_token_user(request):
