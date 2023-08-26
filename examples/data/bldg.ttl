@@ -56,8 +56,8 @@
 #        bacnet:objectOf :plug1_BACnetDevice ; ] ;
     ref:hasTimeseriesReference [
         a ref:TimeseriesReference ;
-        ref:hasTimeseriesId "0000000-0000-000-0000-000000000000" ;
-        ref:storedAt "postgres://1.2.3.4:5432/db1" ; ] ;
+        ref:hasTimeseriesId "b67c5c50-a9bb-5a74-a399-a3b0c669373e" ;
+        ref:storedAt "influxdb://1.2.3.4:5432/db1" ; ] ;
     ref:hasExternalReference [
         a ref:MetasysReference ;
         ref:metasysID "54f03333-afcb-5210-be0b-9b6996e2e76e";

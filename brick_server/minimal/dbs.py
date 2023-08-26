@@ -1,7 +1,12 @@
 from fastapi_rest_framework.config import settings
 from mongoengine import connect as mongo_connect
 
-from brick_server.minimal.interfaces import ActuationInterface, AsyncpgTimeseries
+from brick_server.minimal.interfaces import (
+    ActuationInterface,
+    AsyncpgTimeseries,
+    InfluxDBTimeseries,
+    TimeseriesInterface,
+)
 from brick_server.minimal.interfaces.grafana import GrafanaEndpoint
 from brick_server.minimal.interfaces.graphdb import GraphDB
 
@@ -50,6 +55,14 @@ ts_db = AsyncpgTimeseries(
     settings.timescale_host,
     settings.timescale_port,
 )
+
+influx_db = InfluxDBTimeseries(
+    settings.influxdb_url,
+    settings.influxdb_token,
+    settings.influxdb_org,
+    settings.influxdb_bucket,
+)
+timeseries_iface = TimeseriesInterface()
 
 
 grafana_url = f"http://{settings.grafana_host}:{settings.grafana_port}/{settings.grafana_api_endpoint}"

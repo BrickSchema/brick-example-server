@@ -72,6 +72,11 @@ class DatabaseConfig(config.Base):
     grafana_api_endpoint: str = "api"
     grafana_api_key: str = "YOUR_API_TOKEN"
 
+    influxdb_url: str = "https://us-east-1-1.aws.cloud2.influxdata.com"
+    influxdb_token: str = ""
+    influxdb_org: str = "9d4d3af8fd50fcbb"
+    influxdb_bucket = "CO2-Exp"
+
 
 FastAPIConfig: Type[
     Union[BaseConfig, AuthConfig, DatabaseConfig]
