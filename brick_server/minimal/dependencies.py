@@ -50,6 +50,12 @@ def get_actuation_iface():
     return actuation_iface
 
 
+def get_timeseries_iface():
+    from brick_server.minimal.dbs import timeseries_iface
+
+    return timeseries_iface
+
+
 def get_grafana():
     from brick_server.minimal.dbs import grafana_endpoint
 

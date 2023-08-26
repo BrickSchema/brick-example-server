@@ -28,6 +28,7 @@ fastapi-rest-framework = {git = "https://github.com/joint-online-judge/fastapi-r
 fastapi-utils = "^0.2.1"
 grpcio = "^1.42.0"
 httpx = "^0.23.0"
+influxdb-client = {extras = ["async"], version = "^1.37.0"}
 itsdangerous = "^2.0.1"
 mongoengine = "^0.23.1"
 protobuf = "^3.17.3"
