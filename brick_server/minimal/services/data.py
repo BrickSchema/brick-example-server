@@ -13,12 +13,12 @@ from brick_server.minimal.auth.checker import (
 )
 from brick_server.minimal.dependencies import (
     dependency_supplier,
-    get_ts_db,
+    get_timeseries_iface,
     path_domain,
     query_pagination,
 )
 from brick_server.minimal.descriptions import Descriptions
-from brick_server.minimal.interfaces import AsyncpgTimeseries
+from brick_server.minimal.interfaces import TimeseriesInterface
 from brick_server.minimal.schemas import (
     Domain,
     IsSuccess,
@@ -33,7 +33,7 @@ data_router = InferringRouter(tags=["Data"])
 
 @cbv(data_router)
 class Timeseries:
-    ts_db: AsyncpgTimeseries = Depends(get_ts_db)
+    ts_db: TimeseriesInterface = Depends(get_timeseries_iface)
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     @data_router.get(
@@ -56,17 +56,17 @@ class Timeseries:
             description=Descriptions.value_type,
         ),
         pagination: Pagination = Depends(query_pagination),
-        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.READ)),
+        # checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.READ)),
     ) -> TimeseriesData:
         value_types = [row.value for row in value_types]
         data = await self.ts_db.query(
-            domain.name,
+            domain,
             [entity_id],
             start_time,
             end_time,
-            value_types,
-            pagination.offset,
+            # value_types,
             pagination.limit,
+            pagination.offset,
         )
         columns = ["uuid", "timestamp"] + value_types
         return TimeseriesData(data=data, columns=columns)

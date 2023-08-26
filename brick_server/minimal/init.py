@@ -1,7 +1,7 @@
 import asyncpg
 from loguru import logger
 
-from brick_server.minimal.dbs import ts_db
+from brick_server.minimal.dbs import influx_db, ts_db
 
 
 async def initialization() -> None:
@@ -18,5 +18,7 @@ async def initialization() -> None:
     try:
         logger.info("Init timescale tables")
         await ts_db.init()
+        logger.info("Init InfluxDB")
+        await influx_db.init()
     except asyncpg.exceptions.DuplicateTableError:
         logger.info("Timescale tables have been already created.")

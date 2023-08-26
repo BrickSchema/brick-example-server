@@ -2,7 +2,7 @@ class BaseTimeseries:
     # def __init__(self, *args, **kwargs):
     #     pass
 
-    def add_data(self, domain_name, data):
+    async def add_data(self, domain_name, data):
         """Adds timeseries data
 
         This function adds data into the designated timeseries database.
@@ -20,15 +20,18 @@ class BaseTimeseries:
             "This should be overriden by an actual implementation."
         )
 
-    def query(self, domain_name, start_time, end_time, entity_ids):
+    async def query(self, domain, entity_ids, start_time, end_time, limit=0, offset=0):
         """Executes a basic query over the timeseries DB.
 
         Processes a basic range-based query over the timeseries DB.
 
         Args:
+            domain:
             start_time: UNIX timestamp in seconds as a floating point.
             end_time: UNIX timestamp in seconds as a floating point.
             entity_ids: A list of string entity identifiers.
+            limit:
+            offset:
 
         Returns:
 
@@ -37,7 +40,7 @@ class BaseTimeseries:
             "This should be overriden by an actual implementation."
         )
 
-    def raw_query(self, qstr):
+    async def raw_query(self, qstr):
         """Executes SQL query over the timeseries DB.
 
         Executes SQL query over timeseries data.
