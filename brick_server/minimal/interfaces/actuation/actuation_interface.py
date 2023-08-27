@@ -3,6 +3,7 @@ from brick_server.minimal.interfaces.actuation.bacnet import BacnetActuation
 from brick_server.minimal.interfaces.actuation.base_actuation import BaseActuation
 from brick_server.minimal.interfaces.actuation.metasys import MetasysActuation
 from brick_server.minimal.utils import get_external_references
+from loguru import logger
 
 
 class ActuationInterface:
@@ -25,4 +26,4 @@ class ActuationInterface:
         # TODO: get actuation_name in brick graph with cache
         external_references = await get_external_references(domain, entity_id)
         driver = await self.get_actuation_driver(external_references)
-        await driver.actuate(entity_id, value, external_references)
+        return await driver.actuate(entity_id, value, external_references)

@@ -17,11 +17,12 @@ class MetasysActuation(BaseActuation):
             "https://brickschema.org/schema/Brick/ref#metasysID"
         ]
         logger.info("metasys: {} {}", sensor_id, value)
-        async with grpc.aio.insecure_channel("localhost:50051") as channel:
+        async with grpc.aio.insecure_channel("172.17.0.1:50051") as channel:
             stub = actuate_pb2_grpc.ActuateStub(channel)
             response: actuate_pb2.Response = await stub.TemporaryOverride(
                 actuate_pb2.TemporaryOverrideAction(
                     uuid=sensor_id, value=str(value), hour=4, minute=0
                 )
             )
+            logger.info(response)
             return response.status, response.details
