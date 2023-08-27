@@ -1,4 +1,5 @@
 from datetime import datetime
+import arrow
 
 from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
 from loguru import logger
@@ -15,7 +16,7 @@ class InfluxDBTimeseries(BaseTimeseries):
         self.client = None
 
     async def init(self):
-        self.client = InfluxDBClientAsync(url=self.url, token=self.token, org=self.org)
+        self.client = InfluxDBClientAsync(url=self.url, token=self.token, org=self.org, timeout=100000)
         ready = await self.client.ping()
         logger.info("InfluxDB Initialized: {}", ready)
 
@@ -24,13 +25,18 @@ class InfluxDBTimeseries(BaseTimeseries):
         # |> range(start: -10m)
         qstr = f'from(bucket:"{self.bucket}")'
         if start_time:
-            qstr += f"\n|> range(start: {datetime.fromtimestamp(start_time)})"
+            start = arrow.get(start_time).to('utc').format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z'
         else:
-            qstr += "\n|> range(start: -10m)"
+            start = '-10d'
+
         if end_time:
-            qstr += f"\n|> range(stop: {datetime.fromtimestamp(end_time)})"
+            qstr += f"\n|> range(start: {start}, stop: {arrow.get(end_time).to('utc').format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z'})"
+        else:
+            qstr += f"\n|> range(start: {start})"
+
         if limit > 0:
             qstr += f"\n|> limit(n: {limit}, offset: {offset})"
+        qstr+= '\n|> sort(columns: ["_time"], desc: true)'
         qstr += f'\n|> filter(fn: (r) => r._measurement == "heattransfer-test1" and r.id == "{entity_ids[0]}")'
         logger.info(qstr)
 
