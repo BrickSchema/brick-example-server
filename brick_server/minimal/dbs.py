@@ -1,3 +1,4 @@
+from aiocache import caches
 from fastapi_rest_framework.config import settings
 from mongoengine import connect as mongo_connect
 
@@ -18,7 +19,6 @@ mongo_connection = mongo_connect(
     db=settings.mongo_dbname,
     connect=False,
 )
-
 
 actuation_iface = ActuationInterface()
 
@@ -64,6 +64,23 @@ influx_db = InfluxDBTimeseries(
 )
 timeseries_iface = TimeseriesInterface()
 
+caches.set_config(
+    {
+        "default": {
+            "cache": "aiocache.RedisCache",
+            "endpoint": settings.redis_host,
+            "port": settings.redis_port,
+            "db": settings.redis_db,
+            "password": settings.redis_password,
+            "timeout": 1,
+            "serializer": {"class": "aiocache.serializers.PickleSerializer"},
+            "plugins": [
+                {"class": "aiocache.plugins.HitMissRatioPlugin"},
+                {"class": "aiocache.plugins.TimingPlugin"},
+            ],
+        }
+    }
+)
 
 grafana_url = f"http://{settings.grafana_host}:{settings.grafana_port}/{settings.grafana_api_endpoint}"
 grafana_endpoint = GrafanaEndpoint(grafana_url, settings.grafana_api_key)

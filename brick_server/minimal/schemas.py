@@ -174,4 +174,4 @@ class ActuationResult(BaseModel):
 
 class ActuationResults(BaseModel):
     results: List[ActuationResult] = Field([])
-    response_time: float = Field(0)
+    response_time: Dict = Field({})

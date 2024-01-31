@@ -165,7 +165,7 @@ class GraphDB:
         repository: str,
         query_str: str,
         is_update=False,
-        limit: int = 1000,
+        limit: int = 10000,
         offset: int = 0,
     ):
         resp = await self.client.post(
@@ -177,7 +177,7 @@ class GraphDB:
         )
         query_str = resp.content.decode("utf-8")
         query_str = ast.literal_eval(query_str)
-        logger.debug(query_str)
+        # logger.debug(query_str)
         data = {
             "query": query_str,
             "infer": True,
@@ -201,5 +201,5 @@ class GraphDB:
                 detail=resp.content.decode("utf-8"), status_code=resp.status_code
             )
         result = resp.json()
-        logger.debug(result)
+        # logger.debug(result)
         return result
