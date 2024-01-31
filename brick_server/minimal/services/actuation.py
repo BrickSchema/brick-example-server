@@ -5,7 +5,6 @@ import arrow
 from fastapi import Body, Depends
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
-from fastapi_utils.timing import TIMER_ATTRIBUTE, _TimingStats
 from starlette.requests import Request
 
 from brick_server.minimal import models, schemas
@@ -30,15 +29,39 @@ class ActuationEntity:
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     # TODO: use a better method to guard the playground api
-    async def guard_before_actuation(self, domain, entity_id, value) -> None:
+    async def guard_before_actuation(
+        self, domain, entity_id, value
+    ) -> Tuple[bool, str, float, float]:
         pass
 
     async def actuate_entity(self, domain, jwt_payload, entity_id, actuation_payload):
+        policy_time = 0
+        guard_time = 0
+        driver_time = 0
+        actuation_time = 0
         try:
-            await self.guard_before_actuation(domain, entity_id, actuation_payload[0])
+            (
+                success,
+                detail,
+                policy_time,
+                guard_time,
+            ) = await self.guard_before_actuation(
+                domain, entity_id, actuation_payload[0]
+            )
+            if not success:
+                return (
+                    success,
+                    detail,
+                    (policy_time, guard_time, driver_time, actuation_time),
+                )
             if len(actuation_payload) == 2:
                 print(actuation_payload[1])
-            success, detail = await self.actuation_iface.actuate(
+            (
+                success,
+                detail,
+                driver_time,
+                actuation_time,
+            ) = await self.actuation_iface.actuate(
                 domain, entity_id, actuation_payload[0]
             )
             await self.ts_db.add_history_data(
@@ -50,9 +73,13 @@ class ActuationEntity:
                 arrow.now(),
                 actuation_payload[0],
             )
-            return success, detail
+            return (
+                success,
+                detail,
+                (policy_time, guard_time, driver_time, actuation_time),
+            )
         except Exception as e:
-            return False, f"{e}"
+            return False, f"{e}", (policy_time, guard_time, driver_time, actuation_time)
 
     @actuation_router.post(
         "/domains/{domain}",
@@ -80,17 +107,25 @@ class ActuationEntity:
             self.actuate_entity(domain, jwt_payload, entity_id, actuation_payload)
             for entity_id, actuation_payload in actuation_request.items()
         ]
-        results = await asyncio.gather(*tasks)
-        results = [
-            schemas.ActuationResult(success=success, detail=detail)
-            for success, detail in results
-        ]
-        timer: _TimingStats = getattr(request.state, TIMER_ATTRIBUTE)
-        timer.take_split()
+        task_results = await asyncio.gather(*tasks)
+        results = []
+        response_time = {"policy": 0, "guard": 0, "driver": 0, "actuation": 0}
 
-        return schemas.ActuationResults(
-            results=results, response_time=1000 * timer.time
-        )
+        for (
+            success,
+            detail,
+            (policy_time, guard_time, driver_time, actuation_time),
+        ) in task_results:
+            results.append(schemas.ActuationResult(success=success, detail=detail))
+            response_time["policy"] += 1000 * policy_time
+            response_time["guard"] += 1000 * guard_time
+            response_time["driver"] += 1000 * driver_time
+            response_time["actuation"] += 1000 * actuation_time
+
+        # timer: _TimingStats = getattr(request.state, TIMER_ATTRIBUTE)
+        # timer.take_split()
+
+        return schemas.ActuationResults(results=results, response_time=response_time)
 
         # for entity_id, actuation in actuation_request.items():
         #     if not await self.guard_before_actuation(domain, entity_id):

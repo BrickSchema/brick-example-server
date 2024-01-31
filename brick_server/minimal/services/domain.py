@@ -28,6 +28,17 @@ class DomainRoute:
     graphdb: GraphDB = Depends(get_graphdb)
     ts_db: AsyncpgTimeseries = Depends(get_ts_db)
 
+    async def initialize_rdf_schema(self, graphs, domain, url):
+        if url in graphs:
+            logger.info("GraphDB schema {} found in domain {}.", url, domain.name)
+        else:
+            logger.info(
+                "GraphDB schema {} not found in domain {}, initializing...",
+                url,
+                domain.name,
+            )
+            await self.graphdb.import_schema_from_url(domain.name, url)
+
     async def initialize_domain_background(self, domain: models.Domain):
         tasks = [
             self.graphdb.init_repository(domain.name),
@@ -36,13 +47,10 @@ class DomainRoute:
         ]
         await asyncio.gather(*tasks)
         graphs = await self.graphdb.list_graphs(domain.name)
-        if settings.default_brick_url in graphs:
-            logger.info("GraphDB Brick Schema found.")
-        else:
-            logger.info("GraphDB Brick Schema not found.")
-            await self.graphdb.import_schema_from_url(
-                domain.name, settings.default_brick_url
-            )
+        await self.initialize_rdf_schema(graphs, domain, settings.default_brick_url)
+        await self.initialize_rdf_schema(
+            graphs, domain, settings.default_ref_schema_url
+        )
         domain.initialized = True
         domain.save()
 

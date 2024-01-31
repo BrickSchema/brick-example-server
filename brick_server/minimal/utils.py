@@ -13,7 +13,7 @@ def parse_graphdb_result(res):
 async def get_external_references(domain, entity_id):
     query = f"""
 select distinct ?k ?v where {{
-    {entity_id} ref:hasExternalReference ?o .
+    <{entity_id}> ref:hasExternalReference ?o .
     ?o ?k ?v .
 }}
         """

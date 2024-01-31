@@ -17,9 +17,13 @@ class BaseConfig(config.Base):
     workers: int = 4
 
     default_brick_url: str = "https://brickschema.org/schema/Brick"
+    default_ref_schema_url: str = "https://gist.githubusercontent.com/tc-imba/714c2043e893b1538406a9113140a4fe/raw/2fa8df840f3e4f1deb647b14fe524976f004e321/ref-schema.ttl"
 
     hostname: str = "http://localhost:9000"
     frontend: str = "DUMMY-NOT-WORK"
+
+    cache: bool = False
+    # cache: bool = True
 
 
 @config.add
@@ -76,6 +80,11 @@ class DatabaseConfig(config.Base):
     influxdb_token: str = ""
     influxdb_org: str = "9d4d3af8fd50fcbb"
     influxdb_bucket = "CO2-Exp"
+
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_password: str = "brick-demo"
+    redis_db: int = 0
 
 
 FastAPIConfig: Type[

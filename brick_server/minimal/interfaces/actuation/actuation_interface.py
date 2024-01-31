@@ -1,9 +1,11 @@
+import time
+
 from brick_server.minimal.exceptions import DoesNotExistError
 from brick_server.minimal.interfaces.actuation.bacnet import BacnetActuation
 from brick_server.minimal.interfaces.actuation.base_actuation import BaseActuation
 from brick_server.minimal.interfaces.actuation.metasys import MetasysActuation
+from brick_server.minimal.interfaces.cache import use_cache
 from brick_server.minimal.utils import get_external_references
-from loguru import logger
 
 
 class ActuationInterface:
@@ -24,6 +26,21 @@ class ActuationInterface:
 
     async def actuate(self, domain, entity_id, value):
         # TODO: get actuation_name in brick graph with cache
-        external_references = await get_external_references(domain, entity_id)
-        driver = await self.get_actuation_driver(external_references)
-        return await driver.actuate(entity_id, value, external_references)
+        start = time.time()
+        driver_time = 0
+        actuation_time = 0
+        try:
+            cache_key = f"external_references:{domain.name}:{entity_id}"
+            external_references = await use_cache(
+                cache_key, get_external_references, domain, entity_id
+            )
+            driver = await self.get_actuation_driver(external_references)
+            driver_time = time.time() - start
+            start = time.time()
+            success, detail = await driver.actuate(
+                entity_id, value, external_references
+            )
+            actuation_time = time.time() - start
+        except Exception as e:
+            success, detail = False, f"{e}"
+        return success, detail, driver_time, actuation_time
