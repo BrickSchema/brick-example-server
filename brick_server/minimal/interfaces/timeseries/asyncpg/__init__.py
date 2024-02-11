@@ -98,12 +98,12 @@ class AsyncpgTimeseries(BaseTimeseries):
                 table_name=table_name
             ),
             """
-            CREATE INDEX IF NOT EXISTS brick_data_time_index ON {table_name} (time DESC);
+            CREATE INDEX IF NOT EXISTS {table_name}_time_index ON {table_name} (time DESC);
             """.format(
                 table_name=table_name
             ),
             """
-            CREATE INDEX IF NOT EXISTS brick_data_uuid_index ON {table_name} (uuid);
+            CREATE INDEX IF NOT EXISTS {table_name}_uuid_index ON {table_name} (uuid);
             """.format(
                 table_name=table_name
             ),
@@ -144,12 +144,12 @@ class AsyncpgTimeseries(BaseTimeseries):
                 table_name=table_name
             ),
             """
-            CREATE INDEX IF NOT EXISTS brick_history_time_index ON {table_name} (time DESC);
+            CREATE INDEX IF NOT EXISTS {table_name}_time_index ON {table_name} (time DESC);
             """.format(
                 table_name=table_name
             ),
             """
-            CREATE INDEX IF NOT EXISTS brick_data_uuid_index ON {table_name} (uuid);
+            CREATE INDEX IF NOT EXISTS {table_name}_uuid_index ON {table_name} (uuid);
             """.format(
                 table_name=table_name
             ),
