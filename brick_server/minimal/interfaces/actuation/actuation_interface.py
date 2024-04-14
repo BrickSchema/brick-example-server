@@ -1,11 +1,11 @@
 import time
 
-from brick_server.minimal.exceptions import DoesNotExistError
 from brick_server.minimal.interfaces.actuation.bacnet import BacnetActuation
 from brick_server.minimal.interfaces.actuation.base_actuation import BaseActuation
 from brick_server.minimal.interfaces.actuation.metasys import MetasysActuation
 from brick_server.minimal.interfaces.cache import use_cache
-from brick_server.minimal.utils import get_external_references
+from brick_server.minimal.utilities.exceptions import BizError, ErrorCode
+from brick_server.minimal.utilities.utils import get_external_references
 
 
 class ActuationInterface:
@@ -22,7 +22,7 @@ class ActuationInterface:
         for actuation_type in types:
             if actuation_type in self.actuation_dict:
                 return self.actuation_dict[actuation_type]
-        raise DoesNotExistError("actuation_driver", ",".join(types))
+        raise BizError(ErrorCode.ActuationDriverNotFoundError, ",".join(types))
 
     async def actuate(self, domain, entity_id, value):
         # TODO: get actuation_name in brick graph with cache

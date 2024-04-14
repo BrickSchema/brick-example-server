@@ -1,9 +1,9 @@
 import arrow
 import asyncpg
-from fastapi_rest_framework.config import settings
 from mongoengine import connect as mongo_connect
 from tenacity import retry, stop_after_delay, wait_exponential
 
+from brick_server.minimal.config.manager import settings
 from brick_server.minimal.interfaces.graphdb import GraphDB
 from brick_server.minimal.models import User
 
@@ -44,10 +44,10 @@ async def drop_postgres_db():
         "drop test db",
         settings.timescale_host,
         settings.timescale_port,
-        settings.timescale_dbname,
+        settings.TIMESCALE_DATABASE,
     )
     conn = await get_postgres_conn()
-    await conn.execute(f'DROP DATABASE IF EXISTS "{settings.timescale_dbname}"')
+    await conn.execute(f'DROP DATABASE IF EXISTS "{settings.TIMESCALE_DATABASE}"')
     await conn.close()
 
 
@@ -56,14 +56,14 @@ async def create_postgres_db():
         "create test db",
         settings.timescale_host,
         settings.timescale_port,
-        settings.timescale_dbname,
+        settings.TIMESCALE_DATABASE,
     )
     conn = await get_postgres_conn()
     await conn.execute(
-        f'CREATE DATABASE "{settings.timescale_dbname}" OWNER "{settings.timescale_username}"'
+        f'CREATE DATABASE "{settings.TIMESCALE_DATABASE}" OWNER "{settings.timescale_username}"'
     )
     await conn.close()
-    conn = await get_postgres_conn(database=settings.timescale_dbname)
+    conn = await get_postgres_conn(database=settings.TIMESCALE_DATABASE)
     await conn.execute("CREATE EXTENSION IF NOT EXISTS postgis CASCADE")
     await conn.close()
 

@@ -2,26 +2,25 @@ import asyncio
 from typing import Any, Callable, Dict, Tuple, Union
 
 import arrow
-from fastapi import Body, Depends
-from fastapi_utils.cbv import cbv
-from fastapi_utils.inferring_router import InferringRouter
+from fastapi import APIRouter, Body, Depends
+from fastapi_restful.cbv import cbv
 from starlette.requests import Request
 
 from brick_server.minimal import models, schemas
-from brick_server.minimal.dependencies import (
+from brick_server.minimal.interfaces import ActuationInterface, BaseTimeseries, GraphDB
+from brick_server.minimal.utilities.dependencies import (
     dependency_supplier,
     get_actuation_iface,
     get_graphdb,
     get_jwt_payload,
+    get_path_domain,
     get_ts_db,
-    path_domain,
 )
-from brick_server.minimal.interfaces import ActuationInterface, BaseTimeseries, GraphDB
 
-actuation_router = InferringRouter(tags=["Actuation"])
+router = APIRouter(prefix="/actuation", tags=["actuation"])
 
 
-@cbv(actuation_router)
+@cbv(router)
 class ActuationEntity:
     actuation_iface: ActuationInterface = Depends(get_actuation_iface)
     ts_db: BaseTimeseries = Depends(get_ts_db)
@@ -67,7 +66,7 @@ class ActuationEntity:
             await self.ts_db.add_history_data(
                 domain.name,
                 entity_id,
-                jwt_payload["user_id"],
+                jwt_payload["sub"],
                 jwt_payload["app_name"],
                 jwt_payload.get("domain_user_app", ""),
                 arrow.now(),
@@ -81,7 +80,7 @@ class ActuationEntity:
         except Exception as e:
             return False, f"{e}", (policy_time, guard_time, driver_time, actuation_time)
 
-    @actuation_router.post(
+    @router.post(
         "/domains/{domain}",
         description="Actuate an entity to a value. Body format {{entity_id: [actuation_value, optional playceholder}, ...}",
         # response_model=schemas.IsSuccess,
@@ -90,7 +89,7 @@ class ActuationEntity:
     async def post(
         self,
         request: Request,
-        domain: models.Domain = Depends(path_domain),
+        domain: models.Domain = Depends(get_path_domain),
         # entity_id: str = Query(..., description=Descriptions.entity_id),
         actuation_request: Dict[str, Union[Tuple[str], Tuple[str, str]]] = Body(...),
         jwt_payload: Dict[str, Any] = Depends(get_jwt_payload),

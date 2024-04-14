@@ -49,6 +49,10 @@ services:
       - ./tests:/root/tests
       - ./examples:/root/examples
       - /var/run/docker.sock:/var/run/docker.sock
+    build:
+      context: .
+      args:
+        DOCKER_BUILDKIT: 1
     ports:
       - "9000:9000"
     networks:
@@ -61,7 +65,9 @@ services:
       - TIMESCALE_HOST=brick-server-postgres
       - BRICK_HOST=brick-server-virtuoso
       - GRAPHDB_HOST=brick-server-graphdb
-#      - GRAFANA_HOST=brick-server-grafana
+      - OAUTH_GOOGLE_CLIENT_ID=${OAUTH_GOOGLE_CLIENT_ID}
+      - OAUTH_GOOGLE_CLIENT_SECRET=${OAUTH_GOOGLE_CLIENT_SECRET}
+    #      - GRAFANA_HOST=brick-server-grafana
     depends_on:
       - brick-server-graphdb
     privileged: true

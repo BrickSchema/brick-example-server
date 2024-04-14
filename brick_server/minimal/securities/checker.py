@@ -3,15 +3,11 @@ import asyncio
 from typing import Callable, Dict, Set, Tuple, Union
 
 from fastapi import Body, Depends, Query
-from fastapi.security import HTTPAuthorizationCredentials
 
-from brick_server.minimal.auth.authorization import PermissionScope, PermissionType
-from brick_server.minimal.auth.jwt import jwt_security_scheme
-from brick_server.minimal.dependencies import dependency_supplier
-from brick_server.minimal.descriptions import Descriptions
-from brick_server.minimal.schemas import TimeseriesData
-
-from ..exceptions import NotAuthorizedError
+from brick_server.minimal.schemas import PermissionScope, PermissionType, TimeseriesData
+from brick_server.minimal.utilities.dependencies import dependency_supplier
+from brick_server.minimal.utilities.descriptions import Descriptions
+from brick_server.minimal.utilities.exceptions import BizError, ErrorCode
 
 
 class PermissionCheckerBase(abc.ABC):
@@ -41,14 +37,14 @@ class PermissionCheckerBase(abc.ABC):
         else:
             result = auth_logic_func(entity_ids, permission_type, permission_scope)
         if not result:
-            raise NotAuthorizedError()
+            raise BizError(ErrorCode.UnauthorizedError)
         return auth_logic
 
 
 class PermissionChecker(PermissionCheckerBase):
     async def __call__(
         self,
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        # token: HTTPAuthorizationCredentials = jwt_security_scheme,
         auth_logic: Callable[
             [Set[str], PermissionType, PermissionScope], bool
         ] = Depends(dependency_supplier.auth_logic),
@@ -61,7 +57,7 @@ class PermissionChecker(PermissionCheckerBase):
 class PermissionCheckerWithEntityId(PermissionCheckerBase):
     async def __call__(
         self,
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        # token: HTTPAuthorizationCredentials = jwt_security_scheme,
         auth_logic: Callable[
             [Set[str], PermissionType, PermissionScope], bool
         ] = Depends(dependency_supplier.auth_logic),
@@ -83,7 +79,7 @@ class PermissionCheckerWithData(PermissionCheckerBase):
 
     async def __call__(
         self,
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        # token: HTTPAuthorizationCredentials = jwt_security_scheme,
         auth_logic: Callable[
             [Set[str], PermissionType, PermissionScope], bool
         ] = Depends(dependency_supplier.auth_logic),
@@ -98,7 +94,7 @@ class PermissionCheckerWithData(PermissionCheckerBase):
 class PermissionCheckerActuation(PermissionCheckerBase):
     async def __call__(
         self,
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
+        # token: HTTPAuthorizationCredentials = jwt_security_scheme,
         auth_logic: Callable[
             [Set[str], PermissionType, PermissionScope], bool
         ] = Depends(dependency_supplier.auth_logic),

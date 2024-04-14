@@ -18,42 +18,37 @@ version = "0.1.0"
 [tool.poetry.dependencies]
 aiocache = {extras = ["redis"], version = "^0.12.1"}
 aiofiles = "^0.7.0"
-aiosparql = "^0.12.0"
-arrow = "^1.1.1"
-asyncpg = "^0.24.0"
-Authlib = "^0.15.4"
-brick-data = {git = "https://github.com/jbkoh/brick_data.git", rev = "master"}
+arrow = "^1.3.0"
+asyncpg = "^0.29.0"
 click-default-group = "^1.2.2"
-fastapi = "^0.78.0"
-fastapi-rest-framework = {git = "https://github.com/joint-online-judge/fastapi-rest-framework", rev = "master"}
-fastapi-utils = "^0.2.1"
+fastapi = "^0.110.1"
+fastapi-restful = "^0.5.0"
+fastapi-users = {extras = ["beanie", "oauth"], version = "^13.0.0"}
 grpcio = "^1.42.0"
-httpx = "^0.23.0"
+httpx = "^0.27.0"
 influxdb-client = {extras = ["async"], version = "^1.37.0"}
-itsdangerous = "^2.0.1"
-mongoengine = "^0.23.1"
+loguru = "^0.7.2"
 protobuf = "^3.17.3"
-psycopg2-binary = "^2.9.1"
-pydantic = "^1.8.2"
-PyJWT = "^2.1.0"
-pyparsing = "2.3.1"
-python = ">=3.7,<3.11"
-python-multipart = "^0.0.5"
-PyYAML = "6.0.1"
-rdflib = "^4.2.2"
-requests = "^2.26.0"
-tenacity = "^8.1.0"
-timeout-decorator = "^0.5.0"
-uvicorn = "^0.15.0"
+pydantic = "^2.7.0"
+pydantic-settings = "^2.2.1"
+pyhumps = "^3.8.0"
+python = "^3.10"
+python-decouple = "^3.8"
+python-multipart = "^0.0.9"
+shapely = "^2.0.3"
+typing-inspect = "^0.9.0"
+uvicorn = {extras = ["standard"], version = "^0.29.0"}
 
 [tool.poetry.dev-dependencies]
 asgi-lifespan = "^1.0.1"
+black = "^24.4.0"
 pre-commit = "^2.15.0"
 pytest = "^6.2.5"
 pytest-asyncio = "^0.15.1"
 pytest-depends = "^1.0.1"
 pytest-env = "^0.6.2"
 pytest-ordering = "^0.6"
+tenacity = "^8.1.0"
 
 [tool.pycln]
 all = true

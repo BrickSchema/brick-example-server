@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import Any, Callable
 
 from fastapi import Body, Depends
-from fastapi_utils.cbv import cbv
-from fastapi_utils.inferring_router import InferringRouter
+from fastapi_restful.cbv import cbv
+from fastapi_restful.inferring_router import InferringRouter
 from starlette.requests import Request
 
 from brick_server.minimal.auth.checker import PermissionChecker, PermissionType
@@ -14,9 +14,9 @@ from brick_server.minimal.dependencies import (
     get_ts_db,
     path_domain,
 )
-from brick_server.minimal.descriptions import Descriptions
 from brick_server.minimal.interfaces import BaseTimeseries, GraphDB
 from brick_server.minimal.schemas import Domain, SparqlResult
+from brick_server.minimal.utilities.descriptions import Descriptions
 
 query_router = InferringRouter(tags=["Raw Queries"])
 
