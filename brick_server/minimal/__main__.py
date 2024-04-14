@@ -1,9 +1,8 @@
 import click
 import uvicorn
 from click_default_group import DefaultGroup
-from fastapi_rest_framework import cli, config
 
-from brick_server.minimal.config import FastAPIConfig
+from brick_server.minimal.config.manager import settings
 
 
 @click.group(cls=DefaultGroup, default="serve", default_if_no_args=True)
@@ -12,22 +11,31 @@ def cli_group():
     pass
 
 
-@cli.command()
+@click.command()
 def serve() -> None:
-    settings = config.init_settings(FastAPIConfig)
     uvicorn.run(
-        "brick_server.minimal.app:app",
-        host=settings.host,
-        port=settings.port,
-        debug=settings.debug,
-        reload=settings.workers == 1 and settings.debug,
-        log_level="debug",
+        app="brick_server.minimal.app:backend_app",
+        host=settings.SERVER_HOST,
+        port=settings.SERVER_PORT,
+        reload=settings.SERVER_WORKERS and settings.DEBUG,
         reload_dirs=["brick_server/minimal"],
-        workers=settings.workers,
+        workers=settings.SERVER_WORKERS,
+        log_level=settings.LOGGING_LEVEL,
     )
 
 
-@cli.command()
+# @click.command("openapi")
+# @click.option("-o", "--output", type=click.Path(), required=False, default=None)
+# def main(output: Optional[str]) -> None:
+#     openapi_json = json.dumps(app.openapi(), indent=2)
+#     if output is None:
+#         print(openapi_json)
+#     else:
+#         with Path(output).open("w", encoding="utf-8") as f:
+#             f.write(openapi_json)
+
+
+@click.command()
 @click.option("--user-id", type=str, default="admin")
 @click.option("--app-name", type=str, default="")
 @click.option("--domain", type=str, default="")
@@ -36,9 +44,6 @@ def serve() -> None:
 def generate_jwt(
     user_id: str, app_name: str, domain: str, token_lifetime: int, create_user: bool
 ) -> None:
-    settings = config.init_settings(FastAPIConfig)
-    print(settings)
-
     from brick_server.minimal.auth.authorization import create_user
     from brick_server.minimal.auth.jwt import create_jwt_token
     from brick_server.minimal.dbs import mongo_connection
@@ -46,7 +51,7 @@ def generate_jwt(
 
     _ = mongo_connection  # prevent import removed by pycln
     if token_lifetime == 0:
-        token_lifetime = settings.jwt_expire_seconds
+        token_lifetime = settings.JWT_EXPIRE_SECONDS
 
     user = get_doc_or_none(User, user_id=user_id)
     if create_user and user is None:

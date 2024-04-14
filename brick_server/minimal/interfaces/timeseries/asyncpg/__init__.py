@@ -3,7 +3,7 @@ from uuid import uuid4 as gen_uuid
 
 import aiofiles
 import asyncpg
-import pandas as pd
+from asyncpg import Pool
 from loguru import logger
 from shapely.geometry import Point
 
@@ -60,12 +60,16 @@ class AsyncpgTimeseries(BaseTimeseries):
             "text": "TEXT",
             "loc": "geometry(Point,4326)",
         }
-        self.pool = None
+        self.pool: Pool | None = None
 
     async def init(self, **pool_config):
         self.pool = await asyncpg.create_pool(dsn=self.conn_str, **pool_config)
         # await self._init_table()
         logger.info("Timeseries Initialized")
+
+    async def dispose(self):
+        if self.pool:
+            await self.pool.close()
 
     def get_table_name(self, domain_name):
         return f"{self.TABLE_NAME_PREFIX}_{domain_name}"
@@ -191,10 +195,13 @@ class AsyncpgTimeseries(BaseTimeseries):
             numbers.append(number)
             texts.append(text)
             locs.append(loc)
-        df = pd.DataFrame(
-            {"time": times, "uuid": uuids, "number": numbers, "loc": locs}
+        logger.info(
+            "time: {}, uuid: {}, number: {}, loc: {}", times, uuids, numbers, locs
         )
-        print(df)
+        # df = pd.DataFrame(
+        #     {"time": times, "uuid": uuids, "number": numbers, "loc": locs}
+        # )
+        # print(df)
 
     def serialize_records(self, records):
         return [tuple(row) for row in records]

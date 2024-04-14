@@ -1,63 +1,54 @@
 import asyncio
 from typing import Any, Callable
 
-from fastapi import Body, Depends, HTTPException, Query, status
-from fastapi_utils.cbv import cbv
-from fastapi_utils.inferring_router import InferringRouter
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from fastapi_restful.cbv import cbv
 from loguru import logger
 
-from brick_server.minimal.auth.checker import (
+from brick_server.minimal import models, schemas
+from brick_server.minimal.interfaces import TimeseriesInterface
+from brick_server.minimal.securities.checker import (
     PermissionCheckerWithData,
     PermissionCheckerWithEntityId,
     PermissionType,
 )
-from brick_server.minimal.dependencies import (
+from brick_server.minimal.utilities.dependencies import (
     dependency_supplier,
+    get_pagination_query,
+    get_path_domain,
     get_timeseries_iface,
-    path_domain,
-    query_pagination,
 )
-from brick_server.minimal.descriptions import Descriptions
-from brick_server.minimal.interfaces import TimeseriesInterface
-from brick_server.minimal.schemas import (
-    Domain,
-    IsSuccess,
-    Pagination,
-    TimeseriesData,
-    ValueType,
-    ValueTypes,
-)
+from brick_server.minimal.utilities.descriptions import Descriptions
 
-data_router = InferringRouter(tags=["Data"])
+router = APIRouter(prefix="/data", tags=["data"])
 
 
-@cbv(data_router)
+@cbv(router)
 class Timeseries:
     ts_db: TimeseriesInterface = Depends(get_timeseries_iface)
     auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
-    @data_router.get(
+    @router.get(
         "/timeseries/domains/{domain}",
         status_code=200,
         # description='Get data of an entity with in a time range.',
-        response_model=TimeseriesData,
     )
     async def get(
         self,
-        domain: Domain = Depends(path_domain),
+        domain: models.Domain = Depends(get_path_domain),
         entity_id: str = Query(
             ...,
             description=Descriptions.entity_id,
         ),
         start_time: float = Query(default=None, description=Descriptions.start_time),
         end_time: float = Query(default=None, description=Descriptions.end_time),
-        value_types: ValueTypes = Query(
-            default=[ValueType.number],
+        value_types: list[schemas.ValueType] = Query(
+            default=[schemas.ValueType.number],
             description=Descriptions.value_type,
         ),
-        pagination: Pagination = Depends(query_pagination),
+        pagination: schemas.PaginationQuery = Depends(get_pagination_query),
         # checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.READ)),
-    ) -> TimeseriesData:
+    ) -> schemas.StandardResponse[schemas.TimeseriesData]:
         value_types = [row.value for row in value_types]
         data = await self.ts_db.query(
             domain,
@@ -69,41 +60,39 @@ class Timeseries:
             pagination.offset,
         )
         columns = ["uuid", "timestamp"] + value_types
-        return TimeseriesData(data=data, columns=columns)
+        return schemas.TimeseriesData(data=data, columns=columns).to_response()
 
-    @data_router.delete(
+    @router.delete(
         "/timeseries/domains/{domain}",
         status_code=200,
         description="Delete data of an entity with in a time range or all the data if a time range is not given.",
-        response_model=IsSuccess,
     )
     async def delete(
         self,
-        domain: Domain = Depends(path_domain),
+        domain: models.Domain = Depends(get_path_domain),
         entity_id: str = Query(..., description=Descriptions.entity_id),
         start_time: float = Query(default=None, description=Descriptions.start_time),
         end_time: float = Query(None, description=Descriptions.end_time),
         checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.WRITE)),
-    ) -> IsSuccess:
+    ) -> schemas.StandardResponse[schemas.Empty]:
         # self.auth_logic(entity_id, "write")
         await self.ts_db.delete(domain.name, [entity_id], start_time, end_time)
-        return IsSuccess()
+        return schemas.StandardResponse()
 
-    @data_router.post(
+    @router.post(
         "/timeseries/domains/{domain}",
         status_code=200,
         description="Post data. If fields are not given, default values are assumed.",
-        response_model=IsSuccess,
     )
     async def post(
         self,
-        domain: Domain = Depends(path_domain),
-        data: TimeseriesData = Body(
+        domain: models.Domain = Depends(get_path_domain),
+        data: schemas.TimeseriesData = Body(
             ...,
             description=Descriptions.timeseries_data,
         ),
         checker: Any = Depends(PermissionCheckerWithData(PermissionType.WRITE)),
-    ) -> IsSuccess:
+    ) -> schemas.StandardResponse[schemas.Empty]:
         raw_data = data.data
         if not raw_data:
             raise HTTPException(
@@ -139,7 +128,7 @@ class Timeseries:
                     logger.info(f"data {datum} with error {e}")
             futures = self.add_data(domain.name, data, data_type=value_col)
         await asyncio.gather(futures)
-        return IsSuccess()
+        return schemas.StandardResponse()
 
     async def add_data(self, domain_name, data, data_type):
         try:

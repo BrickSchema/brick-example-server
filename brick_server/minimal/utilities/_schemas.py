@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 from pydantic import BaseModel, ConstrainedInt, Field, conlist
 
-from brick_server.minimal.descriptions import Descriptions
+from brick_server.minimal.utilities.descriptions import Descriptions
 
 
 class ValueType(str, Enum):

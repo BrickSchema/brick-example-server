@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM tiangolo/uvicorn-gunicorn:python3.8-slim
+FROM tiangolo/uvicorn-gunicorn:python3.10-slim
 
 ENV HOME="/root"
 WORKDIR /root

@@ -1,29 +1,27 @@
 from typing import Any, Callable, List
 
 from fastapi import Body, Depends, HTTPException, Query
-from fastapi.security import HTTPAuthorizationCredentials
-from fastapi_rest_framework.config import settings
-from fastapi_utils.cbv import cbv
-from fastapi_utils.inferring_router import InferringRouter
+from fastapi_restful.cbv import cbv
+from fastapi_restful.inferring_router import InferringRouter
 from loguru import logger
 from pydantic import BaseModel
 from starlette.requests import Request
 
-from brick_server.minimal.auth.checker import (
+from brick_server.minimal.config.manager import settings
+from brick_server.minimal.interfaces import GraphDB
+from brick_server.minimal.models import Domain
+from brick_server.minimal.schemas import Entity, EntityIds
+from brick_server.minimal.securities.checker import (
     PermissionChecker,
     PermissionCheckerWithEntityId,
     PermissionType,
 )
-from brick_server.minimal.auth.jwt import jwt_security_scheme
-from brick_server.minimal.dependencies import (
+from brick_server.minimal.utilities.dependencies import (
     dependency_supplier,
     get_graphdb,
     query_domain,
 )
-from brick_server.minimal.descriptions import Descriptions
-from brick_server.minimal.interfaces import GraphDB
-from brick_server.minimal.models import Domain
-from brick_server.minimal.schemas import Entity, EntityIds
+from brick_server.minimal.utilities.descriptions import Descriptions
 
 entity_router = InferringRouter(tags=["Entities"])
 
@@ -322,11 +320,10 @@ class EntitiesResource:
             ListEntityParams(), description=Descriptions.relation_query
         ),
         domain: Domain = Depends(query_domain),
-        token: HTTPAuthorizationCredentials = jwt_security_scheme,
         checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ) -> EntityIds:
         # FIXME: rewrite
-        topclass = get_brick_topclass(settings.brick_version)
+        topclass = get_brick_topclass(settings.BRICK_VERSION)
         logger.debug("topclass: {}", topclass)
         qstr = f"""
         select distinct ?entity where {{
