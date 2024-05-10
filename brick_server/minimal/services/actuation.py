@@ -8,11 +8,11 @@ from starlette.requests import Request
 
 from brick_server.minimal import models, schemas
 from brick_server.minimal.interfaces import ActuationInterface, BaseTimeseries, GraphDB
+from brick_server.minimal.securities.auth import get_jwt_payload
 from brick_server.minimal.securities.checker import PermissionCheckerActuation
 from brick_server.minimal.utilities.dependencies import (
     get_actuation_iface,
     get_graphdb,
-    get_jwt_payload,
     get_path_domain,
     get_ts_db,
 )
