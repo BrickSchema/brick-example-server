@@ -102,6 +102,8 @@ def init_logging() -> None:
     logger.configure(
         handlers=[{"sink": sys.stdout, "level": logging.DEBUG, "format": format_record}]
     )
+    logger.disable("httpx")
+    logger.disable("httpcore")
 
 
 def intercept_all_loggers(level: int = logging.DEBUG) -> None:

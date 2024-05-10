@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Callable, Dict, Tuple, Union
+from typing import Any, Dict, Tuple, Union
 
 import arrow
 from fastapi import APIRouter, Body, Depends
@@ -8,8 +8,8 @@ from starlette.requests import Request
 
 from brick_server.minimal import models, schemas
 from brick_server.minimal.interfaces import ActuationInterface, BaseTimeseries, GraphDB
+from brick_server.minimal.securities.checker import PermissionCheckerActuation
 from brick_server.minimal.utilities.dependencies import (
-    dependency_supplier,
     get_actuation_iface,
     get_graphdb,
     get_jwt_payload,
@@ -25,7 +25,6 @@ class ActuationEntity:
     actuation_iface: ActuationInterface = Depends(get_actuation_iface)
     ts_db: BaseTimeseries = Depends(get_ts_db)
     graphdb: GraphDB = Depends(get_graphdb)
-    auth_logic: Callable = Depends(dependency_supplier.auth_logic)
 
     # TODO: use a better method to guard the playground api
     async def guard_before_actuation(
@@ -83,18 +82,19 @@ class ActuationEntity:
     @router.post(
         "/domains/{domain}",
         description="Actuate an entity to a value. Body format {{entity_id: [actuation_value, optional playceholder}, ...}",
-        # response_model=schemas.IsSuccess,
-        status_code=200,
+        dependencies=[
+            Depends(
+                PermissionCheckerActuation(permission_type=schemas.PermissionType.WRITE)
+            )
+        ],
     )
     async def post(
         self,
         request: Request,
         domain: models.Domain = Depends(get_path_domain),
-        # entity_id: str = Query(..., description=Descriptions.entity_id),
         actuation_request: Dict[str, Union[Tuple[str], Tuple[str, str]]] = Body(...),
         jwt_payload: Dict[str, Any] = Depends(get_jwt_payload),
-        # checker: Any = Depends(PermissionCheckerActuation(PermissionType.WRITE)),
-    ) -> schemas.ActuationResults:
+    ) -> schemas.StandardResponse[schemas.ActuationResults]:
         # if scheduled_time:
         #    # TODO: Implement this
         #    raise exceptions.NotImplemented('Currently only immediate actuation is supported.')
@@ -124,7 +124,9 @@ class ActuationEntity:
         # timer: _TimingStats = getattr(request.state, TIMER_ATTRIBUTE)
         # timer.take_split()
 
-        return schemas.ActuationResults(results=results, response_time=response_time)
+        return schemas.ActuationResults(
+            results=results, response_time=response_time
+        ).to_response()
 
         # for entity_id, actuation in actuation_request.items():
         #     if not await self.guard_before_actuation(domain, entity_id):

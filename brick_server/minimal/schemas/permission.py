@@ -6,6 +6,7 @@ from brick_server.minimal.schemas.base import StrEnumMixin
 class PermissionType(StrEnumMixin, Enum):
     READ = "read"
     WRITE = "write"
+    # ADMIN = "admin"
     NA = "na"
 
 

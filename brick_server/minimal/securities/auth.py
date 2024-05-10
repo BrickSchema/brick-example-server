@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Set
+from typing import Any, Callable, Optional, Set
 
 import jwt
 from beanie import PydanticObjectId
@@ -18,7 +18,6 @@ from fastapi_users.authentication.authenticator import (
 )
 from fastapi_users.jwt import decode_jwt, generate_jwt
 from fastapi_users_db_beanie import BeanieUserDatabase, ObjectIDIDMixin
-from loguru import logger
 from makefun import with_signature
 
 from brick_server.minimal.config.manager import settings
@@ -77,6 +76,9 @@ def get_jwt_strategy() -> MyJWTStrategy:
     )
 
 
+my_jwt_strategy = get_jwt_strategy()
+
+
 cookie_auth_backend = AuthenticationBackend(
     name="cookie",
     transport=cookie_transport,
@@ -91,12 +93,20 @@ bearer_auth_backend = AuthenticationBackend(
 
 
 class UserDatabase(BeanieUserDatabase):
-    async def get_by_user_id(self, string: str) -> Optional[User]:
+    async def get_by_name(self, string: str) -> Optional[User]:
         """Get a single user by user_id."""
         return await self.user_model.find_one(
-            self.user_model.user_id == string,
-            collation=self.user_model.Settings.user_id_collation,
+            self.user_model.name == string,
+            collation=self.user_model.Settings.name_collation,
         )
+
+    async def create(self, create_dict: dict[str, Any]) -> User:
+        """Create a user."""
+        if "name" not in create_dict:
+            create_dict["name"] = create_dict["email"]
+        user = self.user_model(**create_dict)
+        await user.create()
+        return user
 
 
 class UserManager(ObjectIDIDMixin, BaseUserManager[User, PydanticObjectId]):
@@ -107,7 +117,7 @@ class UserManager(ObjectIDIDMixin, BaseUserManager[User, PydanticObjectId]):
     #     self.user_db: UserDatabase
     #     user = await self.user_db.get_by_email(user_email)
     #     if user is None:
-    #         user = await self.user_db.get_by_user_id(user_email)
+    #         user = await self.user_db.get_by_name(user_email)
     #     if user is None:
     #         raise exceptions.UserNotExists()
     #     return user
@@ -199,7 +209,14 @@ def default_auth_logic(
         permission_type: PermissionType,
         permission_scope: PermissionScope,
     ):
-        logger.info(user)
+        # we use a very simple permission model in brick server minimal
+        # there are only two api permission levels: admin and non-admin
+        if (
+            permission_scope == PermissionScope.SITE
+            or permission_scope == PermissionScope.DOMAIN
+        ):
+            if not user.is_superuser:
+                return False
         return True
 
     return _auth_logic

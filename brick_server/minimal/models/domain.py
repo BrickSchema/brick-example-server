@@ -1,12 +1,9 @@
-from beanie import Document
-from pymongo import IndexModel
+from beanie import Document, Indexed
 
 
 class Domain(Document):
-    name: str
+    name: Indexed(str, unique=True)
     initialized: bool = False
 
     class Settings:
-        indexes = [
-            IndexModel("name", unique=True),
-        ]
+        name = "domains"

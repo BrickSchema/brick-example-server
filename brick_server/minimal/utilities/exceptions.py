@@ -32,6 +32,7 @@ class ErrorCode(str, Enum):
     UserNotFoundError = "UserNotFoundError"
     UserInvalidPasswordError = "UserInvalidPasswordError"
     UserAlreadyExistsError = "UserAlreadyExistsError"
+    UserNotUpdatableError = "UserNotUpdatableError"
     UserEmailAlreadyExistsError = "UserEmailAlreadyExistsError"
     UserAlreadyVerifiedError = "UserAlreadyVerifiedError"
     UserInactiveError = "UserInactiveError"

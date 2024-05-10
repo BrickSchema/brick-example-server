@@ -14,9 +14,9 @@ class BackendBaseSettings(pydantic_settings.BaseSettings):
     TITLE: str = "Brick Server Minimal"
     VERSION: str = "0.1.0"
     TIMEZONE: str = "UTC"
-    DESCRIPTION: str | None = None
+    DESCRIPTION: str = ""
     DEBUG: bool = False
-    CACHE: bool = False
+    CACHE: bool = decouple.config("CACHE", cast=bool, default=True)
 
     # brick
     BRICK_VERSION: str = decouple.config("BRICK_VERSION", cast=str, default="1.3")
@@ -33,7 +33,7 @@ class BackendBaseSettings(pydantic_settings.BaseSettings):
     # backend
     SERVER_HOST: str = decouple.config("SERVER_HOST", cast=str, default="0.0.0.0")
     SERVER_PORT: int = decouple.config("SERVER_PORT", cast=int, default=9000)
-    SERVER_WORKERS: int = decouple.config("SERVER_WORKERS", cast=int, default=4)
+    SERVER_WORKERS: int = decouple.config("SERVER_WORKERS", cast=int, default=1)
     API_PREFIX: str = "/brickapi/v1"
     DOCS_URL: str = "/brickapi/v1/docs"
     OPENAPI_URL: str = "/brickapi/v1/openapi.json"
@@ -166,6 +166,7 @@ class BackendBaseSettings(pydantic_settings.BaseSettings):
         case_sensitive: bool = True
         env_file: str = f"{str(ROOT_DIR)}/.env"
         validate_assignment: bool = True
+        extra: str = "allow"
 
     @property
     def set_backend_app_attributes(self) -> dict[str, str | bool | dict | None]:

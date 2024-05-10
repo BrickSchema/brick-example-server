@@ -1,8 +1,9 @@
 import ast
 import json
+import re
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import httpx
 from fastapi import UploadFile
@@ -13,6 +14,8 @@ from brick_server.minimal.utilities.exceptions import BizError, ErrorCode
 
 
 class GraphDB:
+    prefix_regex = re.compile(r"^PREFIX (\w+): <(.+)>$")
+
     def __init__(self, host: str, port: int, repository: str) -> None:
         self.host = host
         self.port = port
@@ -162,14 +165,43 @@ class GraphDB:
         )
         logger.debug(resp.content)
 
+    def parse_prefix(self, query_str: str) -> dict[str, str]:
+        result = {}
+        for line in query_str.split("\n"):
+            match = self.prefix_regex.fullmatch(line)
+            if match is None:
+                break
+            prefix, full_url = match.groups()
+            result[full_url] = prefix
+        # logger.info(result)
+        return result
+
+    @staticmethod
+    def parse_result(
+        result: dict[str, Any], prefixes: dict[str, str]
+    ) -> dict[str, Any]:
+        keys = result["head"]["vars"]
+        d = {key: [] for key in keys}
+        for row in result["results"]["bindings"]:
+            for i, key in enumerate(keys):
+                value = row[key]["value"]
+                # logger.info(value)
+                for full_url, prefix in prefixes.items():
+                    if value.startswith(full_url):
+                        value = f"{prefix}:{value[len(full_url):]}"
+                        # logger.info("{} {} {}", value, full_url, prefix)
+                d[key].append(value)
+        return d
+
     async def query(
         self,
         repository: str,
         query_str: str,
-        is_update=False,
+        is_update: bool = False,
         limit: int = 10000,
         offset: int = 0,
-    ):
+        parse_prefix: bool = True,
+    ) -> tuple[dict[str, Any], dict[str, str]]:
         resp = await self.client.post(
             "/rest/sparql/addKnownPrefixes",
             data=query_str,
@@ -204,8 +236,15 @@ class GraphDB:
                 resp.content.decode("utf-8"),
             )
         result = resp.json()
+        if parse_prefix:
+            prefixes = self.parse_prefix(query_str)
+        else:
+            prefixes = {}
+        return result, prefixes
         # logger.debug(result)
-        return result
+        # parsed_result = self.parse_result(result, prefixes)
+        # logger.debug(parsed_result)
+        # return parsed_result
 
 
 graphdb = GraphDB(
