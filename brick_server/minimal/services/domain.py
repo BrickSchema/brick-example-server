@@ -1,5 +1,4 @@
 import asyncio
-from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Path, UploadFile
 from fastapi_restful.cbv import cbv
@@ -24,7 +23,6 @@ router = APIRouter(prefix="/domains", tags=["domains"])
 
 @cbv(router)
 class DomainRoute:
-    # auth_logic: Callable = Depends(dependency_supplier.auth_logic)
     graphdb: GraphDB = Depends(get_graphdb)
     ts_db: AsyncpgTimeseries = Depends(get_ts_db)
 
@@ -54,12 +52,28 @@ class DomainRoute:
         domain.initialized = True
         await domain.save()
 
-    @router.post("/{domain}")
+    @router.get(
+        "/",
+        dependencies=[Depends(PermissionChecker())],
+    )
+    async def list_domains(
+        self,
+    ) -> schemas.StandardListResponse[schemas.DomainRead]:
+        domains = await models.Domain.find_all().to_list()
+        return schemas.StandardListResponse(
+            [schemas.DomainRead.model_validate(domain.dict()) for domain in domains]
+        )
+
+    @router.post(
+        "/{domain}",
+        dependencies=[
+            Depends(PermissionChecker(permission_scope=schemas.PermissionScope.SITE)),
+        ],
+    )
     async def create_domain(
         self,
         background_tasks: BackgroundTasks,
         domain: str = Path(...),
-        # checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ) -> schemas.StandardResponse[schemas.DomainRead]:
         created_domain = models.Domain(name=domain)
         try:
@@ -69,30 +83,39 @@ class DomainRoute:
         background_tasks.add_task(self.initialize_domain_background, created_domain)
         return schemas.DomainRead.model_validate(created_domain.dict()).to_response()
 
-    @router.delete("/{domain}")
+    @router.delete(
+        "/{domain}",
+        dependencies=[
+            Depends(PermissionChecker(permission_scope=schemas.PermissionScope.SITE)),
+        ],
+    )
     async def delete_domain(
         self,
         domain: models.Domain = Depends(get_path_domain),
-        # checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ) -> schemas.StandardResponse[schemas.Empty]:
         # TODO: delete repository, add lock
         await domain.delete()
         return schemas.StandardResponse()
 
-    @router.get("/{domain}")
+    @router.get(
+        "/{domain}",
+        dependencies=[Depends(PermissionChecker())],
+    )
     async def get_domain(
         self,
-        background_tasks: BackgroundTasks,
         domain: models.Domain = Depends(get_path_domain),
-        checker: Any = Depends(PermissionChecker(schemas.PermissionType.READ)),
     ) -> schemas.StandardResponse[schemas.DomainRead]:
         return schemas.DomainRead.model_validate(domain.dict()).to_response()
 
-    @router.get("/{domain}/init")
+    @router.get(
+        "/{domain}/init",
+        dependencies=[
+            Depends(PermissionChecker(permission_scope=schemas.PermissionScope.DOMAIN))
+        ],
+    )
     async def init_domain(
         self,
         domain: models.Domain = Depends(get_path_domain),
-        # checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ) -> schemas.StandardResponse[schemas.DomainRead]:
         # for debug purpose
         await self.initialize_domain_background(domain)
@@ -100,24 +123,27 @@ class DomainRoute:
 
     @router.post(
         "/{domain}/upload",
-        status_code=200,
         description="Upload a Turtle file. An example file: https://gitlab.com/jbkoh/brick-server-dev/blob/dev/examples/data/bldg.ttl",
         summary="Uplaod a Turtle file",
+        dependencies=[
+            Depends(PermissionChecker(permission_scope=schemas.PermissionScope.DOMAIN)),
+        ],
     )
     async def upload_turtle_file(
         self,
         background_tasks: BackgroundTasks,
         domain: models.Domain = Depends(get_path_domain),
         file: UploadFile = File(...),
-        # checker: Any = Depends(PermissionChecker(PermissionType.WRITE)),
     ) -> schemas.StandardResponse[schemas.DomainRead]:
         await self.graphdb.clear_import_file(domain.name, file.filename)
-        background_tasks.add_task(
-            self.graphdb.import_schema_from_file,
-            domain.name,
-            file,
-            named_graph=None,
-            delete=False,
+        await self.graphdb.import_schema_from_file(
+            domain.name, file, named_graph=None, delete=False
         )
-        # await self.graphdb.import_schema_from_file(file, named_graph, delete=True)
+        # background_tasks.add_task(
+        #     self.graphdb.import_schema_from_file,
+        #     domain.name,
+        #     file,
+        #     named_graph=None,
+        #     delete=False,
+        # )
         return schemas.DomainRead.model_validate(domain.dict()).to_response()

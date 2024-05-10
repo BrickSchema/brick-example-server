@@ -2,7 +2,7 @@ from enum import Enum
 from functools import lru_cache
 from typing import Annotated, Any, Generic, List, Optional, Tuple, Type, TypeVar, Union
 
-from beanie import PydanticObjectId
+from beanie import Document, PydanticObjectId
 from humps import camelize
 from pydantic import BaseModel as PydanticBaseModel, ConfigDict, Field, create_model
 
@@ -115,6 +115,11 @@ class BaseModel(PydanticBaseModel):
 
     def to_response(self: BT) -> StandardResponse[BT]:
         return StandardResponse(self)
+
+    def update_model(self: BT, model: Document) -> None:
+        for k, v in self.dict().items():
+            if v is not None:
+                setattr(model, k, v)
 
 
 PaginationLimit = 500

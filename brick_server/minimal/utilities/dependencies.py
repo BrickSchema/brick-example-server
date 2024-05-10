@@ -1,10 +1,12 @@
 from typing import Any, Callable
 
-from fastapi import Path, Query
+from bson import ObjectId
+from fastapi import Path, Query, Request
 
 from brick_server.minimal import models
 from brick_server.minimal.interfaces.actuation import actuation_iface
 from brick_server.minimal.interfaces.graphdb import GraphDB, graphdb
+from brick_server.minimal.interfaces.mongodb import AsyncDatabase, async_db
 from brick_server.minimal.interfaces.timeseries import (
     AsyncpgTimeseries,
     InfluxDBTimeseries,
@@ -52,6 +54,10 @@ def get_influx_db() -> InfluxDBTimeseries:
     return influx_db
 
 
+def get_mongodb() -> AsyncDatabase:
+    return async_db
+
+
 def get_actuation_iface():
     return actuation_iface
 
@@ -67,8 +73,33 @@ def get_pagination_query(
     return PaginationQuery(offset=offset, limit=limit)
 
 
-async def get_path_domain(domain: str = Path(...)):
-    problem_model = await models.Domain.find_one(models.Domain.name == domain)
-    if problem_model is None:
+async def _get_domain(domain: str) -> models.Domain:
+    if ObjectId.is_valid(domain):
+        domain_model = await models.Domain.get(domain)
+    else:
+        domain_model = await models.Domain.find_one(models.Domain.name == domain)
+    return domain_model
+
+
+async def get_path_domain_optional(request: Request) -> models.Domain | None:
+    domain = request.path_params.get("domain", None)
+    if domain is None:
+        return None
+    return await _get_domain(str(domain))
+
+
+async def get_path_domain(domain: str = Path(...)) -> models.Domain:
+    domain_model = await _get_domain(domain)
+    if domain_model is None:
         raise BizError(ErrorCode.DomainNotFoundError)
-    return problem_model
+    return domain_model
+
+
+async def get_path_user(user: str = Path(...)) -> models.User:
+    if ObjectId.is_valid(user):
+        user_model = await models.User.get(user)
+    else:
+        user_model = await models.User.find_one(models.User.name == user)
+    if user_model is None:
+        raise BizError(ErrorCode.UserNotFoundError)
+    return user_model

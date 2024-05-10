@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Callable
+from typing import Callable
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from fastapi_restful.cbv import cbv
@@ -7,11 +7,7 @@ from loguru import logger
 
 from brick_server.minimal import models, schemas
 from brick_server.minimal.interfaces import TimeseriesInterface
-from brick_server.minimal.securities.checker import (
-    PermissionCheckerWithData,
-    PermissionCheckerWithEntityId,
-    PermissionType,
-)
+from brick_server.minimal.securities.checker import PermissionCheckerWithEntityId
 from brick_server.minimal.utilities.dependencies import (
     dependency_supplier,
     get_pagination_query,
@@ -31,7 +27,14 @@ class Timeseries:
     @router.get(
         "/timeseries/domains/{domain}",
         status_code=200,
-        # description='Get data of an entity with in a time range.',
+        description="Get data of an entity with in a time range.",
+        dependencies=[
+            Depends(
+                PermissionCheckerWithEntityId(
+                    permission_type=schemas.PermissionType.READ
+                )
+            )
+        ],
     )
     async def get(
         self,
@@ -66,6 +69,13 @@ class Timeseries:
         "/timeseries/domains/{domain}",
         status_code=200,
         description="Delete data of an entity with in a time range or all the data if a time range is not given.",
+        dependencies=[
+            Depends(
+                PermissionCheckerWithEntityId(
+                    permission_scope=schemas.PermissionScope.DOMAIN
+                )
+            )
+        ],
     )
     async def delete(
         self,
@@ -73,7 +83,6 @@ class Timeseries:
         entity_id: str = Query(..., description=Descriptions.entity_id),
         start_time: float = Query(default=None, description=Descriptions.start_time),
         end_time: float = Query(None, description=Descriptions.end_time),
-        checker: Any = Depends(PermissionCheckerWithEntityId(PermissionType.WRITE)),
     ) -> schemas.StandardResponse[schemas.Empty]:
         # self.auth_logic(entity_id, "write")
         await self.ts_db.delete(domain.name, [entity_id], start_time, end_time)
@@ -83,6 +92,13 @@ class Timeseries:
         "/timeseries/domains/{domain}",
         status_code=200,
         description="Post data. If fields are not given, default values are assumed.",
+        dependencies=[
+            Depends(
+                PermissionCheckerWithEntityId(
+                    permission_scope=schemas.PermissionScope.DOMAIN
+                )
+            )
+        ],
     )
     async def post(
         self,
@@ -91,7 +107,6 @@ class Timeseries:
             ...,
             description=Descriptions.timeseries_data,
         ),
-        checker: Any = Depends(PermissionCheckerWithData(PermissionType.WRITE)),
     ) -> schemas.StandardResponse[schemas.Empty]:
         raw_data = data.data
         if not raw_data:

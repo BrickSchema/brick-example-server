@@ -17,7 +17,7 @@ def serve() -> None:
         app="brick_server.minimal.app:backend_app",
         host=settings.SERVER_HOST,
         port=settings.SERVER_PORT,
-        reload=settings.SERVER_WORKERS and settings.DEBUG,
+        reload=settings.SERVER_WORKERS == 1 and settings.DEBUG,
         reload_dirs=["brick_server/minimal"],
         workers=settings.SERVER_WORKERS,
         log_level=settings.LOGGING_LEVEL,

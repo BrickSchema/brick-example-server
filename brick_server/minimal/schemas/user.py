@@ -5,17 +5,12 @@ from brick_server.minimal.schemas.base import BaseModel
 
 
 class UserRead(schemas.BaseUser[PydanticObjectId], BaseModel):
-    ...
-    # name: str
-    # user_id: str
+    name: str
 
 
 class UserCreate(schemas.BaseUserCreate, BaseModel):
-    ...
-    # name: str
-    # user_id: str
+    name: str
 
 
 class UserUpdate(schemas.BaseUserUpdate, BaseModel):
-    ...
-    # name: Optional[str] = None
+    name: str | None = None
