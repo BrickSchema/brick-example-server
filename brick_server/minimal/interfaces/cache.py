@@ -1,7 +1,8 @@
 import asyncio
 from typing import Any
 
-from aiocache import BaseCache, caches
+from aiocache import BaseCache, RedisCache, caches
+from loguru import logger
 
 from brick_server.minimal.config.manager import settings
 
@@ -20,11 +21,23 @@ async def use_cache(key: str, fallback_func: Any, *args, **kwargs) -> Any:
             value = fallback_func(*args, **kwargs)
         if settings.CACHE:
             await cache.set(key, value)
-            # logger.info("save cache {}: {}", key, value)
+            logger.debug("save cache {}: {}", key, value)
     else:
-        pass
-        # logger.info("load cache {}: {}", key, value)
+        logger.debug("load cache {}: {}", key, value)
     return value
+
+
+async def clear_cache(key_prefix: str) -> None:
+    if not settings.CACHE:
+        return
+    cache: RedisCache = caches.get("default")
+    logger.debug("clear cache: {}", key_prefix)
+    keys = []
+    async for key in cache.client.scan_iter(f"{key_prefix}:*"):
+        keys.append(key)
+    jobs = [cache.delete(key) for key in keys]
+    await asyncio.gather(*jobs)
+    logger.debug("delete cache keys: {}", keys)
 
 
 caches.set_config(

@@ -7,6 +7,7 @@ from loguru import logger
 from brick_server.minimal import models, schemas
 from brick_server.minimal.config.manager import settings
 from brick_server.minimal.interfaces import AsyncpgTimeseries, GraphDB
+from brick_server.minimal.interfaces.cache import clear_cache
 from brick_server.minimal.securities.checker import PermissionChecker
 from brick_server.minimal.utilities.dependencies import (
     get_graphdb,
@@ -139,6 +140,7 @@ class DomainRoute:
         await self.graphdb.import_schema_from_file(
             domain.name, file, named_graph=None, delete=False
         )
+        await clear_cache(domain.name)
         # background_tasks.add_task(
         #     self.graphdb.import_schema_from_file,
         #     domain.name,

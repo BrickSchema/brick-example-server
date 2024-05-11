@@ -30,7 +30,7 @@ class ActuationInterface:
         driver_time = 0
         actuation_time = 0
         try:
-            cache_key = f"external_references:{domain.name}:{entity_id}"
+            cache_key = f"{domain.name}:external_references:{entity_id}"
             external_references = await use_cache(
                 cache_key, get_external_references, domain, entity_id
             )
