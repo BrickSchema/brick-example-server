@@ -21,6 +21,8 @@ def serve() -> None:
         reload_dirs=["brick_server/minimal"],
         workers=settings.SERVER_WORKERS,
         log_level=settings.LOGGING_LEVEL,
+        proxy_headers=True,
+        forwarded_allow_ips="*",
     )
 
 
