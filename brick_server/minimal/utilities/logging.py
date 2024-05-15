@@ -104,6 +104,7 @@ def init_logging() -> None:
     )
     logger.disable("httpx")
     logger.disable("httpcore")
+    logger.disable("pymongo.logger")
 
 
 def intercept_all_loggers(level: int = logging.DEBUG) -> None:

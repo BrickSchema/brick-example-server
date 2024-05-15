@@ -153,7 +153,7 @@ async def get_user_manager(user_db=Depends(get_user_db)):
 
 fastapi_users = FastAPIUsers[User, PydanticObjectId](
     get_user_manager,
-    [cookie_auth_backend, bearer_auth_backend],
+    [bearer_auth_backend, cookie_auth_backend],
 )
 
 # current_active_user = fastapi_users.current_user(active=True)

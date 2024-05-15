@@ -5,7 +5,6 @@ from fastapi_restful.cbv import cbv
 
 from brick_server.minimal import models, schemas
 from brick_server.minimal.interfaces import GraphDB
-from brick_server.minimal.securities.checker import PermissionChecker
 from brick_server.minimal.utilities.dependencies import (
     dependency_supplier,
     get_graphdb,
@@ -62,9 +61,9 @@ class SparqlQuery:
     @router.post(
         "/domains/{domain}/sparql",
         description="Raw SPARQL for Brick metadata. (May not be exposed in the production deployment.",
-        dependencies=[
-            Depends(PermissionChecker(permission_scope=schemas.PermissionScope.DOMAIN))
-        ],
+        # dependencies=[
+        # Depends(PermissionChecker(permission_scope=schemas.PermissionScope.DOMAIN))
+        # ],
     )
     async def post(
         self,

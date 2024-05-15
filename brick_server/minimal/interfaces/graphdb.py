@@ -177,6 +177,13 @@ class GraphDB:
         return result
 
     @staticmethod
+    def parse_entity_with_prefixes(value: str, prefixes: dict[str, str]) -> str:
+        for full_url, prefix in prefixes.items():
+            if value.startswith(full_url):
+                return f"{prefix}:{value[len(full_url):]}"
+        return value
+
+    @staticmethod
     def parse_result(
         result: dict[str, Any], prefixes: dict[str, str]
     ) -> dict[str, Any]:
@@ -185,11 +192,7 @@ class GraphDB:
         for row in result["results"]["bindings"]:
             for i, key in enumerate(keys):
                 value = row[key]["value"]
-                # logger.info(value)
-                for full_url, prefix in prefixes.items():
-                    if value.startswith(full_url):
-                        value = f"{prefix}:{value[len(full_url):]}"
-                        # logger.info("{} {} {}", value, full_url, prefix)
+                value = GraphDB.parse_entity_with_prefixes(value, prefixes)
                 d[key].append(value)
         return d
 
