@@ -27,3 +27,21 @@ class BaseActuation(ABC):
         raise NotImplementedError(
             "This should be overriden by an actual implementation."
         )
+
+    @abstractmethod
+    async def read(self, entity_id: str, external_references: MultiDict):
+        """Read the current value of an entity
+
+        Args:
+            entity_id: The identifier of an entity.
+            external_references: External references from brick graph
+
+        Returns:
+            None. If the actuation is successful, the function completes. Otherwise, it raises an exception.
+
+        Raises:
+            TODO
+        """
+        raise NotImplementedError(
+            "This should be overriden by an actual implementation."
+        )

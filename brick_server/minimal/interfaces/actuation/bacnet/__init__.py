@@ -24,3 +24,6 @@ class BacnetActuation(BaseActuation):
             if not res.result:
                 print(res.detail)
             return res.result, res.detail
+
+    async def read(self, entity_id, external_references):
+        raise NotImplementedError

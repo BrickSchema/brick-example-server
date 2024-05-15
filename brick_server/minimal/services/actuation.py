@@ -32,6 +32,10 @@ class ActuationEntity:
     ) -> Tuple[bool, str, float, float]:
         pass
 
+    async def read_entity(self, domain, entity_id):
+        success, detail = await self.actuation_iface.read(domain, entity_id)
+        return success, detail
+
     async def actuate_entity(self, domain, jwt_payload, entity_id, actuation_payload):
         policy_time = 0
         guard_time = 0
@@ -78,6 +82,30 @@ class ActuationEntity:
             )
         except Exception as e:
             return False, f"{e}", (policy_time, guard_time, driver_time, actuation_time)
+
+    @router.post(
+        "/domains/{domain}/read",
+        description="Read an entity to a value. ",
+        dependencies=[
+            Depends(
+                PermissionCheckerActuation(permission_type=schemas.PermissionType.READ)
+            )
+        ],
+    )
+    async def read(
+        self,
+        domain: models.Domain = Depends(get_path_domain),
+        actuation_request: Dict[str, Union[Tuple[str], Tuple[str, str]]] = Body(...),
+    ) -> schemas.StandardResponse[schemas.ActuationResults]:
+        tasks = [
+            self.read_entity(domain, entity_id)
+            for entity_id in actuation_request.keys()
+        ]
+        task_results = await asyncio.gather(*tasks)
+        results = []
+        for success, detail in task_results:
+            results.append(schemas.ActuationResult(success=success, detail=detail))
+        return schemas.ActuationResults(results=results).to_response()
 
     @router.post(
         "/domains/{domain}",

@@ -26,3 +26,18 @@ class MetasysActuation(BaseActuation):
             )
             logger.info(response)
             return response.status, response.details
+
+    async def read(self, entity_id, external_references):
+        sensor_id = external_references[
+            "https://brickschema.org/schema/Brick/ref#metasysID"
+        ]
+        logger.info("metasys read: {}", sensor_id)
+        async with grpc.aio.insecure_channel("172.17.0.1:50051") as channel:
+            stub = actuate_pb2_grpc.ActuateStub(channel)
+            response: actuate_pb2.Response = await stub.ReadObjectCurrent(
+                actuate_pb2.ReadObjectCurrentAction(
+                    uuid=sensor_id, attribute="presentValue"
+                )
+            )
+            logger.info(response)
+            return response.status, response.details
