@@ -89,6 +89,7 @@ If you wish to contribute to this project, please pass all pre commit hooks befo
 - Incorporation of front end
 
 # References
+- [Playground: A Safe Building Operating System (ICCPS 2024)](https://xhfu.me/research/brick_bos/)
 - Metadata Models and Methods for Smart Buildings (Dissertation, UCSD, 2020)
 - Who, What, and When (BuildSys 2019)
 - Brick+ (BuildSys 2019)
